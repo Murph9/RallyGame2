@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=3 uid="uid://iurxxw5eajhl"]
+
+[ext_resource type="Script" path="res://main.cs" id="1_rty62"]
+[ext_resource type="PackedScene" uid="uid://bntg7wl4pvsj8" path="res://assets/duct.blend" id="2_2cly2"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_g37oh"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_l4mql"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_rty62")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.17505, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+shape = SubResource("BoxShape3D_g37oh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+mesh = SubResource("BoxMesh_l4mql")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.991799, 0.127809, 0, -0.127809, 0.991799, 0.401531, 3.88342, 6.2648)
+
+[node name="RigidBody3D2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.35009, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D2"]
+shape = SubResource("BoxShape3D_g37oh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.735978)
+mesh = SubResource("BoxMesh_l4mql")
+skeleton = NodePath("../../RigidBody3D2")
+
+[node name="RigidBody3D3" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.52514, -0.515933)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D3"]
+shape = SubResource("BoxShape3D_g37oh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D3"]
+mesh = SubResource("BoxMesh_l4mql")
+skeleton = NodePath("../../RigidBody3D3")
+
+[node name="RigidBody3D4" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.641833, 8.70018, 0)
+mass = 86.54
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D4"]
+shape = SubResource("BoxShape3D_g37oh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D4"]
+mesh = SubResource("BoxMesh_l4mql")
+skeleton = NodePath("../../RigidBody3D4")
+
+[node name="duct" parent="." instance=ExtResource("2_2cly2")]
