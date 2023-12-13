@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Play",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "C:\\Users\\murph\\Downloads\\Godot_v4.2.1-stable_mono_win64\\Godot_v4.2.1-stable_mono_win64.exe",
+            "args": ["--verbose"],
+            "cwd": "${workspaceFolder}/godot",
+            "stopAtEntry": false,
+        }
+    ]
+}
