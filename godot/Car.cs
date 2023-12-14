@@ -1,13 +1,15 @@
 using Godot;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot;
 
 public partial class Car : RigidBody3D
 {
-    private static float SUS_DAMPING = 0.2f;
+    // no pacejka use http://www.racer.nl/reference/pacejka.htm
+    // a custom step function which looks like search "F1-2002" on page
+
+    private static float SUS_REBOUND = 0.2f;
+    private static float SUS_COMPRESSION = 0.4f;
     private static float MASS = 10;
 
     public static void RotateBoxLineFor(MeshInstance3D mesh, Vector3 start, Vector3 end) {
@@ -37,24 +39,34 @@ public partial class Car : RigidBody3D
     }
 
     class Wheel {
-        public Vector3 Pos;
         public MeshInstance3D Model;
-        public MeshInstance3D SusRay;
-        public MeshInstance3D SusForce;
+        public RayCast3D Ray;
     }
 
     private readonly Wheel[] _wheels;
 
     public Car() {
         _wheels = new Wheel[] {
-            new () { Pos = new Vector3(1, 0, -2) },
-            new () { Pos = new Vector3(1, 0, 2) },
-            new () { Pos = new Vector3(-1, 0, 2) },
-            new () { Pos = new Vector3(-1, 0, -2) }
+            new () { Ray = new RayCast3D() {
+                Position = new Vector3(1, 0, -2),
+                TargetPosition = new Vector3(0, -2, 0)
+            } },
+            new () { Ray = new RayCast3D() {
+                Position = new Vector3(1, 0, 2),
+                TargetPosition = new Vector3(0, -2, 0)
+            }  },
+            new () { Ray = new RayCast3D() {
+                Position = new Vector3(-1, 0, 2),
+                TargetPosition = new Vector3(0, -2, 0)
+            }  },
+            new () { Ray = new RayCast3D() {
+                Position = new Vector3(-1, 0, -2),
+                TargetPosition = new Vector3(0, -2, 0)
+            }  }
         };
 
         Mass = MASS;
-        Position = new Vector3(1, 1, 1);
+        Position = new Vector3(1, 5, 1);
         Rotate(Vector3.Up, Mathf.DegToRad(135));
     }
 
@@ -76,8 +88,9 @@ public partial class Car : RigidBody3D
 
         // all 4 wheels now
         foreach (var w in _wheels) {
+            AddChild(w.Ray);
             w.Model = new MeshInstance3D() {
-                Position = w.Pos,
+                Position = w.Ray.Position,
                 Mesh = new SphereMesh() {
                     Radius = 0.2f,
                     Height = 0.2f*2,
@@ -87,12 +100,6 @@ public partial class Car : RigidBody3D
                 },
             };
             AddChild(w.Model);
-            
-            w.SusRay = BoxLine(Colors.Black, Vector3.Up, Vector3.Down);
-            AddChild(w.SusRay);
-
-            w.SusForce = BoxLine(Colors.Blue, Vector3.Up, Vector3.Down);
-            AddChild(w.SusForce);
         }
     }
 
@@ -111,57 +118,41 @@ public partial class Car : RigidBody3D
 
     private void ApplySuspension(Wheel w)
     {
-        var sphere = (SphereMesh)w.Model.Mesh;
-
-        var t = GlobalTransform;
-        var globalPos = ToGlobal(w.Pos);
-        var globalDownRay = -t.Basis.Y; // down
+        var sphereObj = (SphereMesh)w.Model.Mesh;
         
-        var from = globalPos;
-        var to = globalPos + globalDownRay * 2;
-        RotateBoxLineFor(w.SusRay, ToLocal(from), ToLocal(to));
-        
-        var space = GetWorld3D().DirectSpaceState;
-        var col = space.IntersectRay(PhysicsRayQueryParameters3D.Create(from, to));
-        if (!col.TryGetValue("position", out var position) || position.VariantType != Variant.Type.Vector3) {
-            // default to the full extension
-            w.Model.Position = ToLocal(to);
-            sphere.Radius = 0.1f;
-            sphere.Height = 0.2f;
+        var hitPositionGlobal = w.Ray.GetCollisionPoint();
+        var hitNormalGlobal = w.Ray.GetCollisionNormal();
+        if (hitPositionGlobal.LengthSquared() == 0) {
+            // get the end of the ray TODO check
+            w.Model.Position = w.Model.ToLocal(w.Ray.ToGlobal(w.Ray.TargetPosition));
+            sphereObj.Radius = 0.1f;
+            sphereObj.Height = 0.2f;
             return;
         }
-
-        var normal = (Vector3)col["normal"];
-        if (normal.LengthSquared() == 0) {
-            sphere.Radius = 0.1f;
-            sphere.Height = 0.2f;
-            return;
-        }
-
-        // set nothing first
-        RotateBoxLineFor(w.SusForce, w.Model.Position, w.Model.Position);
-
-        var angle = normal.Dot(-globalDownRay);
-
-        var posV3 = (Vector3)position;
-        w.Model.Position = ToLocal(posV3);
-
-        var distance = from.DistanceTo(posV3);
-        var force = 2 - distance;
-        var pointVelocity = LinearVelocity + AngularVelocity.Cross(ToGlobal(w.Model.Position) - GlobalPosition);
         
-        var damping = -SUS_DAMPING * normal.Dot(pointVelocity);
+        w.Model.Position = ToLocal(hitPositionGlobal);
+
+        var rayDirectionGlobal = w.Ray.GlobalBasis * w.Ray.TargetPosition;
+        var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
+
+        var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
+        var force = Math.Max(0, 1 - distance); // an offset
+        var hitVelocity = LinearVelocity + AngularVelocity.Cross(hitPositionGlobal - GlobalPosition); // TODO calc other model speed
+        
+        var relVel = hitNormalGlobal.Dot(hitVelocity);
+        var damping = -SUS_REBOUND * relVel;
+        if (relVel > 0) {
+            damping = -SUS_COMPRESSION * relVel;
+        }
         
         if (force + damping > 0) {
-            sphere.Radius = (force + damping)/5 + 0.1f;
-            sphere.Height = (force + damping)/2.5f + 0.2f;
-            var forceDir = -globalDownRay * (force + damping) * angle;
+            sphereObj.Radius = (force + damping)/5 + 0.1f;
+            sphereObj.Height = (force + damping)/2.5f + 0.2f;
+            var forceDir = -rayDirectionGlobal * (force + damping) * surfaceNormalFactor;
             ApplyForce(5 * Mass * forceDir, ToGlobal(w.Model.Position) - GlobalPosition);
-            
-            RotateBoxLineFor(w.SusForce, w.Model.Position, w.Model.Position + (forceDir * t.Basis));
         } else {
-            sphere.Radius = 0.1f;
-            sphere.Height = 0.2f;
+            sphereObj.Radius = 0.1f;
+            sphereObj.Height = 0.2f;
         }
     }
 
