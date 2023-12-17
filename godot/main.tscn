@@ -23,12 +23,6 @@ shape = SubResource("BoxShape3D_g37oh")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
 mesh = SubResource("BoxMesh_l4mql")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.999978, 0.000845476, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 3.88342, 9.99093)
-
 [node name="RigidBody3D2" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.35009, 0)
 
@@ -67,5 +61,11 @@ skeleton = NodePath("../../RigidBody3D4")
 offset_right = 8.0
 offset_bottom = 8.0
 text = "Add Car"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 3.88342, 9.99093)
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

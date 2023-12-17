@@ -33,7 +33,6 @@ _subresources={
 "nodes": {
 "PATH:Plane": {
 "decomposition/advanced": true,
-"generate/physics": true,
 "physics/shape_type": 2
 }
 }
