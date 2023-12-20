@@ -1,11 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://iurxxw5eajhl"]
+[gd_scene load_steps=5 format=3 uid="uid://iurxxw5eajhl"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_rty62"]
 [ext_resource type="PackedScene" uid="uid://bntg7wl4pvsj8" path="res://assets/duct.blend" id="2_2cly2"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_g37oh"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_l4mql"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_0kera"]
 
@@ -13,36 +9,6 @@
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_rty62")
-
-[node name="RigidBody3D" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.17505, 0)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
-shape = SubResource("BoxShape3D_g37oh")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
-mesh = SubResource("BoxMesh_l4mql")
-
-[node name="RigidBody3D2" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.35009, 0)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D2"]
-shape = SubResource("BoxShape3D_g37oh")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0351535)
-mesh = SubResource("BoxMesh_l4mql")
-skeleton = NodePath("../../RigidBody3D2")
-
-[node name="RigidBody3D3" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.370352, 6.52514, -0.312536)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D3"]
-shape = SubResource("BoxShape3D_g37oh")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D3"]
-mesh = SubResource("BoxMesh_l4mql")
-skeleton = NodePath("../../RigidBody3D3")
 
 [node name="RigidBody3D4" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.641833, 8.70018, 0)
@@ -55,8 +21,6 @@ shape = SubResource("SphereShape3D_0kera")
 mesh = SubResource("SphereMesh_vavfl")
 skeleton = NodePath("../../RigidBody3D4")
 
-[node name="duct" parent="." instance=ExtResource("2_2cly2")]
-
 [node name="Button" type="Button" parent="."]
 offset_right = 8.0
 offset_bottom = 8.0
@@ -67,5 +31,7 @@ transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 3.88342, 9.99093)
+
+[node name="duct" parent="." instance=ExtResource("2_2cly2")]
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

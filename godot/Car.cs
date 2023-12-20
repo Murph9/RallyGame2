@@ -1,110 +1,65 @@
 using Godot;
 using System;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot;
 
-public partial class Car : RigidBody3D
+public partial class Car : Node
 {
-    // no pacejka use http://www.racer.nl/reference/pacejka.htm
-    // a custom step function which looks like search "F1-2002" on page
+    // no pacejka, please use http://www.racer.nl/reference/pacejka.htm
+    // as a custom step function which looks like search "F1-2002" on page
 
-    private static float SUS_REBOUND = 0.2f;
-    private static float SUS_COMPRESSION = 0.4f;
-    private static float MASS = 10;
-
-    public static void RotateBoxLineFor(MeshInstance3D mesh, Vector3 start, Vector3 end) {
-        var length = (end - start).Length();
-        
-        mesh.Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1,0,0), (end-start).Normalized())), start.Lerp(end, 0.5f));
-        var box = mesh.Mesh as BoxMesh;
-        box.Size = new Vector3(length, 0.1f, 0.1f);
-    }
-
-    public static MeshInstance3D BoxLine(Color c, Vector3 start, Vector3 end) {
-        var mat = new StandardMaterial3D() {
-            AlbedoColor = c
-        };
-        var length = (end - start).Length();
-        
-        var mesh = new BoxMesh() {
-            Size = new Vector3(length, 0.1f, 0.1f),
-            Material = mat
-        };
-        var meshObj = new MeshInstance3D() {
-            Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1,0,0), (end-start).Normalized())), start.Lerp(end, 0.5f)),
-            Mesh = mesh
-        };
-
-        return meshObj;
-    }
+    private static readonly float SUS_STIFFNESS = 20;
+    private static readonly float SUS_REBOUND = 0.2f;
+    private static readonly float SUS_COMPRESSION = 0.4f;
+    private static readonly float MASS = 750;
 
     class Wheel {
-        public MeshInstance3D Model;
+        public Node3D WheelModel;
         public RayCast3D Ray;
     }
+
+    private readonly RigidBody3D _rigidBody;
 
     private readonly Wheel[] _wheels;
 
     public Car() {
-        _wheels = new Wheel[] {
-            new () { Ray = new RayCast3D() {
-                Position = new Vector3(1, 0, -2),
-                TargetPosition = new Vector3(0, -2, 0)
-            } },
-            new () { Ray = new RayCast3D() {
-                Position = new Vector3(1, 0, 2),
-                TargetPosition = new Vector3(0, -2, 0)
-            }  },
-            new () { Ray = new RayCast3D() {
-                Position = new Vector3(-1, 0, 2),
-                TargetPosition = new Vector3(0, -2, 0)
-            }  },
-            new () { Ray = new RayCast3D() {
-                Position = new Vector3(-1, 0, -2),
-                TargetPosition = new Vector3(0, -2, 0)
-            }  }
-        };
+        var scene = GD.Load<PackedScene>("res://assets/track1_2.blend");
+        var carModel = scene.Instantiate<Node3D>();
+        _rigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
+        _rigidBody.Mass = MASS;
+        _rigidBody.GetParent().RemoveChild(_rigidBody); // remove the scene parent
+        AddChild(_rigidBody);
 
-        Mass = MASS;
-        Position = new Vector3(1, 5, 1);
-        Rotate(Vector3.Up, Mathf.DegToRad(135));
+        _wheels = carModel.GetChildren().Where(x => x is Node3D).Select(x => {
+            var node = x as Node3D;
+            return new Wheel {
+                Ray = new RayCast3D() {
+                    Position = node.Position,
+                    TargetPosition = new Vector3(0, -1f, 0)
+                }
+            };
+        }).ToArray();
+        
+        _rigidBody.Position = new Vector3(1, 5, 1);
+        _rigidBody.Rotate(Vector3.Up, Mathf.DegToRad(135));
     }
 
     public override void _Ready() {
-        AddChild(new MeshInstance3D() {
-            Mesh = new BoxMesh() {
-                Size = new Vector3(1.8f, 1, 3.8f),
-                Material = new StandardMaterial3D() {
-                    AlbedoColor = Colors.AliceBlue
-                }
-            }
-        });
-
-        AddChild(new CollisionShape3D() {
-            Shape = new BoxShape3D() {
-                Size = new Vector3(1.8f, 1, 3.8f),
-            }
-        });
-
         // all 4 wheels now
         foreach (var w in _wheels) {
-            AddChild(w.Ray);
-            w.Model = new MeshInstance3D() {
-                Position = w.Ray.Position,
-                Mesh = new SphereMesh() {
-                    Radius = 0.2f,
-                    Height = 0.2f*2,
-                    Material = new StandardMaterial3D() {
-                        AlbedoColor = Colors.Yellow
-                    }
-                },
-            };
-            AddChild(w.Model);
+            _rigidBody.AddChild(w.Ray);
+
+            var scene = GD.Load<PackedScene>("res://assets/wheel1.blend");
+            w.WheelModel = scene.Instantiate<Node3D>();
+            w.WheelModel.Position = w.Ray.Position;
+            
+            _rigidBody.AddChild(w.WheelModel);
         }
     }
 
     public override void _Process(double delta) {
-        
+        GetViewport().GetCamera3D().LookAt(_rigidBody.GlobalPosition);
     }
     
     public override void _PhysicsProcess(double delta) {
@@ -118,41 +73,32 @@ public partial class Car : RigidBody3D
 
     private void ApplySuspension(Wheel w)
     {
-        var sphereObj = (SphereMesh)w.Model.Mesh;
-        
         var hitPositionGlobal = w.Ray.GetCollisionPoint();
         var hitNormalGlobal = w.Ray.GetCollisionNormal();
-        if (hitPositionGlobal.LengthSquared() == 0) {
-            // get the end of the ray TODO check
-            w.Model.Position = w.Model.ToLocal(w.Ray.ToGlobal(w.Ray.TargetPosition));
-            sphereObj.Radius = 0.1f;
-            sphereObj.Height = 0.2f;
+        if (!w.Ray.IsColliding()) {
+            w.WheelModel.Position = w.Ray.TargetPosition + w.Ray.Position - w.Ray.TargetPosition.Normalized() * 0.4f;
             return;
         }
         
-        w.Model.Position = ToLocal(hitPositionGlobal);
+        w.WheelModel.Position = _rigidBody.ToLocal(hitPositionGlobal) - w.Ray.TargetPosition.Normalized() * 0.4f;
 
         var rayDirectionGlobal = w.Ray.GlobalBasis * w.Ray.TargetPosition;
         var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
 
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
         var force = Math.Max(0, 1 - distance); // an offset
-        var hitVelocity = LinearVelocity + AngularVelocity.Cross(hitPositionGlobal - GlobalPosition); // TODO calc other model speed
+        var hitVelocity = _rigidBody.LinearVelocity + _rigidBody.AngularVelocity.Cross(hitPositionGlobal - _rigidBody.GlobalPosition); // TODO calc other model speed
         
         var relVel = hitNormalGlobal.Dot(hitVelocity);
-        var damping = -SUS_REBOUND * relVel;
+        var damping = -SUS_REBOUND;
         if (relVel > 0) {
-            damping = -SUS_COMPRESSION * relVel;
+            damping = -SUS_COMPRESSION;
         }
         
-        if (force + damping > 0) {
-            sphereObj.Radius = (force + damping)/5 + 0.1f;
-            sphereObj.Height = (force + damping)/2.5f + 0.2f;
-            var forceDir = -rayDirectionGlobal * (force + damping) * surfaceNormalFactor;
-            ApplyForce(5 * Mass * forceDir, ToGlobal(w.Model.Position) - GlobalPosition);
-        } else {
-            sphereObj.Radius = 0.1f;
-            sphereObj.Height = 0.2f;
+        var totalForce = force + damping * relVel;
+        if (totalForce > 0) {
+            var forceDir = -rayDirectionGlobal * totalForce * surfaceNormalFactor;
+            _rigidBody.ApplyForce(SUS_STIFFNESS * _rigidBody.Mass * forceDir, hitPositionGlobal - _rigidBody.GlobalPosition);
         }
     }
 
