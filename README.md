@@ -1,15 +1,20 @@
-# RallyGame Readme
+# RallyGame2 Readme
 
-Blender physics objecy work flow:
+## Project setup
+
+Download godot, setup the .vscode launch.json script to point to its location
+
+Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9bb...
+
+
+## How Tos
+
+Static .blend file import with physics work flow:
 1. make model thats ready to import into godot
-1. press shift-d on it to duplicate it non-instanced
-1. change name to `xxxx-colonly`
+1. Duplicate it with shift-D (a copy non-instanced)
+1. Change name to `xxxx-colonly`
 1. add a decimate modifier to simplify the col mesh with properties:
    - planar with angle limit of 0.5d
+   - and apply it
 
 
-Issues:
-
-You need to manually download godotjolt and put the extracted zip it in the godot folder
-
-TODO guide
