@@ -9,34 +9,37 @@ public partial class Car : Node
     // no pacejka, please use http://www.racer.nl/reference/pacejka.htm
     // as a custom step function which looks like search "F1-2002" on page
 
-    private static readonly float SUS_STIFFNESS = 20;
-    private static readonly float SUS_REBOUND = 0.2f;
-    private static readonly float SUS_COMPRESSION = 0.4f;
+    private static readonly float SUS_STIFFNESS = 10;
+    private static readonly float SUS_REBOUND = 0.5f;
+    private static readonly float SUS_COMPRESSION = 0.6f;
     private static readonly float MASS = 750;
-
-    class Wheel {
-        public Node3D WheelModel;
-        public RayCast3D Ray;
-    }
 
     private readonly RigidBody3D _rigidBody;
 
-    private readonly Wheel[] _wheels;
+    public readonly Wheel[] Wheels;
 
     public Car() {
+        var uiScene = GD.Load<PackedScene>("res://CarUI.tscn");
+        var instance = uiScene.Instantiate<CarUI>();
+        instance.Car = this;
+        AddChild(instance);
+
         var scene = GD.Load<PackedScene>("res://assets/track1_2.blend");
         var carModel = scene.Instantiate<Node3D>();
         _rigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
         _rigidBody.Mass = MASS;
-        _rigidBody.GetParent().RemoveChild(_rigidBody); // remove the scene parent
+        var parent = _rigidBody.GetParent();
+        parent.RemoveChild(_rigidBody); // remove the scene parent
+        parent.QueueFree();
         AddChild(_rigidBody);
 
-        _wheels = carModel.GetChildren().Where(x => x is Node3D).Select(x => {
+        Wheels = carModel.GetChildren().Where(x => x is Node3D).Select(x => {
             var node = x as Node3D;
             return new Wheel {
+                Name = node.Name,
                 Ray = new RayCast3D() {
                     Position = node.Position,
-                    TargetPosition = new Vector3(0, -1f, 0)
+                    TargetPosition = new Vector3(0, -0.5f, 0)
                 }
             };
         }).ToArray();
@@ -47,7 +50,7 @@ public partial class Car : Node
 
     public override void _Ready() {
         // all 4 wheels now
-        foreach (var w in _wheels) {
+        foreach (var w in Wheels) {
             _rigidBody.AddChild(w.Ray);
 
             var scene = GD.Load<PackedScene>("res://assets/wheel1.blend");
@@ -60,14 +63,17 @@ public partial class Car : Node
 
     public override void _Process(double delta) {
         GetViewport().GetCamera3D().LookAt(_rigidBody.GlobalPosition);
+
+        foreach (var w in Wheels) {
+            w._Process(delta);
+        }
     }
     
     public override void _PhysicsProcess(double delta) {
-        foreach (var w in _wheels) {
+        foreach (var w in Wheels) {
             ApplySuspension(w);
-        }
-        foreach (var w in _wheels) {
             ApplyDrag(w);
+            w._PhysicsProcess(delta);
         }
     }
 
@@ -75,18 +81,19 @@ public partial class Car : Node
     {
         var hitPositionGlobal = w.Ray.GetCollisionPoint();
         var hitNormalGlobal = w.Ray.GetCollisionNormal();
+
+        w.InContact = w.Ray.IsColliding();
         if (!w.Ray.IsColliding()) {
-            w.WheelModel.Position = w.Ray.TargetPosition + w.Ray.Position - w.Ray.TargetPosition.Normalized() * 0.4f;
             return;
         }
+        w.ContactPoint = _rigidBody.ToLocal(hitPositionGlobal);
         
-        w.WheelModel.Position = _rigidBody.ToLocal(hitPositionGlobal) - w.Ray.TargetPosition.Normalized() * 0.4f;
-
         var rayDirectionGlobal = w.Ray.GlobalBasis * w.Ray.TargetPosition;
         var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
 
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
-        var force = Math.Max(0, 1 - distance); // an offset
+        var maxDist = w.Ray.TargetPosition.Length();
+        w.SusTravelFraction = Math.Clamp(maxDist - distance, 0, maxDist); // an offset
         var hitVelocity = _rigidBody.LinearVelocity + _rigidBody.AngularVelocity.Cross(hitPositionGlobal - _rigidBody.GlobalPosition); // TODO calc other model speed
         
         var relVel = hitNormalGlobal.Dot(hitVelocity);
@@ -95,10 +102,11 @@ public partial class Car : Node
             damping = -SUS_COMPRESSION;
         }
         
-        var totalForce = force + damping * relVel;
+        var totalForce = w.SusTravelFraction + damping * relVel;
         if (totalForce > 0) {
-            var forceDir = -rayDirectionGlobal * totalForce * surfaceNormalFactor;
-            _rigidBody.ApplyForce(SUS_STIFFNESS * _rigidBody.Mass * forceDir, hitPositionGlobal - _rigidBody.GlobalPosition);
+            var forceDir = SUS_STIFFNESS * _rigidBody.Mass * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
+            _rigidBody.ApplyForce(forceDir, hitPositionGlobal - _rigidBody.GlobalPosition);
+            w.Force = forceDir;
         }
     }
 

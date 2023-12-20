@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://be05ca5rdj2jo"]
+
+[ext_resource type="Script" path="res://CarUI.cs" id="1_ujtt8"]
+
+[node name="CarUi" type="Node2D"]
+script = ExtResource("1_ujtt8")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="NameLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="wheelVBC0" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC0"]
+layout_mode = 2
+text = "W"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer/wheelVBC0"]
+layout_mode = 2
+disabled = true
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC0"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+max_value = 1.0
+
+[node name="wheelVBC1" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC1"]
+layout_mode = 2
+text = "W"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer/wheelVBC1"]
+layout_mode = 2
+disabled = true
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC1"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+max_value = 1.0
+
+[node name="wheelVBC2" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC2"]
+layout_mode = 2
+text = "W"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer/wheelVBC2"]
+layout_mode = 2
+disabled = true
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC2"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+max_value = 1.0
+
+[node name="wheelVBC3" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC3"]
+layout_mode = 2
+text = "W"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer/wheelVBC3"]
+layout_mode = 2
+disabled = true
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC3"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+max_value = 1.0
