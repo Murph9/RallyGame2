@@ -1,14 +1,15 @@
 using Godot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using murph9.RallyGame2.Car.Init;
 
 namespace murph9.RallyGame2.godot;
 
 public partial class Main : Node
 {
     public override void _Ready() {
-        AddChild(new Car());
+        var grav = new Vector3(0, -9.81f, 0);
+
+        var details = CarType.Runner.GetCarDetails(grav);
+        AddChild(new Car(details));
     }
 
     public override void _Process(double delta) {
@@ -16,6 +17,7 @@ public partial class Main : Node
     }
 
     public void _on_button_pressed() {
-        AddChild(new Car());
+        var details = CarType.Runner.GetCarDetails(new Vector3(0, -9.81f, 0));
+        AddChild(new Car(details));
     }
 }
