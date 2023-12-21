@@ -10,8 +10,9 @@ public class Wheel {
     public Node3D WheelModel;
     public RayCast3D Ray;
     public bool InContact;
+    public RigidBody3D ContactRigidBody;
     public float SusTravelFraction;
-    public Vector3 Force;
+    public Vector3 SusForce;
     public Vector3 ContactPoint;
 
     public Wheel(WheelDetails details) {

@@ -13,7 +13,7 @@ public record CarSusDetails
 	public float preload_force; //kg/mm [2.5ish]
 	public float stiffness; //kg/mm [10-200]
 	public float max_force; //kg/mm [50*carMass]
-	public float antiroll; //??? [12ish]
+	public float antiroll; //kg/mm [2 - 20]
 	
 	public float comp; //[0.2] //should be less than relax
 	public float relax; //[0.3]

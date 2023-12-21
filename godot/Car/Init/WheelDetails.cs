@@ -12,7 +12,7 @@ public record WheelDetails {
 
     public string tractionType;
 
-	public int i;
+	public int id;
 	public Vector3 position;
     // public WheelTraction traction;
 }

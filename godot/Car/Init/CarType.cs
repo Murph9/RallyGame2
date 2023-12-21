@@ -58,13 +58,13 @@ public static class CarTypeExtensions
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
 			var a = wheelPoss[CarPart.wheel_fl.ToString()];
-			carDetails.wheelData[0].i = 0;
+			carDetails.wheelData[0].id = 0;
 			carDetails.wheelData[0].position = wheelPoss[CarPart.wheel_fl.ToString()].Position;
-			carDetails.wheelData[1].i = 1;
+			carDetails.wheelData[1].id = 1;
 			carDetails.wheelData[1].position = wheelPoss[CarPart.wheel_fr.ToString()].Position;
-			carDetails.wheelData[2].i = 2;
+			carDetails.wheelData[2].id = 2;
 			carDetails.wheelData[2].position = wheelPoss[CarPart.wheel_rl.ToString()].Position;
-			carDetails.wheelData[3].i = 3;
+			carDetails.wheelData[3].id = 3;
 			carDetails.wheelData[3].position = wheelPoss[CarPart.wheel_rr.ToString()].Position;
 		} catch (Exception e) {
 			GD.Print(e);

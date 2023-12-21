@@ -33,7 +33,7 @@ public partial class Car : Node
         AddChild(_rigidBody);
 
         Wheels = _details.wheelData.Select(x => {
-            var sus = _details.SusByWheelNum(x.i);
+            var sus = _details.SusByWheelNum(x.id);
             return new Wheel(x) {
                 Ray = new RayCast3D() {
                     Position = x.position + new Vector3(0, sus.max_travel, 0),
@@ -53,7 +53,7 @@ public partial class Car : Node
 
             var scene = GD.Load<PackedScene>("res://assets/" + w.Details.modelName);
             w.WheelModel = scene.Instantiate<Node3D>();
-            if (w.Details.i % 2 == 1)
+            if (w.Details.id % 2 == 1)
                 w.WheelModel.Rotate(Vector3.Up, Mathf.DegToRad(180));
             w.WheelModel.Position = w.Details.position;
             
@@ -71,15 +71,16 @@ public partial class Car : Node
     
     public override void _PhysicsProcess(double delta) {
         foreach (var w in Wheels) {
-            ApplySuspension(w);
-            ApplyTraction(w);
-            ApplyDrag(w);
+            CalcSuspension(w);
+            CalcTraction(w);
+            CalcDrag(w);
+
             w._PhysicsProcess(delta);
         }
         ApplyCentralDrag();
     }
 
-    private void ApplySuspension(Wheel w)
+    private void CalcSuspension(Wheel w)
     {
         var hitPositionGlobal = w.Ray.GetCollisionPoint();
         var hitNormalGlobal = w.Ray.GetCollisionNormal();
@@ -94,32 +95,44 @@ public partial class Car : Node
         var maxDist = w.Ray.TargetPosition.Length();
         w.SusTravelFraction = Math.Clamp(maxDist - distance, 0, maxDist); // an offset
         
-        // TODO calc other thing velocity
         var hitVelocity = _rigidBody.LinearVelocity + _rigidBody.AngularVelocity.Cross(hitPositionGlobal - _rigidBody.GlobalPosition);
-        
+        // then calc other thing velocity if its a rigidbody
+        w.ContactRigidBody = w.Ray.GetCollider() as RigidBody3D;
+        if (w.ContactRigidBody != null)
+            hitVelocity += w.ContactRigidBody.LinearVelocity + w.ContactRigidBody.AngularVelocity.Cross(hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
+
         var relVel = hitNormalGlobal.Dot(hitVelocity);
         var susDetails = _details.SusByWheelNum(0);
         var damping = -susDetails.Relax() * relVel;
         if (relVel > 0) {
             damping = -susDetails.Compression() * relVel;
         }
+
+        var swayForce = 0f;
+        int w_id_other = w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2; // fetch the index of the other side
+        if (Wheels[w_id_other].InContact) {
+            float swayDiff = Wheels[w_id_other].Ray.TargetPosition.Length() - w.Ray.TargetPosition.Length();
+            swayForce = swayDiff * susDetails.antiroll;
+        }
         
-        var totalForce = w.SusTravelFraction * susDetails.stiffness + damping;
+        var totalForce = (swayForce + w.SusTravelFraction) * susDetails.stiffness + damping;
         if (totalForce > 0) {
-            // sin of angle to surface
+            // reduce force based on angle to surface
             var rayDirectionGlobal = w.Ray.GlobalBasis * w.Ray.TargetPosition.Normalized();
             var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
             
             var forceDir = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
             _rigidBody.ApplyForce(forceDir, hitPositionGlobal - _rigidBody.GlobalPosition);
-            w.Force = forceDir;
+            w.SusForce = forceDir;
+
+            w.ContactRigidBody?.ApplyForce(-forceDir, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
     }
 
-    private void ApplyTraction(Wheel w) {
+    private void CalcTraction(Wheel w) {
 
     }
-    private void ApplyDrag(Wheel w)
+    private void CalcDrag(Wheel w)
     {
         
     }
