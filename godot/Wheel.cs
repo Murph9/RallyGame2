@@ -21,17 +21,31 @@ public partial class Wheel : Node3D {
     public double SkidFraction;
     public Vector3 GripDir;
 
-    public Wheel(WheelDetails details) {
+    public Wheel(WheelDetails details, RayCast3D ray) {
         Details = details;
+        Ray = ray;
+    }
+
+    public override void _Ready()
+    {
+        var scene = GD.Load<PackedScene>("res://assets/" + Details.modelName);
+        WheelModel = scene.Instantiate<Node3D>();
+        
+        if (Details.id % 2 == 1)
+            WheelModel.Rotate(Vector3.Up, Mathf.DegToRad(180));
+        Position = Details.position;
+        AddChild(WheelModel);
     }
 
     public override void _Process(double delta) {
         if (!InContact) {
-            WheelModel.Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * 0.4f;
+            Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * 0.4f;
         } else {
-            WheelModel.Position = ContactPoint - Ray.TargetPosition.Normalized() * 0.4f;
+            Position = ContactPoint - Ray.TargetPosition.Normalized() * 0.4f;
         }
     }
 
-    public override void _PhysicsProcess(double delta) {}
+    public override void _PhysicsProcess(double delta) {
+        WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);
+    }
 }

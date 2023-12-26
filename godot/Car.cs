@@ -45,30 +45,16 @@ public partial class Car : Node
 
         Wheels = _details.wheelData.Select(x => {
             var sus = _details.SusByWheelNum(x.id);
-            return new Wheel(x) {
-                Ray = new RayCast3D() {
+            return new Wheel(x, new RayCast3D() {
                     Position = x.position + new Vector3(0, sus.max_travel, 0),
                     TargetPosition = new Vector3(0, -sus.TravelTotal() - x.radius, 0)
-                }
-            };
+                });
         }).ToArray();
-        
-        _rigidBody.Position = new Vector3(1, 5, 1);
-        // _rigidBody.Rotate(Vector3.Up, Mathf.DegToRad(135));
-    }
 
-    public override void _Ready() {
-        // all 4 wheels now
+        // attach wheels to car
         foreach (var w in Wheels) {
-            _rigidBody.AddChild(w.Ray);
-
-            var scene = GD.Load<PackedScene>("res://assets/" + w.Details.modelName);
-            w.WheelModel = scene.Instantiate<Node3D>();
-            if (w.Details.id % 2 == 1)
-                w.WheelModel.Rotate(Vector3.Up, Mathf.DegToRad(180));
-            w.WheelModel.Position = w.Details.position;
-            
-            _rigidBody.AddChild(w.WheelModel);
+            _rigidBody.AddChild(w.Ray); // ray should not be attached to the wheel so it can detect height
+            _rigidBody.AddChild(w);
         }
     }
 
