@@ -10,8 +10,6 @@ public record WheelDetails {
 	public float mass;
 	public float width;
 
-    public string tractionType;
-
 	public int id;
 	public Vector3 position;
     // public WheelTraction traction;

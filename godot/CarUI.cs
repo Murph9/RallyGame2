@@ -9,12 +9,17 @@ public partial class CarUI : Node2D {
     public override void _Process(double delta) {
         if (Car == null) return;
 
-        GetNode<Label>("VBoxContainer/NameLabel").Text = Car.ToString();
+        GetNode<Label>("VBoxContainer/NameLabel").Text = Car.ToString() + " @ " + Car.RigidBody.Position;
 
         for (var i = 0; i < Car.Wheels.Length; i++) {
-            GetNode<Label>("VBoxContainer/GridContainer/wheelVBC"+i+"/Label").Text = Car.Wheels[i].Name;
-            GetNode<ProgressBar>("VBoxContainer/GridContainer/wheelVBC"+i+"/ProgressBar").Value = Car.Wheels[i].SusTravelFraction;
-            GetNode<CheckBox>("VBoxContainer/GridContainer/wheelVBC"+i+"/CheckBox").ButtonPressed = Car.Wheels[i].InContact;
+            var w = Car.Wheels[i];
+            GetNode<Label>("VBoxContainer/GridContainer/wheelVBC"+i+"/Label").Text = w.Name + w.RadSec;
+            GetNode<ProgressBar>("VBoxContainer/GridContainer/wheelVBC"+i+"/ProgressBar").Value = w.SusTravelFraction;
+            GetNode<CheckBox>("VBoxContainer/GridContainer/wheelVBC"+i+"/CheckBox").ButtonPressed = w.InContact;
+            GetNode<Line2D>("VBoxContainer/GridContainer/wheelVBC"+i+"/Line2D").Points = new Vector2[] {
+                new (80, 40),
+                40* new Vector2(w.GripDir.X, w.GripDir.Z) / Car.Details.mass + new Vector2(80, 40),
+            };
         }
     }
 }

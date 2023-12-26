@@ -35,13 +35,8 @@ public enum CarType {
 
 public static class CarTypeExtensions
 {
-	public static string GetName(this CarType type) => type.ToString();
-
-	public static string GetResourceName(this CarType type) => $"TODO{type}";
-
-	public static CarDetails GetCarDetails(this CarType type, Vector3 gravity) {
-		// TODO use type
-		var filePath = Path.Combine(AppContext.BaseDirectory, "Car", "Init", "Type", "Runner.json");
+	public static CarDetails LoadCarDetails(this CarType type, Vector3 gravity) {
+		var filePath = Path.Combine(AppContext.BaseDirectory, "Car", "Init", "Type", type.ToString() + ".json");
         var jsonContent = File.ReadAllText(filePath);
 		var carDetails = JsonSerializer.Deserialize<CarDetails>(jsonContent, new JsonSerializerOptions() {
 			AllowTrailingCommas = true,
@@ -49,7 +44,7 @@ public static class CarTypeExtensions
 			IncludeFields = true
 		});
 
-		// calculate wheel pos
+		// calculate wheel positions based on the model
 		Node3D carModel = null;
 		try {
 			var scene = GD.Load<PackedScene>("res://assets/" + carDetails.carModel);
@@ -57,7 +52,6 @@ public static class CarTypeExtensions
 			var wheelPoss = carModel.GetChildren()
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
-			var a = wheelPoss[CarPart.wheel_fl.ToString()];
 			carDetails.wheelData[0].id = 0;
 			carDetails.wheelData[0].position = wheelPoss[CarPart.wheel_fl.ToString()].Position;
 			carDetails.wheelData[1].id = 1;

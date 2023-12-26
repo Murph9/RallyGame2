@@ -9,11 +9,18 @@ public class Wheel {
     public string Name;
     public Node3D WheelModel;
     public RayCast3D Ray;
+
     public bool InContact;
     public RigidBody3D ContactRigidBody;
     public float SusTravelFraction;
     public Vector3 SusForce;
     public Vector3 ContactPoint;
+
+    public float SlipAngle;
+    public float SlipRatio;
+    public float RadSec;
+    public double SkidFraction;
+    public Vector3 GripDir;
 
     public Wheel(WheelDetails details) {
         Details = details;

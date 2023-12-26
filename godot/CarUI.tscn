@@ -33,6 +33,9 @@ custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 max_value = 1.0
 
+[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC0"]
+points = PackedVector2Array(10, 10, 40, 40)
+
 [node name="wheelVBC1" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 
@@ -48,6 +51,9 @@ disabled = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 max_value = 1.0
+
+[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC1"]
+points = PackedVector2Array(10, 10, 40, 40)
 
 [node name="wheelVBC2" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
@@ -65,6 +71,9 @@ custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 max_value = 1.0
 
+[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC2"]
+points = PackedVector2Array(10, 10, 40, 40)
+
 [node name="wheelVBC3" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 
@@ -80,3 +89,6 @@ disabled = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 max_value = 1.0
+
+[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC3"]
+points = PackedVector2Array(10, 10, 40, 40)
