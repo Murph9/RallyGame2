@@ -5,10 +5,10 @@ namespace murph9.RallyGame2.godot;
 
 public partial class Main : Node
 {
-    public override void _Ready() {
-        var grav = new Vector3(0, -9.81f, 0);
+    private static readonly float default_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
 
-        var details = CarType.Runner.LoadCarDetails(grav);
+    public override void _Ready() {
+        var details = CarType.Runner.LoadCarDetails(new Vector3(0, -default_gravity, 0));
         AddChild(new Car(details));
     }
 
@@ -17,7 +17,7 @@ public partial class Main : Node
     }
 
     public void _on_button_pressed() {
-        var details = CarType.Runner.LoadCarDetails(new Vector3(0, -9.81f, 0));
+        var details = CarType.Runner.LoadCarDetails(new Vector3(0, -default_gravity, 0));
         AddChild(new Car(details));
     }
 }

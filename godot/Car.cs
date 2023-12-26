@@ -243,14 +243,8 @@ public partial class Car : Node
             w.RadSec = 0; // maxed out the forces with braking, so prevent wheels from moving
         else
             w.RadSec += (float)delta * totalLongForceTorque; // so the radSec can be used next frame, to calculate slip ratio
-        if (w.RadSec > 10000) {
-            GD.Print(w.Details.id + " " + wheel_force.Z + " " + CalcWheelTraction.Calc(w.SlipRatio, TRACTION_MAXSLIP, TRACTION_MAX, TRACTION_MAXLENGTH, TRACTION_DECAY) + " " + w.SusForce.Length());
-        }
 
         w.GripDir = wheel_force;
-        if (wheel_force.Length() > 100000) { // TODO fix
-            wheel_force = wheel_force.Normalized() * 100000;
-        }
         if (wheel_force.LengthSquared() > 0)
             _rigidBody.ApplyForce(_rigidBody.ToGlobal(wheel_force), _rigidBody.ToGlobal(w.ContactPoint) - _rigidBody.GlobalPosition);
         // TODO apply to other rigid body if it exists

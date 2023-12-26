@@ -3,10 +3,9 @@ using murph9.RallyGame2.Car.Init;
 
 namespace murph9.RallyGame2.godot;
 
-public class Wheel {
+public partial class Wheel : Node3D {
 
     public readonly WheelDetails Details;
-    public string Name;
     public Node3D WheelModel;
     public RayCast3D Ray;
 
@@ -26,7 +25,7 @@ public class Wheel {
         Details = details;
     }
 
-    public void _Process(double delta) {
+    public override void _Process(double delta) {
         if (!InContact) {
             WheelModel.Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * 0.4f;
         } else {
@@ -34,5 +33,5 @@ public class Wheel {
         }
     }
 
-    public void _PhysicsProcess(double delta) {}
+    public override void _PhysicsProcess(double delta) {}
 }
