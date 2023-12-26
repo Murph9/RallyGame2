@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot;
 
-public partial class Car : Node
+public partial class Car : Node3D
 {
     private readonly RigidBody3D _rigidBody;
     public RigidBody3D RigidBody => _rigidBody;
@@ -15,10 +15,12 @@ public partial class Car : Node
 
     public readonly Wheel[] Wheels;
 
-    // some temp variables so the copied code can work
+    private float[] engineForce = new float[4]; // TODO engine
     private bool handbrakeCur;
     private float brakingCur;
-    private float steeringFake;
+    private float steeringLeft;
+    private float steeringRight;
+
     private float driftAngle;
 
     public const float TRACTION_MAXSLIP = 0.2f;
@@ -58,15 +60,28 @@ public partial class Car : Node
         }
     }
 
+    public override void _Input(InputEvent @event)
+    {
+        if (@event.IsActionPressed("car_reset")) {
+            // TODO only works sometimes
+            _rigidBody.Position = new Vector3();
+        }
+    }
+
     public override void _Process(double delta) {
         GetViewport().GetCamera3D().LookAt(_rigidBody.GlobalPosition);
 
         foreach (var w in Wheels) {
-            w._Process(delta);
+            // rotate the front wheels (here because the wheels don't have their angle)
+            if (w.Details.id < 2) {
+                w.Rotation = new Vector3(0, steeringLeft - steeringRight, 0);
+            }
         }
     }
     
     public override void _PhysicsProcess(double delta) {
+        ReadInputs();
+        
         foreach (var w in Wheels) {
             CalcSuspension(w);
 
@@ -80,6 +95,23 @@ public partial class Car : Node
             w._PhysicsProcess(delta);
         }
         ApplyCentralDrag();
+    }
+
+    private void ReadInputs()
+    {
+        handbrakeCur = Input.IsActionPressed("car_handbrake");
+        brakingCur = Input.GetActionStrength("car_brake");
+        steeringLeft = Input.GetActionStrength("car_left") * Details.w_steerAngle;
+        steeringRight = Input.GetActionStrength("car_right") * Details.w_steerAngle;
+        var engineForce = Input.IsActionPressed("car_accel") ? 10000 : 0;
+        if (Details.driveFront) {
+            this.engineForce[0] = engineForce;
+            this.engineForce[1] = engineForce;
+        }
+        if (Details.driveRear) {
+            this.engineForce[2] = engineForce;
+            this.engineForce[3] = engineForce;
+        }
     }
 
     private void CalcSuspension(Wheel w)
@@ -169,7 +201,7 @@ public partial class Car : Node
         if (w.Details.id < 2) {
             // front wheels
             float slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - steeringFake;
+            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - (steeringLeft - steeringRight);
         } else {
             // rear wheels
             float slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
@@ -213,7 +245,7 @@ public partial class Car : Node
             brakeCurrent2 = 0; // very good abs
 
         // add the wheel force after merging the forces
-        var totalLongForce = /*wheelTorque[w_id]*/0 - wheel_force.Z // TODO wheel force from engine
+        var totalLongForce = /*wheelTorque[w_id]*/engineForce[w.Details.id] - wheel_force.Z // TODO actual wheel force from engine
                 - (brakeCurrent2 * _details.brakeMaxTorque * Mathf.Sign(w.RadSec));
         // drive wheels have the engine to pull along
         float wheelInertia = _details.Wheel_inertia(w.Details.id);
