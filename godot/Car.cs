@@ -16,12 +16,13 @@ public partial class Car : Node3D
     public readonly Wheel[] Wheels;
 
     private float[] engineForce = new float[4]; // TODO engine
-    private bool handbrakeCur;
-    private float brakingCur;
-    private float steeringLeft;
-    private float steeringRight;
+    public bool HandbrakeCur { get; private set; }
+    public float AccelCur { get; private set; }
+    public float BrakingCur { get; private set; }
+    public float SteeringLeft { get; private set; }
+    public float SteeringRight { get; private set; }
 
-    private float driftAngle;
+    public float DriftAngle { get; private set; }
 
     public const float TRACTION_MAXSLIP = 0.2f;
     public const float TRACTION_MAX = 3f;
@@ -74,7 +75,7 @@ public partial class Car : Node3D
         foreach (var w in Wheels) {
             // rotate the front wheels (here because the wheels don't have their angle)
             if (w.Details.id < 2) {
-                w.Rotation = new Vector3(0, steeringLeft - steeringRight, 0);
+                w.Rotation = new Vector3(0, SteeringLeft - SteeringRight, 0);
             }
         }
     }
@@ -99,18 +100,17 @@ public partial class Car : Node3D
 
     private void ReadInputs()
     {
-        handbrakeCur = Input.IsActionPressed("car_handbrake");
-        brakingCur = Input.GetActionStrength("car_brake");
-        steeringLeft = Input.GetActionStrength("car_left") * Details.w_steerAngle;
-        steeringRight = Input.GetActionStrength("car_right") * Details.w_steerAngle;
-        var engineForce = Input.IsActionPressed("car_accel") ? 10000 : 0;
+        HandbrakeCur = Input.IsActionPressed("car_handbrake");
+        SteeringLeft = Input.GetActionStrength("car_left") * Details.w_steerAngle;
+        SteeringRight = Input.GetActionStrength("car_right") * Details.w_steerAngle;
+        
+        BrakingCur = Input.GetActionStrength("car_brake");
+        AccelCur = Input.GetActionStrength("car_accel");
         if (Details.driveFront) {
-            this.engineForce[0] = engineForce;
-            this.engineForce[1] = engineForce;
+            engineForce[0] = engineForce[1] = AccelCur * 10000;
         }
         if (Details.driveRear) {
-            this.engineForce[2] = engineForce;
-            this.engineForce[3] = engineForce;
+            engineForce[2] = engineForce[3] = AccelCur * 10000;
         }
     }
 
@@ -194,18 +194,18 @@ public partial class Car : Node3D
         else
             w.SlipRatio = slipr / Mathf.Abs(groundVelocityZ);
 
-        if (handbrakeCur && w.Details.id >= 2) // rearwheels only
+        if (HandbrakeCur && w.Details.id >= 2) // rearwheels only
             w.RadSec = 0;
 
         w.SlipAngle = 0;
         if (w.Details.id < 2) {
             // front wheels
             float slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - (steeringLeft - steeringRight);
+            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - (SteeringLeft - SteeringRight);
         } else {
             // rear wheels
             float slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            driftAngle = slipa_rear; // set drift angle as the rear amount
+            DriftAngle = slipa_rear; // set drift angle as the rear amount
             w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocityZ));
         }
 
@@ -240,8 +240,8 @@ public partial class Car : Node3D
         };
 
         // braking and abs
-        var brakeCurrent2 = brakingCur;
-        if (Mathf.Abs(w.SlipRatio / TRACTION_MAXSLIP) >= 1 && localVel.Length() > 10 && brakingCur > 0)
+        var brakeCurrent2 = BrakingCur;
+        if (Mathf.Abs(w.SlipRatio / TRACTION_MAXSLIP) >= 1 && localVel.Length() > 10 && BrakingCur > 0)
             brakeCurrent2 = 0; // very good abs
 
         // add the wheel force after merging the forces
@@ -279,7 +279,7 @@ public partial class Car : Node3D
 				&& Mathf.Abs(w.SlipAngle) < maxLatSlipAt) {
 			w.SlipAngle = maxLatSlipAt * Mathf.Sign(prevSlipAngle);
 		}
-		if (brakingCur == 0) { // needs to be disabled during braking as it prevents you from stopping
+		if (BrakingCur == 0) { // needs to be disabled during braking as it prevents you from stopping
 			if (Mathf.Abs(prevSlipRatio) < maxLongSlipAt
 					&& Mathf.Abs(w.SlipRatio) > maxLongSlipAt) {
 				w.SlipRatio = maxLongSlipAt * Mathf.Sign(w.SlipRatio);
