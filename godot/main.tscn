@@ -12,7 +12,6 @@ script = ExtResource("1_rty62")
 
 [node name="RigidBody3D4" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.99636, 8.70018, 0)
-mass = 86.54
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D4"]
 shape = SubResource("SphereShape3D_0kera")
