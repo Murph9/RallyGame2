@@ -102,10 +102,10 @@ public partial class Car : Node3D
         BrakingCur = Input.GetActionStrength("car_brake");
         AccelCur = Input.GetActionStrength("car_accel");
         if (Details.driveFront) {
-            engineForce[0] = engineForce[1] = AccelCur * 10000;
+            engineForce[0] = engineForce[1] = AccelCur * 2000;
         }
         if (Details.driveRear) {
-            engineForce[2] = engineForce[3] = AccelCur * 10000;
+            engineForce[2] = engineForce[3] = AccelCur * 2000;
         }
 
         if (Input.IsActionPressed("car_reset")) {

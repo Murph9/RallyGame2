@@ -20,11 +20,6 @@ shape = SubResource("SphereShape3D_0kera")
 mesh = SubResource("SphereMesh_vavfl")
 skeleton = NodePath("../../RigidBody3D4")
 
-[node name="Button" type="Button" parent="."]
-offset_right = 8.0
-offset_bottom = 8.0
-text = "Add Car"
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
 
@@ -33,4 +28,17 @@ transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.9917
 
 [node name="flatworld" parent="." instance=ExtResource("2_2aehh")]
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 2.0
+offset_top = 324.0
+offset_right = 71.0
+offset_bottom = 382.0
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Add Ball"
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
