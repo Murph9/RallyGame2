@@ -1,11 +1,11 @@
+using Godot;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Godot;
 
-namespace murph9.RallyGame2.Car.Init;
+namespace murph9.RallyGame2.godot.Car.Init;
 
 public enum CarType {
 	Survivor,

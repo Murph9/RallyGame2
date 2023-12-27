@@ -1,5 +1,5 @@
 using Godot;
-using murph9.RallyGame2.Car.Init;
+using murph9.RallyGame2.godot.Car.Init;
 
 namespace murph9.RallyGame2.godot;
 
