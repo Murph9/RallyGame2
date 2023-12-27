@@ -87,8 +87,8 @@ public static class CarTypeExtensions
             var sus = carDetails.SusByWheelNum(i);
 
             // Validate that rest suspension position is within min and max
-            float minSusForce = (sus.preload_force + sus.stiffness * 0) * 1000;
-            float maxSusForce = (sus.preload_force + sus.stiffness * (sus.max_travel - sus.min_travel)) * 1000;
+            float minSusForce = (sus.preload_force + sus.stiffness) * 0 * 1000;
+            float maxSusForce = sus.stiffness * (sus.preload_force + sus.max_travel - sus.min_travel) * 1000;
             if (quarterMassForce < minSusForce) {
                 throw new Exception("!! Sus min range too high: " + quarterMassForce + " < " + minSusForce + ", decrease pre-load or stiffness");
             }

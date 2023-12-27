@@ -39,9 +39,9 @@ public partial class Wheel : Node3D {
 
     public override void _PhysicsProcess(double delta) {
         if (!InContact) {
-            Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * 0.4f;
+            Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * Details.radius;
         } else {
-            Position = ContactPoint - Ray.TargetPosition.Normalized() * 0.4f;
+            Position = ContactPoint - Ray.TargetPosition.Normalized() * Details.radius;
         }
 
         WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);

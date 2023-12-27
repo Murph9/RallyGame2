@@ -61,14 +61,6 @@ public partial class Car : Node3D
         }
     }
 
-    public override void _Input(InputEvent @event)
-    {
-        if (@event.IsActionPressed("car_reset")) {
-            // TODO only works sometimes
-            _rigidBody.Position = new Vector3();
-        }
-    }
-
     public override void _Process(double delta) {
         GetViewport().GetCamera3D().LookAt(_rigidBody.GlobalPosition);
 
@@ -85,6 +77,9 @@ public partial class Car : Node3D
         
         foreach (var w in Wheels) {
             CalcSuspension(w);
+
+            // TODO all wheel forces should work off the ground
+            // like handbrake, brake and engine
 
             if (w.InContact) {
                 CalcTraction(w, delta);
@@ -112,6 +107,11 @@ public partial class Car : Node3D
         if (Details.driveRear) {
             engineForce[2] = engineForce[3] = AccelCur * 10000;
         }
+
+        if (Input.IsActionPressed("car_reset")) {
+            _rigidBody.Position = new Vector3();
+            _rigidBody.Rotation = new Vector3();
+        }
     }
 
     private void CalcSuspension(Wheel w)
@@ -121,13 +121,17 @@ public partial class Car : Node3D
 
         w.InContact = w.Ray.IsColliding();
         if (!w.Ray.IsColliding()) {
+            w.ContactPoint = new Vector3();
+            w.SusTravelFraction = 0;
+            w.ContactRigidBody = null;
+            w.SusForce = new Vector3();
             return;
         }
         w.ContactPoint = _rigidBody.ToLocal(hitPositionGlobal);
         
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
         var maxDist = w.Ray.TargetPosition.Length();
-        w.SusTravelFraction = Math.Clamp(maxDist - distance, 0, maxDist); // an offset
+        w.SusTravelFraction = Math.Clamp(maxDist - distance, 0, maxDist);
         
         var hitVelocity = _rigidBody.LinearVelocity + _rigidBody.AngularVelocity.Cross(hitPositionGlobal - _rigidBody.GlobalPosition);
         // then calc other thing velocity if its a rigidbody
@@ -135,11 +139,12 @@ public partial class Car : Node3D
         if (w.ContactRigidBody != null)
             hitVelocity += w.ContactRigidBody.LinearVelocity + w.ContactRigidBody.AngularVelocity.Cross(hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
 
+        // Suspension Dampening
         var relVel = hitNormalGlobal.Dot(hitVelocity);
         var susDetails = _details.SusByWheelNum(0);
-        var damping = -susDetails.Relax() * relVel;
+        var damping = susDetails.Relax() * relVel;
         if (relVel > 0) {
-            damping = -susDetails.Compression() * relVel;
+            damping = susDetails.Compression() * relVel;
         }
 
         var swayForce = 0f;
@@ -149,17 +154,16 @@ public partial class Car : Node3D
             swayForce = swayDiff * susDetails.antiroll;
         }
         
-        var totalForce = (swayForce + w.SusTravelFraction) * susDetails.stiffness + damping;
+        var totalForce = (swayForce + w.SusTravelFraction) * susDetails.stiffness - damping;
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = _rigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
             var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
             
-            var forceDir = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
-            _rigidBody.ApplyForce(forceDir, hitPositionGlobal - _rigidBody.GlobalPosition);
-            w.SusForce = forceDir;
+            w.SusForce = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
+            _rigidBody.ApplyForce(w.SusForce, hitPositionGlobal - _rigidBody.GlobalPosition);
 
-            w.ContactRigidBody?.ApplyForce(-forceDir, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
+            w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
         // TODO suspension keeps sending the car in the -x,+z direction
         // TODO suspension seems to be applying the force on the wrong side of the car or badly during high angles

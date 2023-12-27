@@ -41,20 +41,18 @@
     "susF": {
       "antiroll": 4,
       "comp": 0.5,
-      "max_force": 40000,
       "max_travel": 0.1,
       "min_travel": -0.2,
-      "preload_force": 2,
+      "preload_distance": 0.2,
       "relax": 0.6,
       "stiffness": 15
     },
     "susR": {
       "antiroll": 6,
       "comp": 0.5,
-      "max_force": 40000,
       "max_travel": 0.1,
       "min_travel": -0.2,
-      "preload_force": 2,
+      "preload_distance": 0.2,
       "relax": 0.6,
       "stiffness": 15
     },
