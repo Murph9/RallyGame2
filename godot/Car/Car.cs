@@ -4,7 +4,7 @@ using murph9.RallyGame2.Car.Init;
 using System;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot;
+namespace murph9.RallyGame2.godot.Car;
 
 public partial class Car : Node3D
 {
@@ -32,7 +32,7 @@ public partial class Car : Node3D
     public Car(CarDetails details) {
         _details = details;
 
-        var uiScene = GD.Load<PackedScene>("res://CarUI.tscn");
+        var uiScene = GD.Load<PackedScene>("res://Car/CarUI.tscn");
         var instance = uiScene.Instantiate<CarUI>();
         instance.Car = this;
         AddChild(instance);
