@@ -122,7 +122,7 @@ public partial class Car : Node3D
         w.InContact = w.Ray.IsColliding();
         if (!w.Ray.IsColliding()) {
             w.ContactPoint = new Vector3();
-            w.SusTravelFraction = 0;
+            w.SusTravelDistance = 0;
             w.ContactRigidBody = null;
             w.SusForce = new Vector3();
             return;
@@ -131,7 +131,7 @@ public partial class Car : Node3D
         
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
         var maxDist = w.Ray.TargetPosition.Length();
-        w.SusTravelFraction = Math.Clamp(maxDist - distance, 0, maxDist);
+        w.SusTravelDistance = Math.Clamp(maxDist - distance, 0, maxDist);
         
         var hitVelocity = _rigidBody.LinearVelocity + _rigidBody.AngularVelocity.Cross(hitPositionGlobal - _rigidBody.GlobalPosition);
         // then calc other thing velocity if its a rigidbody
@@ -150,11 +150,14 @@ public partial class Car : Node3D
         var swayForce = 0f;
         int w_id_other = w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2; // fetch the index of the other side
         if (Wheels[w_id_other].InContact) {
-            float swayDiff = Wheels[w_id_other].Ray.TargetPosition.Length() - w.Ray.TargetPosition.Length();
+            // calc the other wheels distance (perf isn't that important)
+            var otherHitPositionGlobal = Wheels[w_id_other].Ray.GetCollisionPoint();
+            var otherLength = Wheels[w_id_other].GlobalPosition.DistanceTo(otherHitPositionGlobal);
+            float swayDiff = otherLength - w.SusTravelDistance;
             swayForce = swayDiff * susDetails.antiroll;
         }
         
-        var totalForce = (swayForce + w.SusTravelFraction) * susDetails.stiffness - damping;
+        var totalForce = swayForce + w.SusTravelDistance * susDetails.stiffness - damping;
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = _rigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
@@ -202,10 +205,15 @@ public partial class Car : Node3D
             w.RadSec = 0;
 
         w.SlipAngle = 0;
+        var steering = SteeringLeft - SteeringRight;
+        if (localVel.Z < 0) { // to flip the steering on moving in reverse
+            steering *= -1;
+        }
+
         if (w.Details.id < 2) {
             // front wheels
             float slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - (SteeringLeft - SteeringRight);
+            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - steering;
         } else {
             // rear wheels
             float slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;

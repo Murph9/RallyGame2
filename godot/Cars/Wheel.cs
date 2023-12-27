@@ -11,7 +11,7 @@ public partial class Wheel : Node3D {
 
     public bool InContact;
     public RigidBody3D ContactRigidBody;
-    public float SusTravelFraction;
+    public float SusTravelDistance;
     public Vector3 SusForce;
     public Vector3 ContactPoint;
 
