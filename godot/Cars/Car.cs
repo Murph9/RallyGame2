@@ -36,6 +36,9 @@ public partial class Car : Node3D
         instance.Car = this;
         AddChild(instance);
 
+        var camera = new CarCamera(this);
+        AddChild(camera);
+
         var scene = GD.Load<PackedScene>("res://assets/" + _details.carModel);
         var carModel = scene.Instantiate<Node3D>();
         _rigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
@@ -61,8 +64,6 @@ public partial class Car : Node3D
     }
 
     public override void _Process(double delta) {
-        GetViewport().GetCamera3D().LookAt(_rigidBody.GlobalPosition);
-
         foreach (var w in Wheels) {
             // rotate the front wheels (here because the wheels don't have their angle)
             if (w.Details.id < 2) {
