@@ -1,7 +1,7 @@
 using Godot;
-using murph9.RallyGame2.godot.Car.Init;
+using murph9.RallyGame2.godot.Cars.Init;
 
-namespace murph9.RallyGame2.godot;
+namespace murph9.RallyGame2.godot.Cars;
 
 public partial class Wheel : Node3D {
 

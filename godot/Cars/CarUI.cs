@@ -1,6 +1,6 @@
 using Godot;
 
-namespace murph9.RallyGame2.godot.Car;
+namespace murph9.RallyGame2.godot.Cars;
 
 public partial class CarUI : Node2D {
 

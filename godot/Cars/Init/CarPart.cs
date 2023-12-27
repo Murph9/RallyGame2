@@ -1,4 +1,4 @@
-namespace murph9.RallyGame2.godot.Car.Init;
+namespace murph9.RallyGame2.godot.Cars.Init;
 
 public enum CarPart {
 	Chassis, //main model

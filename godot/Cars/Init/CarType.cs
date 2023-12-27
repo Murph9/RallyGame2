@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace murph9.RallyGame2.godot.Car.Init;
+namespace murph9.RallyGame2.godot.Cars.Init;
 
 public enum CarType {
 	Survivor,
@@ -36,7 +36,7 @@ public enum CarType {
 public static class CarTypeExtensions
 {
 	public static CarDetails LoadCarDetails(this CarType type, Vector3 gravity) {
-		var filePath = Path.Combine(AppContext.BaseDirectory, "Car", "Init", "Type", type.ToString() + ".json");
+		var filePath = Path.Combine(AppContext.BaseDirectory, "Cars", "Init", "Type", type.ToString() + ".json");
         var jsonContent = File.ReadAllText(filePath);
 		var carDetails = JsonSerializer.Deserialize<CarDetails>(jsonContent, new JsonSerializerOptions() {
 			AllowTrailingCommas = true,

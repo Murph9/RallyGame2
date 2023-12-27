@@ -1,7 +1,7 @@
-using System;
 using Godot;
+using System;
 
-namespace murph9.RallyGame2.godot.Car;
+namespace murph9.RallyGame2.godot.Cars;
 
 public class CalcWheelTraction {
 
