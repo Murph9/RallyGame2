@@ -6,8 +6,24 @@ public partial class CarUI : Node2D {
 
     public Car Car { get; set; }
 
+    public override void _Draw() {
+        var screenSize = GetViewportRect().Size;
+
+        // var arcSize = 100;
+        //DrawArc(screenSize - new Vector2(arcSize + 10, arcSize + 10), arcSize, Mathf.Pi, (1 + speed/100)*Mathf.Pi, 32, Colors.White, 10, true);
+
+        var speed = Car.RigidBody.LinearVelocity.Length();
+        speed *= 3.6f;
+        var defaultFont = ThemeDB.FallbackFont;
+        int defaultFontSize = ThemeDB.FallbackFontSize;
+        var speedStr = float.Round(speed, 2).ToString();
+        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * speedStr.Length, 30), speedStr, HorizontalAlignment.Right, -1, defaultFontSize);
+    }
+
     public override void _Process(double delta) {
         if (Car == null) return;
+
+        QueueRedraw(); // TODO please don't call this every frame if its not needed
 
         for (var i = 0; i < Car.Wheels.Length; i++) {
             var w = Car.Wheels[i];
@@ -34,7 +50,7 @@ DriftAngle: {float.Round(Car.DriftAngle, 2)}
 ";
     }
 
-    private string V3toStr(Vector3 v) {
+    private static string V3toStr(Vector3 v) {
         return $"({float.Round(v.X, 2)}, {float.Round(v.Y, 2)}, {float.Round(v.Z, 2)})";
     }
 }
