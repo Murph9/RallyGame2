@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 namespace murph9.RallyGame2.godot.Cars;
 
@@ -9,15 +10,22 @@ public partial class CarUI : Node2D {
     public override void _Draw() {
         var screenSize = GetViewportRect().Size;
 
-        // var arcSize = 100;
-        //DrawArc(screenSize - new Vector2(arcSize + 10, arcSize + 10), arcSize, Mathf.Pi, (1 + speed/100)*Mathf.Pi, 32, Colors.White, 10, true);
+        var arcSize = 100;
+        DrawArc(screenSize - new Vector2(arcSize + 10, arcSize + 10), arcSize, (float)Math.PI, (float)((1 + Car.Engine.CurRPM/10000f)*Math.PI), 32, Colors.White, 10, true);
 
         var speed = Car.RigidBody.LinearVelocity.Length();
         speed *= 3.6f;
         var defaultFont = ThemeDB.FallbackFont;
         int defaultFontSize = ThemeDB.FallbackFontSize;
-        var speedStr = float.Round(speed, 2).ToString();
-        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * speedStr.Length, 30), speedStr, HorizontalAlignment.Right, -1, defaultFontSize);
+        var rpmStr = Car.Engine.CurRPM.ToString();
+        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * rpmStr.Length, 30), rpmStr, HorizontalAlignment.Right, -1, defaultFontSize);
+
+        // show gear
+        DrawString(defaultFont, screenSize - new Vector2(100, 10), Car.Engine.CurGear.ToString(), HorizontalAlignment.Right, -1, defaultFontSize * 2);
+
+        // show speed
+        var speedStr = float.Round(speed, 0).ToString();
+        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * speedStr.Length, 10), speedStr, HorizontalAlignment.Right, -1, defaultFontSize * 2);
     }
 
     public override void _Process(double delta) {
