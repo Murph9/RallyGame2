@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://b5ybap008f1wt"]
+
+[ext_resource type="Script" path="res://Debug/WorldText.cs" id="1_ahpmw"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_p2bxh"]
+viewport_path = NodePath("SubViewport")
+
+[sub_resource type="LabelSettings" id="LabelSettings_3lrik"]
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_ahpmw")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+billboard = 1
+texture = SubResource("ViewportTexture_p2bxh")
+
+[node name="SubViewport" type="SubViewport" parent="."]
+transparent_bg = true
+size = Vector2i(100, 100)
+
+[node name="Label" type="Label" parent="SubViewport"]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "This Text doesn't fill it right?"
+label_settings = SubResource("LabelSettings_3lrik")
+autowrap_mode = 2
