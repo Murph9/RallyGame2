@@ -14,6 +14,7 @@ public partial class Wheel : Node3D {
     public float SusTravelDistance;
     public Vector3 SusForce;
     public Vector3 ContactPoint;
+    public Vector3 ContactNormal;
 
     public float SlipAngle;
     public float SlipRatio;

@@ -117,12 +117,14 @@ public partial class Car : Node3D
         w.InContact = w.Ray.IsColliding();
         if (!w.Ray.IsColliding()) {
             w.ContactPoint = new Vector3();
+            w.ContactNormal = new Vector3();
             w.SusTravelDistance = 0;
             w.ContactRigidBody = null;
             w.SusForce = new Vector3();
             return;
         }
         w.ContactPoint = RigidBody.ToLocal(hitPositionGlobal);
+        w.ContactNormal = RigidBody.ToLocal(hitNormalGlobal);
         
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
         var maxDist = w.Ray.TargetPosition.Length();
