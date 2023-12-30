@@ -104,8 +104,9 @@ public partial class Car : Node3D
         AccelCur = Input.GetActionStrength("car_accel");
         
         if (Input.IsActionPressed("car_reset")) {
-            RigidBody.Position = new Vector3();
-            RigidBody.Rotation = new Vector3();
+            RigidBody.Transform = Transform3D.Identity;
+            RigidBody.LinearVelocity = new Vector3();
+            RigidBody.AngularVelocity = new Vector3();
         }
     }
 
