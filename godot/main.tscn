@@ -1,7 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://iurxxw5eajhl"]
+[gd_scene load_steps=4 format=3 uid="uid://iurxxw5eajhl"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_rty62"]
-[ext_resource type="PackedScene" uid="uid://2p832356f2du" path="res://assets/flatworld.blend" id="2_2aehh"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_0kera"]
 
@@ -26,8 +25,6 @@ transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 5.99109, 9.99093)
 
-[node name="flatworld" parent="." instance=ExtResource("2_2aehh")]
-
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 offset_left = 2.0
 offset_top = 324.0
@@ -38,7 +35,11 @@ offset_bottom = 382.0
 layout_mode = 2
 text = "Add Ball"
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="WorldOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]

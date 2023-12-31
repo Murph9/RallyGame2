@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://2p832356f2du"
-path="res://.godot/imported/flatworld.blend-68afd757fe3379d66e82dd161211fc52.scn"
+path="res://.godot/imported/flatworld.blend-c0b2768e986582c13f4781b5869cd744.scn"
 
 [deps]
 
-source_file="res://assets/flatworld.blend"
-dest_files=["res://.godot/imported/flatworld.blend-68afd757fe3379d66e82dd161211fc52.scn"]
+source_file="res://assets/staticWorld/flatworld.blend"
+dest_files=["res://.godot/imported/flatworld.blend-c0b2768e986582c13f4781b5869cd744.scn"]
 
 [params]
 
