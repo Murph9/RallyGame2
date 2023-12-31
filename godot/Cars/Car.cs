@@ -1,7 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars;
@@ -67,6 +66,16 @@ public partial class Car : Node3D
             RigidBody.AddChild(w.Ray); // ray should not be attached to the wheel so it can detect height
             RigidBody.AddChild(w);
         }
+
+        // add audio // TODO set engine sound from config
+        var stream = GD.Load<AudioStreamWav>("res://assets/sounds/engine.wav");
+        var engine = new AudioStreamPlayer() {
+            Stream = stream,
+            Autoplay = true,
+            Name = "engineAudioPlayer",
+            VolumeDb = Mathf.LinearToDb(0.25f)
+        };
+        AddChild(engine);
     }
 
     public override void _Process(double delta) {
@@ -76,6 +85,11 @@ public partial class Car : Node3D
                 w.Rotation = new Vector3(0, SteeringLeft - SteeringRight, 0);
             }
         }
+
+        // set audio values
+        var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
+        audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.e_redline), 0.5f, 2);
+        audio.VolumeDb = Mathf.LinearToDb(0.25f + AccelCur * 0.25f); // max of .5
     }
     
     public override void _PhysicsProcess(double delta) {
@@ -134,7 +148,7 @@ public partial class Car : Node3D
             w.SpringForce = 0;
             return;
         }
-        
+
         w.ContactPoint = RigidBody.ToLocal(hitPositionGlobal);
         w.ContactNormal = RigidBody.ToLocal(hitNormalGlobal);
         
