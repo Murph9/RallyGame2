@@ -31,6 +31,12 @@ public partial class WheelUI : VBoxContainer
 		}
 
 		gridContainer.AddChild(new Label() {
+			Text = "SusTravel"
+		});
+		gridContainer.AddChild(new Label() {
+			Text = float.Round(w.SusTravelDistance, 2).ToString()
+		});
+		gridContainer.AddChild(new Label() {
 			Text = "SlipAngle"
 		});
 		gridContainer.AddChild(new Label() {

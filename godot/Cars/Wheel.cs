@@ -40,13 +40,8 @@ public partial class Wheel : Node3D {
         AddChild(WheelModel);
     }
 
-    public override void _PhysicsProcess(double delta) {
-        if (!InContact) {
-            Position = Ray.TargetPosition + Ray.Position - Ray.TargetPosition.Normalized() * Details.radius;
-        } else {
-            Position = ContactPoint - Ray.TargetPosition.Normalized() * Details.radius;
-        }
-
+    public override void _Process(double delta) {
+        Position = Ray.Position + Ray.TargetPosition - Ray.TargetPosition.Normalized() * (Details.radius + SusTravelDistance);
         WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);
     }
 }
