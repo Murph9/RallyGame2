@@ -11,19 +11,24 @@ public partial class Wheel : Node3D {
     public Node3D WheelModel;
     public RayCast3D Ray;
 
+    // simulation values
     public bool InContact;
     public RigidBody3D ContactRigidBody;
     public float SusTravelDistance;
     public Vector3 SusForce;
     public Vector3 ContactPoint;
     public Vector3 ContactNormal;
-    public Dictionary<string, float> ExtraDetails;
+    public float SwayForce;
+    public float SpringForce;
+    public float Damping;
 
     public float SlipAngle;
     public float SlipRatio;
     public float RadSec;
     public double SkidFraction;
     public Vector3 GripDir;
+
+    public Dictionary<string, float> ExtraDetails;
 
     public Wheel(Car car, WheelDetails details, RayCast3D ray) {
         Car = car;

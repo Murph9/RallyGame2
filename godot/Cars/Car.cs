@@ -129,8 +129,12 @@ public partial class Car : Node3D
             w.SusTravelDistance = 0;
             w.ContactRigidBody = null;
             w.SusForce = new Vector3();
+            w.SwayForce = 0;
+            w.Damping = 0;
+            w.SpringForce = 0;
             return;
         }
+        
         w.ContactPoint = RigidBody.ToLocal(hitPositionGlobal);
         w.ContactNormal = RigidBody.ToLocal(hitNormalGlobal);
         
@@ -146,22 +150,23 @@ public partial class Car : Node3D
 
         // Suspension Dampening
         var relVel = hitNormalGlobal.Dot(hitVelocity);
-        var susDetails = Details.SusByWheelNum(0);
-        var damping = susDetails.Relax() * relVel;
+        var susDetails = Details.SusByWheelNum(w.Details.id);
+        w.Damping = susDetails.Relax() * relVel;
         if (relVel > 0) {
-            damping = susDetails.Compression() * relVel;
+            w.Damping = susDetails.Compression() * relVel;
         }
 
-        var swayForce = 0f;
+        w.SwayForce = 0f;
         int w_id_other = w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2; // fetch the index of the other side
         if (Wheels[w_id_other].InContact) {
             // calc the other wheels distance (perf isn't that important)
             var otherHitPositionGlobal = Wheels[w_id_other].Ray.GetCollisionPoint();
             var otherLength = w.Ray.TargetPosition.Length() - Wheels[w_id_other].Ray.GlobalPosition.DistanceTo(otherHitPositionGlobal);
-            swayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
+            w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
         
-        var totalForce = swayForce + w.SusTravelDistance * susDetails.stiffness - damping;
+        w.SpringForce = w.SusTravelDistance * susDetails.stiffness;
+        var totalForce = w.SwayForce + w.SpringForce - w.Damping;
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = RigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
@@ -173,12 +178,7 @@ public partial class Car : Node3D
             w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
 
-        w.ExtraDetails = new Dictionary<string, float>() {
-            {"swayForce", swayForce},
-            {"damping", damping},
-            {"spring", w.SusTravelDistance * susDetails.stiffness},
-        };
-
+        
         // TODO suspension keeps sending the car in the -x,+z direction
         // TODO suspension seems to be applying the force on the wrong side of the car or badly during high angles
     }

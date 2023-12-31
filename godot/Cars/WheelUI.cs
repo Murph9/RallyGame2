@@ -24,25 +24,46 @@ public partial class WheelUI : VBoxContainer
 		}
 
 		gridContainer.AddChild(new Label() {
-			Text = "Spring"
+			Text = "Sus Dist."
 		});
 		gridContainer.AddChild(new Label() {
 			Text = float.Round(Wheel.SusTravelDistance, 2).ToString()
 		});
-		foreach (var e in Wheel.ExtraDetails) {
-			gridContainer.AddChild(new Label() {
-				Text = e.Key
-			});
-			gridContainer.AddChild(new Label() {
-				Text = float.Round(e.Value, 2).ToString()
-			});
+		gridContainer.AddChild(new Label() {
+			Text = "SwayForce"
+		});
+		gridContainer.AddChild(new Label() {
+			Text = float.Round(Wheel.SwayForce, 2).ToString()
+		});
+		gridContainer.AddChild(new Label() {
+			Text = "SpringForce"
+		});
+		gridContainer.AddChild(new Label() {
+			Text = float.Round(Wheel.SpringForce, 2).ToString()
+		});
+		gridContainer.AddChild(new Label() {
+			Text = "Damping"
+		});
+		gridContainer.AddChild(new Label() {
+			Text = float.Round(Wheel.Damping, 2).ToString()
+		});
+		
+		if (Wheel.ExtraDetails != null) {
+			foreach (var e in Wheel.ExtraDetails) {
+				gridContainer.AddChild(new Label() {
+					Text = e.Key
+				});
+				gridContainer.AddChild(new Label() {
+					Text = float.Round(e.Value, 2).ToString()
+				});
+			}
 		}
 	}
 
     public override void _Draw() {
 		var control = GetNode<Control>("Control");
-		var dir = new Vector2(Wheel.GripDir.X, Wheel.GripDir.Z) / Wheel.Car.Details.mass;
+		var dir = new Vector2(Wheel.GripDir.X, Wheel.GripDir.Z) / (Wheel.Car.Details.mass + Car.TRACTION_MAX);
 		var start = control.Position + control.Size/2;
-		DrawLine(start, start + dir * 50, Colors.Red, width: 4);
+		DrawLine(start, start + dir * control.Size/2, Colors.Red, width: 4);
     }
 }
