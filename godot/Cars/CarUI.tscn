@@ -8,52 +8,54 @@ layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_ujtt8")
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
 offset_left = 68.0
 offset_top = 372.0
 offset_right = 68.0
 offset_bottom = 522.0
 
-[node name="ProgressBarSteering" type="ProgressBar" parent="VBoxContainer2"]
+[node name="ProgressBarSteering" type="ProgressBar" parent="VBoxContainer"]
 layout_mode = 2
 min_value = -0.5
 max_value = 0.5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="ProgressBarAccel" type="ProgressBar" parent="VBoxContainer2/HBoxContainer"]
+[node name="ProgressBarAccel" type="ProgressBar" parent="VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(30, 150)
 layout_mode = 2
 max_value = 1.0
 fill_mode = 3
 
-[node name="ProgressBarBrake" type="ProgressBar" parent="VBoxContainer2/HBoxContainer"]
+[node name="ProgressBarBrake" type="ProgressBar" parent="VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(30, 150)
 layout_mode = 2
 max_value = 1.0
 fill_mode = 3
 
 [node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 229.0
 offset_right = 999.0
 offset_bottom = 269.0
 fit_content = true
 
-[node name="GridContainer" type="GridContainer" parent="."]
-offset_left = 50.0
-offset_right = 54.0
-offset_bottom = 4.0
+[node name="WheelGridContainer" type="GridContainer" parent="."]
+layout_mode = 0
+offset_right = 304.0
+offset_bottom = 374.0
 columns = 2
 
-[node name="WheelUi0" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi0" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi1" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi1" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi2" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi2" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi3" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi3" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2

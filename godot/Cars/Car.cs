@@ -56,7 +56,7 @@ public partial class Car : Node3D
 
         Wheels = Details.wheelData.Select(x => {
             var sus = Details.SusByWheelNum(x.id);
-            return new Wheel(x, new RayCast3D() {
+            return new Wheel(this, x, new RayCast3D() {
                     Position = x.position + new Vector3(0, sus.max_travel, 0),
                     TargetPosition = new Vector3(0, -sus.TravelTotal() - x.radius, 0)
                 });

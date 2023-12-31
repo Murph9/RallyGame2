@@ -9,8 +9,7 @@ public partial class CarUI : Control {
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
-            var node = GetNode<WheelUI>("GridContainer/WheelUi" + i);
-            node.Car = Car;
+            var node = GetNode<WheelUI>("WheelGridContainer/WheelUi" + i);
             node.Wheel = Car.Wheels[i];
         }
     }
@@ -41,9 +40,12 @@ public partial class CarUI : Control {
 
         QueueRedraw(); // TODO please don't call this every frame if its not needed
 
-        GetNode<ProgressBar>("VBoxContainer2/ProgressBarSteering").Value = Car.SteeringLeft - Car.SteeringRight;
-        GetNode<ProgressBar>("VBoxContainer2/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;
-        GetNode<ProgressBar>("VBoxContainer2/HBoxContainer/ProgressBarBrake").Value = Car.BrakingCur;
+        var wheels = GetNode<GridContainer>("WheelGridContainer");
+        wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
+
+        GetNode<ProgressBar>("VBoxContainer/ProgressBarSteering").Value = Car.SteeringLeft - Car.SteeringRight;
+        GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;
+        GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarBrake").Value = Car.BrakingCur;
 
         GetNode<RichTextLabel>("RichTextLabel").Text =
 $@"{Car}

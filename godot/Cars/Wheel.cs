@@ -7,6 +7,7 @@ namespace murph9.RallyGame2.godot.Cars;
 public partial class Wheel : Node3D {
 
     public readonly WheelDetails Details;
+    public readonly Car Car;
     public Node3D WheelModel;
     public RayCast3D Ray;
 
@@ -24,7 +25,8 @@ public partial class Wheel : Node3D {
     public double SkidFraction;
     public Vector3 GripDir;
 
-    public Wheel(WheelDetails details, RayCast3D ray) {
+    public Wheel(Car car, WheelDetails details, RayCast3D ray) {
+        Car = car;
         Details = details;
         Ray = ray;
     }
