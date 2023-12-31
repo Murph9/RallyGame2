@@ -26,8 +26,11 @@ public partial class Car : Node3D
     public const float TRACTION_MAXLENGTH = 0.2f;
     public const float TRACTION_DECAY = 3f;
 
-    public Car(CarDetails details) {
+    private readonly Transform3D _worldSpawn;
+
+    public Car(CarDetails details, Transform3D worldSpawn) {
         Details = details;
+        _worldSpawn = worldSpawn;
         Engine = new CarEngine(this);
 
         var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");
@@ -41,10 +44,13 @@ public partial class Car : Node3D
         var scene = GD.Load<PackedScene>("res://assets/" + Details.carModel);
         var carModel = scene.Instantiate<Node3D>();
         RigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
-        RigidBody.Mass = Details.mass;
         var parent = RigidBody.GetParent();
         parent.RemoveChild(RigidBody); // remove the scene parent
         parent.QueueFree();
+
+        // set values from the details
+        RigidBody.Mass = Details.mass;
+        RigidBody.Transform = _worldSpawn;
         AddChild(RigidBody);
 
         Wheels = Details.wheelData.Select(x => {
@@ -104,7 +110,7 @@ public partial class Car : Node3D
         AccelCur = Input.GetActionStrength("car_accel");
         
         if (Input.IsActionPressed("car_reset")) {
-            RigidBody.Transform = Transform3D.Identity;
+            RigidBody.Transform = _worldSpawn;
             RigidBody.LinearVelocity = new Vector3();
             RigidBody.AngularVelocity = new Vector3();
         }
