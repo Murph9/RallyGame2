@@ -2,48 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using murph9.RallyGame2.godot.Debug;
 
 namespace murph9.RallyGame2.godot.World;
 
 public partial class WorldPieces : Node3D, IWorld {
 
-    private const float COUNT = 9;
-
     private static PackedScene SCENE;
-    private readonly Dictionary<Detail, Node3D> _pieces = new();
+    private readonly List<Piece> _pieces = new();
 
-    private readonly RandomNumberGenerator rand;
-
-    private Vector3 currentPosition = new ();
-    private Quaternion currentRotation = Quaternion.Identity;
-
-    record Detail {
+    public record Piece {
         public string Name;
         public Transform3D[] Directions;
+        public Node3D Node;
     }
 
     public WorldPieces(string name) {
         SCENE ??= GD.Load<PackedScene>("res://assets/worldPieces/" + name + ".blend");
 
-        rand = new RandomNumberGenerator();
-
-        // generate a starting box for now, we'll need it to stay still
+        // generate a starting box for now, we'll need it to stay still if the world fails to generate
         var boxBody = new StaticBody3D();
         boxBody.AddChild(new CollisionShape3D() {
             Shape = new BoxShape3D() {
-                Size = new Vector3(30, 1, 30)
+                Size = new Vector3(10, 1, 10)
             }
         });
         boxBody.AddChild(new MeshInstance3D() {
             Mesh = new BoxMesh() {
-                Size = new Vector3(30, 1, 30)
+                Size = new Vector3(10, 1, 10)
             },
             MaterialOverride = new StandardMaterial3D() {
                 AlbedoColor = Colors.Blue
             }
         });
-        boxBody.Position = new Vector3(0, -0.5f, 0);
+        boxBody.Position = new Vector3(0, -0.501f, 0);
         AddChild(boxBody);
     }
 
@@ -55,60 +46,39 @@ public partial class WorldPieces : Node3D, IWorld {
                 scene.RemoveChild(c);
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
-                var d = new Detail() {
+                
+                var p = new Piece() {
                     Name = c.Name,
-                    Directions = directions.Select(x => x.Transform).ToArray()
+                    Directions = directions.Select(x => x.Transform).ToArray(),
+                    Node = c as Node3D
                 };
                 foreach (var dir in directions)
                     c.RemoveChild(dir);
                 
-                _pieces.Add(d, c as Node3D);
+                _pieces.Add(p);
             }
 
-            GeneratePieces();
+            var w = new WorldPieceCircuitGenerator(_pieces);
+            var pieces = w.GenerateFixed(WorldPieceCircuitGenerator.CircuitLayout.LargeCircle);
+            var curPos = new Vector3();
+            var curRot = Quaternion.Identity;
+            foreach (var p in pieces) {
+                var toAdd = p.Node.Duplicate() as Node3D;
+                toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
+                
+                // soz can only select the first one for now
+                var dir = p.Directions.First();
+                curPos += curRot * dir.Origin;
+                curRot *= dir.Basis.GetRotationQuaternion();
+                AddChild(toAdd);
+            }
+                        
         } catch (Exception e) {
             Console.WriteLine(e);
         }
-    }
-
-    private void GeneratePieces() {
-        var pieces = _pieces.ToArray();
-        for (int i = 0; i < COUNT; i++) {
-            bool added = false;
-            int attempts = 10;
-            while (attempts > 0) {
-                var piece = pieces[rand.RandiRange(0, pieces.Length - 1)];
-                if (DoesItFit(piece, currentPosition, currentRotation)) {
-                    var toAdd = piece.Value.Duplicate() as Node3D;
-                    toAdd.Transform = new Transform3D(new Basis(currentRotation), currentPosition);
-                    AddChild(toAdd);
-                    added = true;
-                    
-                    AddChild(DebugHelper.GenerateWorldText(piece.Value.Name, currentPosition + new Vector3(0, 1, 0)));
-
-                    // soz can only select the first one for now
-                    var dir = piece.Key.Directions.First();
-                    Console.WriteLine(piece.Value.Name + " is adding " + dir.Origin + " as " + currentRotation * dir.Origin + " and " + dir.Basis.GetEuler());
-                    currentPosition += currentRotation * dir.Origin;
-                    currentRotation *= dir.Basis.GetRotationQuaternion();
-                    Console.WriteLine("Making " + currentPosition + " " + currentRotation.GetEuler());
-                    break;
-                }
-            }
-            if (!added) {
-                break; // TODO aaaaaaa
-            }
-        }
-    }
-
-    private bool DoesItFit(KeyValuePair<Detail, Node3D> piece, Vector3 location, Quaternion direction) {
-        // var col = piece.Value.GetNode<CollisionShape3D>("");
-        // CollisionShape3D.
-        return true; // LOL
     }
 
     public Transform3D GetSpawn() {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     }
 }
-
