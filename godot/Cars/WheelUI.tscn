@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://csuejkh1rm4lq"]
+
+[ext_resource type="Script" path="res://Cars/WheelUI.cs" id="1_agt2h"]
+
+[node name="WheelUi" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1002.0
+offset_bottom = -540.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_agt2h")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "W"
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+max_value = 1.0
+
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(10, 10, 40, 40)
+width = 5.0
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 2
+columns = 2
+
+[node name="LabelRatio" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Ratio"
+
+[node name="LabelSlip" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Slip"
+
+[node name="LabelDetail" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Detail"

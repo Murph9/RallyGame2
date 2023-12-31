@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars;
@@ -156,9 +157,8 @@ public partial class Car : Node3D
         if (Wheels[w_id_other].InContact) {
             // calc the other wheels distance (perf isn't that important)
             var otherHitPositionGlobal = Wheels[w_id_other].Ray.GetCollisionPoint();
-            var otherLength = Wheels[w_id_other].GlobalPosition.DistanceTo(otherHitPositionGlobal);
-            float swayDiff = otherLength - w.SusTravelDistance;
-            swayForce = swayDiff * susDetails.antiroll;
+            var otherLength = w.Ray.TargetPosition.Length() - Wheels[w_id_other].Ray.GlobalPosition.DistanceTo(otherHitPositionGlobal);
+            swayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
         
         var totalForce = swayForce + w.SusTravelDistance * susDetails.stiffness - damping;
@@ -172,6 +172,13 @@ public partial class Car : Node3D
 
             w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
+
+        w.ExtraDetails = new Dictionary<string, float>() {
+            {"swayForce", swayForce},
+            {"damping", damping},
+            {"spring", w.SusTravelDistance * susDetails.stiffness},
+        };
+
         // TODO suspension keeps sending the car in the -x,+z direction
         // TODO suspension seems to be applying the force on the wrong side of the car or badly during high angles
     }

@@ -16,7 +16,7 @@ public partial class CarCamera : Node3D {
         _lookAt = new Vector3(0, _car.Details.cam_lookAtHeight, 0);
     }
 
-    public override void _Process(double delta) {
+    public override void _PhysicsProcess(double delta) {
         GetViewport().GetCamera3D().LookAt(_car.RigidBody.GlobalPosition + _lookAt);
         GetViewport().GetCamera3D().Position = _car.RigidBody.Position + _car.RigidBody.GlobalBasis * _offset;
     }

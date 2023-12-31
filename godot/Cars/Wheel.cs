@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 
@@ -15,6 +16,7 @@ public partial class Wheel : Node3D {
     public Vector3 SusForce;
     public Vector3 ContactPoint;
     public Vector3 ContactNormal;
+    public Dictionary<string, float> ExtraDetails;
 
     public float SlipAngle;
     public float SlipRatio;

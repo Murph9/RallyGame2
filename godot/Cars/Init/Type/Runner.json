@@ -39,22 +39,22 @@
     "nitro_on": true,
     "nitro_rate": 1,
     "susF": {
-      "antiroll": 4,
-      "comp": 0.5,
-      "max_travel": 0.1,
-      "min_travel": -0.2,
-      "preload_distance": 0.2,
-      "relax": 0.6,
-      "stiffness": 15
+      "antiroll": 0.7,
+      "comp": 0.2,
+      "max_travel": 0.15,
+      "min_travel": -0.15,
+      "preload_distance": 0.1,
+      "relax": 0.3,
+      "stiffness": 20
     },
     "susR": {
-      "antiroll": 6,
-      "comp": 0.5,
-      "max_travel": 0.1,
-      "min_travel": -0.2,
-      "preload_distance": 0.2,
-      "relax": 0.6,
-      "stiffness": 15
+      "antiroll": 1,
+      "comp": 0.2,
+      "max_travel": 0.15,
+      "min_travel": -0.15,
+      "preload_distance": 0.1,
+      "relax": 0.3,
+      "stiffness": 20
     },
     "trans_effic": 0.85,
     "trans_finaldrive": 3.5,

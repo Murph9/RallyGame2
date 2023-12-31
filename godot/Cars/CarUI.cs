@@ -3,9 +3,17 @@ using System;
 
 namespace murph9.RallyGame2.godot.Cars;
 
-public partial class CarUI : Node2D {
+public partial class CarUI : Control {
 
     public Car Car { get; set; }
+
+    public override void _Ready() {
+        for (int i = 0; i < Car.Wheels.Length; i++) {
+            var node = GetNode<WheelUI>("GridContainer/WheelUi" + i);
+            node.Car = Car;
+            node.Wheel = Car.Wheels[i];
+        }
+    }
 
     public override void _Draw() {
         var screenSize = GetViewportRect().Size;
@@ -32,19 +40,6 @@ public partial class CarUI : Node2D {
         if (Car == null) return;
 
         QueueRedraw(); // TODO please don't call this every frame if its not needed
-
-        for (var i = 0; i < Car.Wheels.Length; i++) {
-            var w = Car.Wheels[i];
-            GetNode<Label>("VBoxContainer/GridContainer/wheelVBC"+i+"/Label").Text = w.Details.id + " " + float.Round(w.RadSec, 2);
-            GetNode<ProgressBar>("VBoxContainer/GridContainer/wheelVBC"+i+"/ProgressBar").Value = w.SusTravelDistance / Car.Details.SusByWheelNum(w.Details.id).TravelTotal();
-            GetNode<Line2D>("VBoxContainer/GridContainer/wheelVBC"+i+"/Line2D").Points = new Vector2[] {
-                new (80, 40),
-                40* new Vector2(w.GripDir.X, w.GripDir.Z) / Car.Details.mass + new Vector2(80, 40),
-            };
-
-            GetNode<Label>("VBoxContainer/GridContainer/wheelVBC"+i+"/HBoxContainer/LabelSlip").Text = float.Round(w.SlipAngle, 2).ToString();
-            GetNode<Label>("VBoxContainer/GridContainer/wheelVBC"+i+"/HBoxContainer/LabelRatio").Text = float.Round(w.SlipRatio, 2).ToString();
-        }
 
         GetNode<ProgressBar>("VBoxContainer2/ProgressBarSteering").Value = Car.SteeringLeft - Car.SteeringRight;
         GetNode<ProgressBar>("VBoxContainer2/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;

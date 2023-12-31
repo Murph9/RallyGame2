@@ -1,118 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://cjs71c50pp0kp"]
+[gd_scene load_steps=3 format=3 uid="uid://cjs71c50pp0kp"]
 
 [ext_resource type="Script" path="res://Cars/CarUI.cs" id="1_ujtt8"]
+[ext_resource type="PackedScene" uid="uid://csuejkh1rm4lq" path="res://Cars/WheelUI.tscn" id="2_2ghiq"]
 
-[node name="CarUi" type="Node2D"]
+[node name="CarUi" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_ujtt8")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-offset_left = 50.0
-offset_right = 354.0
-offset_bottom = 195.0
-
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
-layout_mode = 2
-columns = 2
-
-[node name="wheelVBC0" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC0"]
-layout_mode = 2
-text = "W"
-
-[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC0"]
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-max_value = 1.0
-
-[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC0"]
-points = PackedVector2Array(10, 10, 40, 40)
-width = 5.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GridContainer/wheelVBC0"]
-layout_mode = 2
-
-[node name="LabelSlip" type="Label" parent="VBoxContainer/GridContainer/wheelVBC0/HBoxContainer"]
-layout_mode = 2
-
-[node name="LabelRatio" type="Label" parent="VBoxContainer/GridContainer/wheelVBC0/HBoxContainer"]
-layout_mode = 2
-
-[node name="wheelVBC1" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC1"]
-layout_mode = 2
-text = "W"
-
-[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC1"]
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-max_value = 1.0
-
-[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC1"]
-points = PackedVector2Array(10, 10, 40, 40)
-width = 5.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GridContainer/wheelVBC1"]
-layout_mode = 2
-
-[node name="LabelSlip" type="Label" parent="VBoxContainer/GridContainer/wheelVBC1/HBoxContainer"]
-layout_mode = 2
-
-[node name="LabelRatio" type="Label" parent="VBoxContainer/GridContainer/wheelVBC1/HBoxContainer"]
-layout_mode = 2
-
-[node name="wheelVBC2" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC2"]
-layout_mode = 2
-text = "W"
-
-[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC2"]
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-max_value = 1.0
-
-[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC2"]
-points = PackedVector2Array(10, 10, 40, 40)
-width = 5.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GridContainer/wheelVBC2"]
-layout_mode = 2
-
-[node name="LabelSlip" type="Label" parent="VBoxContainer/GridContainer/wheelVBC2/HBoxContainer"]
-layout_mode = 2
-
-[node name="LabelRatio" type="Label" parent="VBoxContainer/GridContainer/wheelVBC2/HBoxContainer"]
-layout_mode = 2
-
-[node name="wheelVBC3" type="VBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/GridContainer/wheelVBC3"]
-layout_mode = 2
-text = "W"
-
-[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/GridContainer/wheelVBC3"]
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-max_value = 1.0
-
-[node name="Line2D" type="Line2D" parent="VBoxContainer/GridContainer/wheelVBC3"]
-points = PackedVector2Array(10, 10, 40, 40)
-width = 5.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GridContainer/wheelVBC3"]
-layout_mode = 2
-
-[node name="LabelSlip" type="Label" parent="VBoxContainer/GridContainer/wheelVBC3/HBoxContainer"]
-layout_mode = 2
-
-[node name="LabelRatio" type="Label" parent="VBoxContainer/GridContainer/wheelVBC3/HBoxContainer"]
-layout_mode = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 offset_left = 68.0
@@ -145,3 +39,21 @@ offset_top = 229.0
 offset_right = 999.0
 offset_bottom = 269.0
 fit_content = true
+
+[node name="GridContainer" type="GridContainer" parent="."]
+offset_left = 50.0
+offset_right = 54.0
+offset_bottom = 4.0
+columns = 2
+
+[node name="WheelUi0" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi1" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi2" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi3" parent="GridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
