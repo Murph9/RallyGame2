@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://4nxeruxred2"]
+
+[ext_resource type="Script" path="res://Racing.cs" id="1_fccqy"]
+
+[node name="Racing" type="Node3D"]
+script = ExtResource("1_fccqy")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 5.99109, 9.99093)
+
+[node name="BackButton" type="Button" parent="."]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Back"
+
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]

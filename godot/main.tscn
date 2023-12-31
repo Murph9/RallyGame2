@@ -35,6 +35,9 @@ offset_bottom = 382.0
 layout_mode = 2
 text = "Add Ball"
 
+[node name="PlayGameButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Play Game"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -43,3 +46,4 @@ layout_mode = 2
 layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/PlayGameButton" to="." method="_on_play_game_button_pressed"]

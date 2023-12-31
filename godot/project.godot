@@ -79,3 +79,4 @@ car_reset={
 common/physics_ticks_per_second=120
 3d/physics_engine="JoltPhysics3D"
 3d/solver/solver_iterations=8
+jolt_3d/solver/bounce_velocity_threshold=25.0

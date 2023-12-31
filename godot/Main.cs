@@ -43,4 +43,8 @@ public partial class Main : Node
         AddChild(r);
         sphereCount++;
     }
+
+    public void _on_play_game_button_pressed() {
+        GetTree().ChangeSceneToFile("res://Racing.tscn");
+    }
 }
