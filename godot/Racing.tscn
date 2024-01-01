@@ -11,9 +11,24 @@ transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 5.99109, 9.99093)
 
-[node name="BackButton" type="Button" parent="."]
-offset_right = 8.0
-offset_bottom = 8.0
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
 text = "Back"
 
-[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LapLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="CheckpointLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

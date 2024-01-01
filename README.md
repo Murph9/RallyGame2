@@ -43,6 +43,7 @@ and its TODO list:
 
 some simple circuit generation:
 - probably prod the dynamic world generation as i can't make a track to save my life
+- with checkpoints and lap time calc
 
 parts
 - no 3d models needed yet, but would be nice
@@ -52,6 +53,5 @@ a UI for selecting parts
 - at least a text block for displaying car stats
 
 Some way to calculate the starting time to beat
-- try and get 
 - maybe get AI to drive it in the future
 
