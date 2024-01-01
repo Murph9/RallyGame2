@@ -35,7 +35,7 @@ public class CarEngine {
 			WheelEngineTorque[0] = WheelEngineTorque[1] = EngineTorque/(2 * wheelRadius);
 		else if (d.driveRear)
             WheelEngineTorque[2] = WheelEngineTorque[3] = EngineTorque/(2 * wheelRadius);
-        
+
         var localVelocity = _car.RigidBody.LinearVelocity * _car.RigidBody.GlobalBasis;
         SimulateAutoTransmission(delta, localVelocity);
     }
@@ -46,7 +46,7 @@ public class CarEngine {
 
         if (!d.driveFront && !d.driveRear)
             return 0;
-        
+
         float curGearRatio = d.trans_gearRatios[CurGear];
         float diffRatio = d.trans_finaldrive;
 
@@ -58,7 +58,7 @@ public class CarEngine {
 			wheelrot = (w[0].RadSec + w[1].RadSec)/2;
 		else if (d.driveRear)
 			wheelrot = (w[2].RadSec + w[3].RadSec)/2;
-        
+
         CurRPM = (int)(wheelrot*curGearRatio*diffRatio*(60/Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
         CurRPM = Mathf.Max(CurRPM, d.e_idle);
 
@@ -90,9 +90,9 @@ public class CarEngine {
 			return; //no changing out of reverse on me please...
         if (!_car.Wheels.Any(x => x.InContact))
 			return; //if no contact, no changing of gear
-        
+
         var d = _car.Details;
-        
+
 		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.trans_gearRatios.Length - 1) {
 			_gearChangeTime = d.auto_changeTime;
 			_gearChangeTo = CurGear + 1;

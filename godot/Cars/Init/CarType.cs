@@ -14,13 +14,13 @@ public enum CarType {
 	Runner,
 	Rally,
 	Roadster,
-	
+
 	Hunter,
 	Ricer,
 	Muscle,
 	Wagon,
 	Bus,
-	
+
 	Ultra,
 	LeMans,
 	Inline,
@@ -29,7 +29,7 @@ public enum CarType {
 
 	WhiteSloth,
 	Rocket,
-	
+
 	Debug
 }
 
@@ -77,10 +77,10 @@ public static class CarTypeExtensions
         if (carDetails.wheelData[3].position.X > 0 || carDetails.wheelData[3].position.Z > 0)
             throw new Exception(CarPart.wheel_rr + " should be in neg x and neg z");
 
-		
+
         // Wheel validation
         float quarterMassForce = Mathf.Abs(gravity.Y) * carDetails.mass / 4f;
-        
+
         // generate the load quadratic value
         carDetails.wheelLoadQuadratic = 1/(quarterMassForce*4);
         for (int i = 0; i < carDetails.wheelData.Length; i++) {
@@ -96,10 +96,10 @@ public static class CarTypeExtensions
                 throw new Exception("!! Sus max range too low: " + quarterMassForce + " > " + maxSusForce + ", increase pre-load or stiffness");
             }
         }
-       
+
 
 		// Output the optimal gear up change point based on the torque curve
-        int redlineOffset = 250;
+        int redlineOffset = 500;
         var changeTimes = new List<(int, float)>();
         float maxTransSpeed = carDetails.SpeedAtRpm(carDetails.trans_gearRatios.Length - 1, carDetails.e_redline - redlineOffset);
         for (float speed = 0; speed < maxTransSpeed; speed += 0.1f) {

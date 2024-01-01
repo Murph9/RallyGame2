@@ -19,7 +19,7 @@ public record CarDetails
 	public float areo_lineardrag; //0.003 to 0.02 (dimensionless number)
 	public float areo_crossSection; //m^2 front area
 	public float areo_downforce; //not a default yet
-	
+
 	//travel values are relative to wheel offset pos
 	public CarSusDetails susF;
 	public CarSusDetails susR;
@@ -27,7 +27,7 @@ public record CarDetails
 	////////
 	//Drivetrain stuff
 	public bool driveFront, driveRear;
-	
+
 	public float[] e_torque; //starts at 0 rpm, steps at every 1000rpm
 	public int e_redline;
 	public int e_idle;
@@ -37,7 +37,7 @@ public record CarDetails
     public float[] auto_gearUpSpeed; //m/s for triggering the next gear [calculated]
     public float[] auto_gearDownSpeed; // m/s for triggering the next gear [calculated]
 	public float auto_changeTime;
-	
+
 	//NOTE: please check torque curves are at the crank before using this value as anything other than 1.0f
 	public float trans_effic; //apparently 0.9 is common (power is lost to rotating the transmission gears)
 	public float trans_finaldrive; //helps set the total drive ratio
@@ -49,29 +49,29 @@ public record CarDetails
 	public float nitro_force;
 	public float nitro_rate;
 	public float nitro_max;
-	
+
 	public bool fuelEnabled;
 	public float fuelMax = 80;
 	public float fuelRpmRate = 0.00003f;
-	
+
 	public float brakeMaxTorque;
-	
+
 	////////
 	//Wheels
 	public float w_steerAngle; //in radians
-	
+
 	public float wheelLoadQuadratic;
 	public WheelDetails[] wheelData;
-	
+
 	//no idea category
 	public float minDriftAngle;
 	public Vector3 JUMP_FORCE;
 
-    
+
     public CarSusDetails SusByWheelNum(int i) {
         return i < 2 ? susF : susR;
     }
-    
+
     public float GetGearUpSpeed(int gear) {
         return auto_gearUpSpeed[gear];
     }
@@ -98,23 +98,23 @@ public record CarDetails
 	public float RollingResistance(int w_id, float susForce) {
 		return susForce*areo_lineardrag/wheelData[w_id].radius;
 	}
-	
+
 	public float Wheel_inertia(int w_id) {
 		//NOTE: PERF: this is a disc, pls make a thicc pipe so its closer to real life
 		return wheelData[w_id].mass*wheelData[w_id].radius*wheelData[w_id].radius/2;
 	}
 	public float E_inertia() { //car internal engine + wheel inertia
-		
+
 		float wheels = 0;
-		for (int i = 0; i < wheelData.Length; i++) 
+		for (int i = 0; i < wheelData.Length; i++)
 			wheels += Wheel_inertia(i);
-		
+
 		if (driveFront && driveRear) {
 			return e_mass + wheels*4;
 		}
 		return e_mass + wheels*2;
 	}
-	
+
 	//compute the torque at rpm
 	//assumed to be a valid and useable rpm value
 	public float LerpTorque(int rpm) {
@@ -125,7 +125,7 @@ public record CarDetails
         float high = e_torque[Mathf.Clamp(whole+1, 0, e_torque.Length - 1)];
         return Mathf.Lerp(low, high, rem);
 	}
-	
+
 	//get the max power and rpm
 	public (float, float) GetMaxPower() {
 		float max = 0;
@@ -137,7 +137,7 @@ public record CarDetails
 		} //http://www.autospeed.com/cms/article.html?&title=Power-versus-Torque-Part-1&A=108647
 		return (max, maxrpm*1000);
 	}
-	
+
 	public float DriveWheelRadius() {
 		if (driveFront && driveRear)
 			return (wheelData[0].radius + wheelData[1].radius + wheelData[2].radius + wheelData[3].radius) / 4f;
