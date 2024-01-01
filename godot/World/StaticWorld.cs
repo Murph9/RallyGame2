@@ -1,4 +1,6 @@
 using Godot;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
@@ -33,7 +35,7 @@ public partial class StaticWorld : Node3D, IWorld {
         }
         if (_worldName == null)
             return;
-        
+
         if (!_worldName.EndsWith(".blend")) {
             _worldName += ".blend";
         }
@@ -51,5 +53,9 @@ public partial class StaticWorld : Node3D, IWorld {
 
     public Transform3D GetSpawn() {
         return Transform3D.Identity;
+    }
+
+    public IEnumerable<Vector3> GetCheckpoints() {
+        return Array.Empty<Vector3>();
     }
 }

@@ -11,6 +11,8 @@ public partial class WorldPieces : Node3D, IWorld {
     private readonly string pieceName;
     private readonly List<Piece> _pieces = new();
 
+    private List<Node3D> _placedPieces = new();
+
     public record Piece {
         public string Name;
         public Transform3D[] Directions;
@@ -80,6 +82,8 @@ public partial class WorldPieces : Node3D, IWorld {
                 curPos += curRot * dir.Origin;
                 curRot *= dir.Basis.GetRotationQuaternion();
                 AddChild(toAdd);
+
+                _placedPieces.Add(toAdd);
             }
 
         } catch (Exception e) {
@@ -90,5 +94,9 @@ public partial class WorldPieces : Node3D, IWorld {
 
     public Transform3D GetSpawn() {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    }
+
+    public IEnumerable<Vector3> GetCheckpoints() {
+        return _placedPieces.Select(x => x.Position);
     }
 }
