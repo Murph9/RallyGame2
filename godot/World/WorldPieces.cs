@@ -7,7 +7,8 @@ namespace murph9.RallyGame2.godot.World;
 
 public partial class WorldPieces : Node3D, IWorld {
 
-    private static PackedScene SCENE;
+    private readonly PackedScene SCENE;
+    private readonly string pieceName;
     private readonly List<Piece> _pieces = new();
 
     public record Piece {
@@ -17,9 +18,10 @@ public partial class WorldPieces : Node3D, IWorld {
     }
 
     public WorldPieces(string name) {
-        SCENE ??= GD.Load<PackedScene>("res://assets/worldPieces/" + name + ".blend");
+        pieceName = name;
+        SCENE = GD.Load<PackedScene>("res://assets/worldPieces/" + name + ".blend");
 
-        // generate a starting box for now, we'll need it to stay still if the world fails to generate
+        // generate a starting box so we don't spawn in the void
         var boxBody = new StaticBody3D();
         boxBody.AddChild(new CollisionShape3D() {
             Shape = new BoxShape3D() {
@@ -46,7 +48,7 @@ public partial class WorldPieces : Node3D, IWorld {
                 scene.RemoveChild(c);
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
-                
+
                 var p = new Piece() {
                     Name = c.Name,
                     Directions = directions.Select(x => x.Transform).ToArray(),
@@ -54,27 +56,35 @@ public partial class WorldPieces : Node3D, IWorld {
                 };
                 foreach (var dir in directions)
                     c.RemoveChild(dir);
-                
+
                 _pieces.Add(p);
             }
+        } catch (Exception e) {
+            GD.Print("Failed to parse pieces for " + pieceName);
+            GD.Print(e);
+            return;
+        }
 
-            var w = new WorldPieceCircuitGenerator(_pieces);
-            var pieces = w.GenerateFixed(WorldPieceCircuitGenerator.CircuitLayout.LargeCircle);
+        try {
+            var w = new WorldPieceLayoutGenerator(_pieces);
+            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.LargeCircle);
+
             var curPos = new Vector3();
             var curRot = Quaternion.Identity;
             foreach (var p in pieces) {
                 var toAdd = p.Node.Duplicate() as Node3D;
                 toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
-                
+
                 // soz can only select the first one for now
                 var dir = p.Directions.First();
                 curPos += curRot * dir.Origin;
                 curRot *= dir.Basis.GetRotationQuaternion();
                 AddChild(toAdd);
             }
-                        
+
         } catch (Exception e) {
-            Console.WriteLine(e);
+            GD.Print("Failed to generate world piece location");
+            GD.Print(e);
         }
     }
 
