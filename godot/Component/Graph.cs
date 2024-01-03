@@ -1,52 +1,68 @@
 using Godot;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Component;
 
 public partial class Graph : HBoxContainer {
 
-    private readonly string _graphName;
+	public class Dataset {
+        public string GraphName { get; }
+        public float Min { get; }
+        public float Max { get; }
+        internal int CurrentIndex  { get; private set; }
+
+        public Color Color { get; set; } = Colors.Blue;
+
+        public readonly float[] Values;
+        public readonly Vector2[] GraphPoints;
+
+        public Dataset(string graphName, float min, float max) {
+            GraphName = graphName;
+            Min = min;
+            Max = max;
+            Values = new float[1090];
+            GraphPoints = new Vector2[1090]; // enough to fill the screen
+        }
+
+        public void Push(float value) {
+            // don't print outside
+            var val = Mathf.Clamp(value, Min, Max);
+
+            Values[CurrentIndex] = val;
+            CurrentIndex = (CurrentIndex + 1) % Values.Length;
+        }
+    }
+
     private readonly Vector2 _graphSize;
-    private readonly float _min;
-    private readonly float _max;
-    public readonly float[] Values;
-    public readonly Vector2[] GraphPoints;
 
-    public string GraphName;
-    private int _currentIndex;
+    public List<Dataset> Datasets { get; set; }
 
-    public Graph(string graphName, Vector2 size, float min, float max) {
-        _graphName = graphName;
+    public Graph(Vector2 size, IEnumerable<Dataset> datasets) {
         _graphSize = size;
-        _min = min;
-        _max = max;
-        Values = new float[(int)size.X];
-        GraphPoints = new Vector2[(int)size.X];
+        Datasets = datasets.ToList();
     }
 
     // https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs#L554
 
     public override void _Ready() {
-        AddChild(new Label() {
-            Text = _graphName,
-            Name = "Label",
-            LabelSettings = new LabelSettings() {
-                FontColor = Colors.Blue
-            }
-        });
+        var box = new VBoxContainer();
+        AddChild(box);
+        foreach (var dataset in Datasets) {
+            box.AddChild(new Label() {
+                Text = dataset.GraphName,
+                Name = "Label",
+                LabelSettings = new LabelSettings() {
+                    FontColor = dataset.Color
+                }
+            });
+        }
         AddChild(new ColorRect() {
             Color = Colors.Transparent, // not used for display, used for sizing the graph
             CustomMinimumSize = _graphSize,
             Size = _graphSize,
             Name = "GraphRect"
         });
-    }
-
-    public void Push(float value) {
-        // don't print outside
-        var val = Mathf.Clamp(value, _min, _max);
-
-        Values[_currentIndex] = val;
-        _currentIndex = (_currentIndex + 1) % Values.Length;
     }
 
     public override void _Draw()
@@ -56,23 +72,29 @@ public partial class Graph : HBoxContainer {
 
         var defaultFont = ThemeDB.FallbackFont;
         int defaultFontSize = ThemeDB.FallbackFontSize;
-        DrawString(defaultFont, colorRect.Position + new Vector2(3, defaultFontSize),
-            float.Round(_max, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  Colors.Blue);
-        DrawString(defaultFont, colorRect.Position + new Vector2(3, colorRect.Size.Y),
-            float.Round(_min, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  Colors.Blue);
-
-        int num = Values.Length;
-        for (int i = 0; i < num; i++)
-        {
-            float value = Values[Mod(_currentIndex - i - 1, Values.Length)];
-            // Note flipped inverse lerp min max to account for y = down in godot UI
-            GraphPoints[i] = new Vector2(
-                colorRect.Position.X + (colorRect.Size.X * ((float)(num - i) / num)), //backwards
-                colorRect.Position.Y + (Mathf.InverseLerp(_max, _min, value) * colorRect.Size.Y)
-            );
+        var offset = new Vector2();
+        foreach (var dataset in Datasets) {
+            DrawString(defaultFont, colorRect.Position + new Vector2(3, defaultFontSize) + offset,
+                float.Round(dataset.Max, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  dataset.Color);
+            DrawString(defaultFont, colorRect.Position + new Vector2(3, colorRect.Size.Y) + offset,
+                float.Round(dataset.Min, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  dataset.Color);
+            offset += new Vector2(50, 0);
         }
 
-        DrawPolyline(GraphPoints, Colors.Blue);
+        foreach (var dataset in Datasets) {
+            int num = dataset.Values.Length;
+            for (int i = 0; i < num; i++)
+            {
+                float value = dataset.Values[Mod(dataset.CurrentIndex - i - 1, dataset.Values.Length)];
+                // Note flipped inverse lerp min max to account for y = down in godot UI
+                dataset.GraphPoints[i] = new Vector2(
+                    colorRect.Position.X + (colorRect.Size.X * ((float)(num - i) / num)), //backwards
+                    colorRect.Position.Y + (Mathf.InverseLerp(dataset.Max, dataset.Min, value) * colorRect.Size.Y)
+                );
+            }
+
+            DrawPolyline(dataset.GraphPoints, dataset.Color);
+        }
     }
 
     public override void _Process(double delta) {
