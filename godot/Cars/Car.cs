@@ -91,12 +91,12 @@ public partial class Car : Node3D
         audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.e_redline), 0.5f, 2);
         audio.VolumeDb = Mathf.LinearToDb(0.25f + AccelCur * 0.25f); // max of .5
     }
-    
+
     public override void _PhysicsProcess(double delta) {
         ReadInputs();
-        
+
         Engine._PhysicsProcess(delta);
-        
+
         foreach (var w in Wheels) {
             CalcSuspension(w);
 
@@ -120,10 +120,10 @@ public partial class Car : Node3D
         HandbrakeCur = Input.IsActionPressed("car_handbrake");
         SteeringLeft = Input.GetActionStrength("car_left") * Details.w_steerAngle;
         SteeringRight = Input.GetActionStrength("car_right") * Details.w_steerAngle;
-        
+
         BrakingCur = Input.GetActionStrength("car_brake");
         AccelCur = Input.GetActionStrength("car_accel");
-        
+
         if (Input.IsActionPressed("car_reset")) {
             RigidBody.Transform = _worldSpawn;
             RigidBody.LinearVelocity = new Vector3();
@@ -151,11 +151,11 @@ public partial class Car : Node3D
 
         w.ContactPoint = RigidBody.ToLocal(hitPositionGlobal);
         w.ContactNormal = RigidBody.ToLocal(hitNormalGlobal);
-        
+
         var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
         var maxDist = w.Ray.TargetPosition.Length();
         w.SusTravelDistance = Math.Clamp(maxDist - distance, 0, maxDist);
-        
+
         var hitVelocity = RigidBody.LinearVelocity + RigidBody.AngularVelocity.Cross(hitPositionGlobal - RigidBody.GlobalPosition);
         // then calc other thing velocity if its a rigidbody
         w.ContactRigidBody = w.Ray.GetCollider() as RigidBody3D;
@@ -178,21 +178,21 @@ public partial class Car : Node3D
             var otherLength = w.Ray.TargetPosition.Length() - Wheels[w_id_other].Ray.GlobalPosition.DistanceTo(otherHitPositionGlobal);
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
-        
+
         w.SpringForce = w.SusTravelDistance * susDetails.stiffness;
         var totalForce = w.SwayForce + w.SpringForce - w.Damping;
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = RigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
             var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
-            
+
             w.SusForce = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
             RigidBody.ApplyForce(w.SusForce, hitPositionGlobal - RigidBody.GlobalPosition);
 
             w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
 
-        
+
         // TODO suspension keeps sending the car in the -x,+z direction
         // TODO suspension seems to be applying the force on the wrong side of the car or badly during high angles
     }
@@ -241,8 +241,8 @@ public partial class Car : Node3D
         } else {
             // rear wheels
             float slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            DriftAngle = slipa_rear; // set drift angle as the rear amount
             w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocityZ));
+            DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
         }
 
         // some hacks to help the simulation
