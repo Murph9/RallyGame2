@@ -16,7 +16,7 @@ public partial class Graph : HBoxContainer {
         public float Max { get; private set; }
         internal int CurrentIndex  { get; private set; }
 
-        public Color Color { get; set; } = Colors.Blue;
+        public Color Color { get; set; } = Colors.White;
         public bool AutoScale { get; set; } = true;
 
 
