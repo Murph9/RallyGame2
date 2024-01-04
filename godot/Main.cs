@@ -20,7 +20,7 @@ public partial class Main : Node
 
         var optionButton = GetNode<OptionButton>("VBoxContainer/HBoxContainer/WorldOptionButton");
         var popup = optionButton.GetPopup();
-        
+
         foreach (var w in _worlds) {
             popup.AddItem(w);
         }

@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace murph9.RallyGame2.godot.Debug;
@@ -10,5 +11,11 @@ public class DebugHelper {
         instance.Position = position;
         instance.SetText(text);
         return instance;
+    }
+
+    public static bool IsNumeric(object o){
+        var numType = typeof(System.Numerics.INumber<>);
+        return o.GetType().GetInterfaces().Any(iface =>
+            iface.IsGenericType && (iface.GetGenericTypeDefinition() == numType));
     }
 }

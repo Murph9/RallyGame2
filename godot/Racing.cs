@@ -8,8 +8,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot;
 
-public partial class Racing : Node3D
-{
+public partial class Racing : Node3D {
 	private Car _car;
 	private Vector3[] _checkpoints;
 
