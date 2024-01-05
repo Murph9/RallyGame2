@@ -1,5 +1,6 @@
 ﻿using System;
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Part;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
@@ -28,11 +29,8 @@ public record CarDetails
 	//Drivetrain stuff
 	public bool driveFront, driveRear;
 
-	public float[] e_torque; //starts at 0 rpm, steps at every 1000rpm
-	public int e_redline;
-	public int e_idle;
-	public float e_compression; // is going to be multiplied by the RPM
-	public float e_mass; // kg, this is the interia of the engine, 100 is high
+	public string engine_file;
+    public EngineDetails Engine;
 
     public float[] auto_gearUpSpeed; //m/s for triggering the next gear [calculated]
     public float[] auto_gearDownSpeed; // m/s for triggering the next gear [calculated]
@@ -66,7 +64,6 @@ public record CarDetails
 	//no idea category
 	public float minDriftAngle;
 	public Vector3 JUMP_FORCE;
-
 
     public CarSusDetails SusByWheelNum(int i) {
         return i < 2 ? susF : susR;
@@ -110,31 +107,20 @@ public record CarDetails
 			wheels += Wheel_inertia(i);
 
 		if (driveFront && driveRear) {
-			return e_mass + wheels*4;
+			return Engine.EngineMass + wheels*4;
 		}
-		return e_mass + wheels*2;
-	}
-
-	//compute the torque at rpm
-	//assumed to be a valid and useable rpm value
-	public float LerpTorque(int rpm) {
-		float RPM = (float)rpm / 1000;
-		int whole = (int) RPM;
-        float rem = RPM - whole;
-        float low = e_torque[Mathf.Clamp(whole, 0, e_torque.Length - 1)]; //clamp to the the end of the array to prevent an index exeception
-        float high = e_torque[Mathf.Clamp(whole+1, 0, e_torque.Length - 1)];
-        return Mathf.Lerp(low, high, rem);
+		return Engine.EngineMass + wheels*2;
 	}
 
 	//get the max power and rpm
 	public (float, float) GetMaxPower() {
 		float max = 0;
 		float maxrpm = 0;
-		for (int i = 0; i < e_torque.Length; i++) {
+		for (int i = 0; i < Engine.MaxRpm; i += 10) {
 			float prevmax = max;
-			max = Mathf.Max(max, e_torque[i]*(1000*i)/9549);
+			max = Mathf.Max(max, (float)Engine.CalcTorqueFor(i) * (1000*i)/9549);
 			if (prevmax != max) maxrpm = i;
-		} //http://www.autospeed.com/cms/article.html?&title=Power-versus-Torque-Part-1&A=108647
+		} // http://www.autospeed.com/cms/article.html?&title=Power-versus-Torque-Part-1&A=108647
 		return (max, maxrpm*1000);
 	}
 

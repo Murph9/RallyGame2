@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Linq;
 
@@ -12,6 +13,7 @@ public partial class Car : Node3D
     public CarEngine Engine { get; }
 
     public readonly Wheel[] Wheels;
+    private readonly Transform3D _worldSpawn;
 
     public bool HandbrakeCur { get; private set; }
     public float AccelCur { get; private set; }
@@ -22,11 +24,17 @@ public partial class Car : Node3D
     public float DriftAngle { get; private set; }
 
     public const float TRACTION_MAXSLIP = 0.2f;
-    public const float TRACTION_MAX = 1.5f;
+    public const float TRACTION_MAX = 2.5f;
     public const float TRACTION_MAXLENGTH = 0.2f;
     public const float TRACTION_DECAY = 3f;
 
-    private readonly Transform3D _worldSpawn;
+    public Vector3 DragForce;
+
+
+    [DebugGUIGraph]
+    public double EngineTorque => Engine.CurrentTorque;
+    [DebugGUIGraph]
+    public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
 
     public Car(CarDetails details, Transform3D worldSpawn) {
         Details = details;
@@ -88,7 +96,7 @@ public partial class Car : Node3D
 
         // set audio values
         var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
-        audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.e_redline), 0.5f, 2);
+        audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.Engine.MaxRpm), 0.5f, 2);
         audio.VolumeDb = Mathf.LinearToDb(0.25f + AccelCur * 0.25f); // max of .5
     }
 
@@ -105,7 +113,7 @@ public partial class Car : Node3D
 
             if (w.InContact) {
                 CalcTraction(w, delta);
-                CalcDrag(w);
+                ApplyWheelDrag(w);
             } else {
                 w.GripDir = new Vector3();
             }
@@ -292,7 +300,7 @@ public partial class Car : Node3D
             wheelInertia = Details.E_inertia();
         }
         var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.radius;
-        
+
         if (brakeCurrent2 != 0 && Mathf.Sign(w.RadSec) != Mathf.Sign(w.RadSec + totalLongForceTorque))
             w.RadSec = 0; // maxed out the forces with braking, so prevent wheels from moving
         else
@@ -335,12 +343,16 @@ public partial class Car : Node3D
 		}
     }
 
-    private void CalcDrag(Wheel w)
-    {
-        
+    private void ApplyWheelDrag(Wheel w) {
+        // TODO none for now, when we get better surface types that cause meaningful drag
     }
 
     private void ApplyCentralDrag() {
-        
+        // quadratic drag (air resistance)
+        var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
+        DragForce = Details.QuadraticDrag(RigidBody.LinearVelocity);
+
+		float dragDown = -0.5f * Details.areo_downforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
+		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
 }

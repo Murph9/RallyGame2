@@ -1,0 +1,67 @@
+{
+  "name": "e_Runner",
+  "Parts": [
+    {
+      "name": "CylinderHead",
+      "MaxIntakeAirPiston": 5000,
+      "CombustionEffiency": 0.95
+    },
+    {
+      "name": "CamshaftAndValves",
+      "MaxIntakeAirPiston": 2000
+    },
+    {
+      "name": "IntakeManifold",
+      "MaxIntakeAirPiston": 3000,
+      "CombustionEffiency": 0.95
+    },
+    {
+      "name": "Turbo",
+      "TurboAirMult": 1
+    },
+    {
+      "name": "SparkPlugs",
+      "CombustionEffiency": 0.95,
+      "MaxRpm": 9000
+    },
+    {
+      "name": "ExhaustSystem",
+      "MaxExhaustAirPiston": 5000
+    },
+    {
+      "name": "ECU",
+      "CombustionEffiency": 0.9
+    },
+    {
+      "name": "Pistons",
+      "CombustionEffiency": 0.9,
+      "MaxRpm": 8000,
+      "Compression": 10
+    },
+    {
+      "name": "Block",
+      "MaxRpm": 9500,
+      "PistonCount": 4,
+      "CylinderBore": 0.085,
+      "StrokeLength": 0.07,
+      "IdleDrag": 0.1
+    },
+    {
+      "name": "Crankshaft",
+      "StrokeLength": 0.062,
+      "MaxRpm": 8000
+    },
+    {
+      "name": "AirFilter",
+      "MaxIntakeAirPiston": 5000
+    },
+    {
+      "name": "Radiator",
+      "CoolingRate": 50
+    },
+    {
+      "name": "TransmissionDrivetrain",
+      "TransmissionEfficency": 0.9
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Part;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
@@ -36,13 +36,8 @@ public enum CarType {
 public static class CarTypeExtensions
 {
 	public static CarDetails LoadCarDetails(this CarType type, Vector3 gravity) {
-		var filePath = Path.Combine(AppContext.BaseDirectory, "Cars", "Init", "Type", type.ToString() + ".json");
-        var jsonContent = File.ReadAllText(filePath);
-		var carDetails = JsonSerializer.Deserialize<CarDetails>(jsonContent, new JsonSerializerOptions() {
-			AllowTrailingCommas = true,
-			PropertyNameCaseInsensitive = true,
-			IncludeFields = true
-		});
+        var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
+        carDetails.Engine = EngineDetails.Load(carDetails.engine_file);
 
 		// calculate wheel positions based on the model
 		Node3D carModel = null;
@@ -101,15 +96,15 @@ public static class CarTypeExtensions
 		// Output the optimal gear up change point based on the torque curve
         int redlineOffset = 500;
         var changeTimes = new List<(int, float)>();
-        float maxTransSpeed = carDetails.SpeedAtRpm(carDetails.trans_gearRatios.Length - 1, carDetails.e_redline - redlineOffset);
+        float maxTransSpeed = carDetails.SpeedAtRpm(carDetails.trans_gearRatios.Length - 1, carDetails.Engine.MaxRpm - redlineOffset);
         for (float speed = 0; speed < maxTransSpeed; speed += 0.1f) {
             int bestGear = -1;
             float bestTorque = -1;
             for (int gear = 1; gear < carDetails.trans_gearRatios.Length; gear++) {
                 int rpm = carDetails.RpmAtSpeed(gear, speed);
-                if (rpm > carDetails.e_redline - redlineOffset) //just a bit off of redline because its not that smooth
+                if (rpm > carDetails.Engine.MaxRpm - redlineOffset) //just a bit off of redline because its not that smooth
                     continue;
-                float wheelTorque = carDetails.LerpTorque(rpm) * carDetails.trans_gearRatios[gear] * carDetails.trans_finaldrive;
+                float wheelTorque = (float)carDetails.Engine.CalcTorqueFor(rpm) * carDetails.trans_gearRatios[gear] * carDetails.trans_finaldrive;
                 if (bestTorque < wheelTorque) {
                     bestTorque = wheelTorque;
                     bestGear = gear;

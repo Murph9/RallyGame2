@@ -1,0 +1,85 @@
+{
+  "JUMP_FORCE": {
+    "x": 0,
+    "y": 1100,
+    "z": 0
+  },
+  "areo_crossSection": 0.3,
+  "areo_downforce": 0,
+  "areo_drag": 0.33,
+  "areo_lineardrag": 0.012,
+  "auto_changeTime": 0.2,
+  "brakeMaxTorque": 8000,
+  "cam_lookAtHeight": 1.3,
+  "cam_offsetLength": -6,
+  "cam_offsetHeight": 2.1,
+  "cam_shake": 0.000002,
+  "carModel": "track1_2.blend",
+  "driveFront": false,
+  "driveRear": true,
+  "engine_file": "e_Runner",
+  "mass": 1200,
+  "minDriftAngle": 7,
+  "name": "runner",
+  "nitro_force": 300,
+  "nitro_max": 15,
+  "nitro_on": true,
+  "nitro_rate": 1,
+  "susF": {
+    "antiroll": 0.7,
+    "comp": 0.2,
+    "max_travel": 0.15,
+    "min_travel": -0.15,
+    "preload_distance": 0.1,
+    "relax": 0.3,
+    "stiffness": 20
+  },
+  "susR": {
+    "antiroll": 1,
+    "comp": 0.2,
+    "max_travel": 0.15,
+    "min_travel": -0.15,
+    "preload_distance": 0.1,
+    "relax": 0.3,
+    "stiffness": 20
+  },
+  "trans_effic": 0.85,
+  "trans_finaldrive": 3.5,
+  "trans_gearRatios": [
+    -2.9,
+    3.6,
+    2.5,
+    1.8,
+    1.3,
+    1,
+    0.84
+  ],
+  "trans_powerBalance": 0.5,
+  "w_steerAngle": 0.5,
+  "wheelData": [
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3
+    }
+  ]
+}

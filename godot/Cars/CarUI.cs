@@ -52,6 +52,7 @@ $@"{Car}
 Position: {V3toStr(Car.RigidBody.Position)}
 Velocity: {V3toStr(Car.RigidBody.LinearVelocity)}
 DriftAngle: {float.Round(Car.DriftAngle, 2)}
+Drag: { V3toStr(Car.DragForce)}
 ";
     }
 

@@ -11,7 +11,7 @@ public class CarEngine {
 
     public int CurGear { get; private set; }
     public int CurRPM { get; private set; }
-    public float EngineTorque { get; private set; }
+    public double CurrentTorque { get; private set; }
     public float[] WheelEngineTorque { get; }
 
     private double _gearChangeTime;
@@ -24,23 +24,23 @@ public class CarEngine {
     }
 
     public void _PhysicsProcess(double delta) {
-        EngineTorque = GetEngineWheelTorque(delta);
+        var engineTorque = SetEngineTorque();
 
         var d = _car.Details;
         var wheelRadius = d.DriveWheelRadius();
         if (d.driveFront && d.driveRear) {
 			WheelEngineTorque[0] = WheelEngineTorque[1] = WheelEngineTorque[2] = WheelEngineTorque[3]
-             = EngineTorque/(4 * wheelRadius);
+             = engineTorque/(4 * wheelRadius);
         } else if (d.driveFront)
-			WheelEngineTorque[0] = WheelEngineTorque[1] = EngineTorque/(2 * wheelRadius);
+			WheelEngineTorque[0] = WheelEngineTorque[1] = engineTorque/(2 * wheelRadius);
 		else if (d.driveRear)
-            WheelEngineTorque[2] = WheelEngineTorque[3] = EngineTorque/(2 * wheelRadius);
+            WheelEngineTorque[2] = WheelEngineTorque[3] = engineTorque/(2 * wheelRadius);
 
         var localVelocity = _car.RigidBody.LinearVelocity * _car.RigidBody.GlobalBasis;
         SimulateAutoTransmission(delta, localVelocity);
     }
 
-    private float GetEngineWheelTorque(double delta) {
+    private float SetEngineTorque() {
         var d = _car.Details;
         var w = _car.Wheels;
 
@@ -60,20 +60,20 @@ public class CarEngine {
 			wheelrot = (w[2].RadSec + w[3].RadSec)/2;
 
         CurRPM = (int)(wheelrot*curGearRatio*diffRatio*(60/Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
-        CurRPM = Mathf.Max(CurRPM, d.e_idle);
+        CurRPM = Mathf.Max(CurRPM, d.Engine.IdleRPM);
 
-        float eTorque = d.LerpTorque(CurRPM) * _car.AccelCur;
-        float engineDrag = 0;
-		if (_car.AccelCur < 0.01f || CurRPM > d.e_redline) //so compression only happens on no accel
-			engineDrag = (CurRPM - d.e_idle) * d.e_compression * Mathf.Sign(wheelrot); //reverse goes the other way
+        CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * _car.AccelCur;
+        double engineDrag = 0;
+		if (_car.AccelCur < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
+			engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); //reverse goes the other way
 
-        float engineOutTorque;
-        if (Mathf.Abs(CurRPM) > d.e_redline)
+        double engineOutTorque;
+        if (Mathf.Abs(CurRPM) > d.Engine.MaxRpm)
 			engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
 		else //normal path
-			engineOutTorque = eTorque * curGearRatio * diffRatio * d.trans_effic - engineDrag;
+			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.trans_effic - engineDrag;
 
-		return engineOutTorque;
+		return (float)engineOutTorque;
     }
 
     private void SimulateAutoTransmission(double delta, Vector3 localVelocity) {
