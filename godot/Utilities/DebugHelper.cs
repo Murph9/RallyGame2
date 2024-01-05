@@ -1,7 +1,7 @@
 using System.Linq;
 using Godot;
 
-namespace murph9.RallyGame2.godot.Debug;
+namespace murph9.RallyGame2.godot.Utilities;
 
 public class DebugHelper {
 

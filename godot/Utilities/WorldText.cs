@@ -1,6 +1,6 @@
 using Godot;
 
-namespace murph9.RallyGame2.godot.Debug;
+namespace murph9.RallyGame2.godot.Utilities;
 
 public partial class WorldText : Node3D {
 

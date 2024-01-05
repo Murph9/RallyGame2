@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace murph9.RallyGame2.godot.Debug;
+namespace murph9.RallyGame2.godot.Utilities;
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class DebugGUIGraphAttribute : Attribute {
