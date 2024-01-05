@@ -37,7 +37,7 @@ public static class CarTypeExtensions
 {
 	public static CarDetails LoadCarDetails(this CarType type, Vector3 gravity) {
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
-        carDetails.Engine = EngineDetails.Load(carDetails.engine_file);
+        carDetails.Engine = EngineDetails.Load(carDetails.engineFileName);
 
 		// calculate wheel positions based on the model
 		Node3D carModel = null;
@@ -82,8 +82,8 @@ public static class CarTypeExtensions
             var sus = carDetails.SusByWheelNum(i);
 
             // Validate that rest suspension position is within min and max
-            float minSusForce = (sus.preload_force + sus.stiffness) * 0 * 1000;
-            float maxSusForce = sus.stiffness * (sus.preload_force + sus.max_travel - sus.min_travel) * 1000;
+            float minSusForce = (sus.preloadForce + sus.stiffness) * 0 * 1000;
+            float maxSusForce = sus.stiffness * (sus.preloadForce + sus.maxTravel - sus.minTravel) * 1000;
             if (quarterMassForce < minSusForce) {
                 throw new Exception("!! Sus min range too high: " + quarterMassForce + " < " + minSusForce + ", decrease pre-load or stiffness");
             }
@@ -96,15 +96,15 @@ public static class CarTypeExtensions
 		// Output the optimal gear up change point based on the torque curve
         int redlineOffset = 500;
         var changeTimes = new List<(int, float)>();
-        float maxTransSpeed = carDetails.SpeedAtRpm(carDetails.trans_gearRatios.Length - 1, carDetails.Engine.MaxRpm - redlineOffset);
+        float maxTransSpeed = carDetails.SpeedAtRpm(carDetails.transGearRatios.Length - 1, carDetails.Engine.MaxRpm - redlineOffset);
         for (float speed = 0; speed < maxTransSpeed; speed += 0.1f) {
             int bestGear = -1;
             float bestTorque = -1;
-            for (int gear = 1; gear < carDetails.trans_gearRatios.Length; gear++) {
+            for (int gear = 1; gear < carDetails.transGearRatios.Length; gear++) {
                 int rpm = carDetails.RpmAtSpeed(gear, speed);
                 if (rpm > carDetails.Engine.MaxRpm - redlineOffset) //just a bit off of redline because its not that smooth
                     continue;
-                float wheelTorque = (float)carDetails.Engine.CalcTorqueFor(rpm) * carDetails.trans_gearRatios[gear] * carDetails.trans_finaldrive;
+                float wheelTorque = (float)carDetails.Engine.CalcTorqueFor(rpm) * carDetails.transGearRatios[gear] * carDetails.transFinaldrive;
                 if (bestTorque < wheelTorque) {
                     bestTorque = wheelTorque;
                     bestGear = gear;
@@ -116,10 +116,10 @@ public static class CarTypeExtensions
             changeTimes.Add(new (bestGear, speed));
         }
 
-        carDetails.auto_gearDownSpeed = new float[carDetails.trans_gearRatios.Length];
-        carDetails.auto_gearDownSpeed[0] = float.MaxValue; // never change out of reverse
-        carDetails.auto_gearUpSpeed = new float[carDetails.trans_gearRatios.Length];
-        carDetails.auto_gearUpSpeed[0] = float.MaxValue; // never change out of reverse
+        carDetails.autoGearDownSpeed = new float[carDetails.transGearRatios.Length];
+        carDetails.autoGearDownSpeed[0] = float.MaxValue; // never change out of reverse
+        carDetails.autoGearUpSpeed = new float[carDetails.transGearRatios.Length];
+        carDetails.autoGearUpSpeed[0] = float.MaxValue; // never change out of reverse
         // Get the first and last value for each gear
 		foreach (var entry in changeTimes.GroupBy(x => x.Item1)) {
 			int gear = entry.Key;
@@ -127,14 +127,14 @@ public static class CarTypeExtensions
             float upValue = entry.Last().Item2;
 
 			// set the auto up and down changes
-            carDetails.auto_gearDownSpeed[gear] = downValue - 2f; // buffer so they overlap a little
-            carDetails.auto_gearUpSpeed[gear] = upValue;
+            carDetails.autoGearDownSpeed[gear] = downValue - 2f; // buffer so they overlap a little
+            carDetails.autoGearUpSpeed[gear] = upValue;
 		}
 
         // Checking that there is gear overlap between up and down (as it prevents the
         // car from changing gear):
         // [2>----[3>-<2]---<3] not [2>----<2]--[3>---<3]
-        for (int i = 1; i < carDetails.trans_gearRatios.Length - 1; i++) {
+        for (int i = 1; i < carDetails.transGearRatios.Length - 1; i++) {
             if (carDetails.GetGearUpSpeed(i) < carDetails.GetGearDownSpeed(i + 1)) {
                 throw new Exception("Gear overlap test failed for up: " + i + " down: " + (i + 1));
             }

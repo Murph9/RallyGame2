@@ -47,8 +47,8 @@ public class CarEngine {
         if (!d.driveFront && !d.driveRear)
             return 0;
 
-        float curGearRatio = d.trans_gearRatios[CurGear];
-        float diffRatio = d.trans_finaldrive;
+        float curGearRatio = d.transGearRatios[CurGear];
+        float diffRatio = d.transFinaldrive;
 
         float wheelrot = 0;
 		//get the drive wheels rotation speed
@@ -71,7 +71,7 @@ public class CarEngine {
         if (Mathf.Abs(CurRPM) > d.Engine.MaxRpm)
 			engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
 		else //normal path
-			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.trans_effic - engineDrag;
+			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.transEfficiency - engineDrag;
 
 		return (float)engineOutTorque;
     }
@@ -93,11 +93,11 @@ public class CarEngine {
 
         var d = _car.Details;
 
-		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.trans_gearRatios.Length - 1) {
-			_gearChangeTime = d.auto_changeTime;
+		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.transGearRatios.Length - 1) {
+			_gearChangeTime = d.autoChangeTime;
 			_gearChangeTo = CurGear + 1;
 		} else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1) {
-			_gearChangeTime = d.auto_changeTime;
+			_gearChangeTime = d.autoChangeTime;
 			_gearChangeTo = CurGear - 1;
 		}
     }

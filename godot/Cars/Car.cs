@@ -64,7 +64,7 @@ public partial class Car : Node3D
         Wheels = Details.wheelData.Select(x => {
             var sus = Details.SusByWheelNum(x.id);
             return new Wheel(this, x, new RayCast3D() {
-                    Position = x.position + new Vector3(0, sus.max_travel, 0),
+                    Position = x.position + new Vector3(0, sus.maxTravel, 0),
                     TargetPosition = new Vector3(0, -sus.TravelTotal() - x.radius, 0)
                 });
         }).ToArray();
@@ -126,8 +126,8 @@ public partial class Car : Node3D
     private void ReadInputs()
     {
         HandbrakeCur = Input.IsActionPressed("car_handbrake");
-        SteeringLeft = Input.GetActionStrength("car_left") * Details.w_steerAngle;
-        SteeringRight = Input.GetActionStrength("car_right") * Details.w_steerAngle;
+        SteeringLeft = Input.GetActionStrength("car_left") * Details.wMaxSteerAngle;
+        SteeringRight = Input.GetActionStrength("car_right") * Details.wMaxSteerAngle;
 
         BrakingCur = Input.GetActionStrength("car_brake");
         AccelCur = Input.GetActionStrength("car_accel");
@@ -187,7 +187,7 @@ public partial class Car : Node3D
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
 
-        w.SpringForce = w.SusTravelDistance * susDetails.stiffness;
+        w.SpringForce = (susDetails.preloadForce + w.SusTravelDistance) * susDetails.stiffness;
         var totalForce = w.SwayForce + w.SpringForce - w.Damping;
         if (totalForce > 0) {
             // reduce force based on angle to surface
@@ -352,7 +352,7 @@ public partial class Car : Node3D
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
         DragForce = Details.QuadraticDrag(RigidBody.LinearVelocity);
 
-		float dragDown = -0.5f * Details.areo_downforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
+		float dragDown = -0.5f * Details.aeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
 		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
 }
