@@ -20,13 +20,13 @@ public partial class Graph : HBoxContainer {
         public bool AutoScale { get; set; } = true;
 
 
-        public Dataset(string graphName, float min = 0, float max = 100, bool autoScale = false) {
+        public Dataset(string graphName, int count, float min = 0, float max = 100, bool autoScale = false) {
             GraphName = graphName;
             Min = min;
             Max = max;
-            Values = new float[1090];
+            Values = new float[count];
             AutoScale = autoScale;
-            GraphPoints = new Vector2[1090]; // enough to fill the screen
+            GraphPoints = new Vector2[count]; // enough to fill the screen
         }
 
         public void Push(float value) {

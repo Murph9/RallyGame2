@@ -44,7 +44,8 @@
       "PistonCount": 4,
       "CylinderBore": 0.085,
       "StrokeLength": 0.07,
-      "IdleDrag": 0.1
+      "IdleDrag": 0.1,
+      "PeakTorqueRPM": 3500
     },
     {
       "name": "Crankshaft",

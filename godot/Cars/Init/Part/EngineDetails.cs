@@ -10,7 +10,7 @@ public class EngineDetails : EngineProperties {
     // other props that aren't generated
     public string Name;
     public int IdleRPM = 1000;
-    public int EngineMass = 20; // although this might be an add of all props in future
+    public int EngineMass = 20; // although this might be a sum all props in the future
 
     public List<EnginePart> Parts { get; set; } = new List<EnginePart>();
 
@@ -24,7 +24,7 @@ public class EngineDetails : EngineProperties {
         // validation
         var engineSet = engineDetails.AreAllSet();
         if (!engineSet) {
-            throw new Exception("Engine not set, see" + engineDetails);
+            throw new Exception("Engine value not set, see" + engineDetails);
         }
 
         return engineDetails;
@@ -34,12 +34,10 @@ public class EngineDetails : EngineProperties {
     private double DisplacementVolume => AreaOfPiston * StrokeLength * PistonCount; // m^3 (note that this is usually shown as cm^3 which is /1000)
     private double MaxEffectiveAirflowPerPiston => Math.Min(MaxIntakeAirPiston, MaxExhaustAirPiston);
     private double TorquePerStroke => Compression * AreaOfPiston * 10000 * StrokeLength; // Nm
-    private double AirflowEffiencyPeakRPM => MaxEffectiveAirflowPerPiston / (DisplacementVolume * 1e3);
 
     public double AirflowAtRpm(int rpm) {
-        // a inverse quadratic function which peaks at airflow effiency peak rpm
-        // clamped to 1 so it gets a little flat top
-        var flowEfficency = Math.Min(1, 1.01f - Math.Pow((rpm - AirflowEffiencyPeakRPM * 2)/MaxRpm, 2));
+        // a inverse quadratic function which peaks at a specific point
+        var flowEfficency = Math.Min(1, 1 - Math.Pow((rpm - PeakTorqueRPM)/MaxRpm, 2));
 
         return flowEfficency * Math.Min(rpm * DisplacementVolume * 1e3, MaxEffectiveAirflowPerPiston) / MaxEffectiveAirflowPerPiston;
     }
@@ -76,6 +74,8 @@ public class EngineProperties {
     public int MaxRpm = int.MaxValue; // w/min
     public double TransmissionEfficency = double.MaxValue; // ratio
 
+    public double PeakTorqueRPM = int.MaxValue; // w/min
+
     public double CoolingRate = double.MaxValue; // K / min
 
     public bool AreAllSet() {
@@ -90,7 +90,8 @@ public class EngineProperties {
             && MaxExhaustAirPiston != double.MaxValue
             && MaxRpm != int.MaxValue
             && TransmissionEfficency != double.MaxValue
-            && CoolingRate != double.MaxValue;
+            && CoolingRate != double.MaxValue
+            && PeakTorqueRPM != int.MaxValue;
     }
 }
 
@@ -113,5 +114,7 @@ public class EnginePart : EngineProperties {
         engine.TransmissionEfficency = Math.Min(engine.TransmissionEfficency, TransmissionEfficency);
 
         engine.CoolingRate = Math.Min(engine.CoolingRate, CoolingRate);
+
+        engine.PeakTorqueRPM = Math.Min(engine.PeakTorqueRPM, PeakTorqueRPM);
     }
 }

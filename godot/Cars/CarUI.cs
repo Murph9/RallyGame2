@@ -1,4 +1,6 @@
 using Godot;
+using murph9.RallyGame2.godot.Component;
+using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
 
 namespace murph9.RallyGame2.godot.Cars;
@@ -6,6 +8,16 @@ namespace murph9.RallyGame2.godot.Cars;
 public partial class CarUI : Control {
 
     public Car Car { get; set; }
+
+    [DebugGUIText(r:0)]
+    private string CarPosition => V3toStr(Car.RigidBody.Position);
+    [DebugGUIText(b:0)]
+    private string CarVelocity => V3toStr(Car.RigidBody.LinearVelocity);
+    [DebugGUIText(g:0)]
+    [DebugGUIGraph(g:0)]
+    private float CarDriftAngle => float.Round(Car.DriftAngle, 2);
+    [DebugGUIText(r:0,g:0)]
+    private string CarDrag => V3toStr(Car.DragForce);
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
@@ -15,6 +27,26 @@ public partial class CarUI : Control {
 
         GetTree().Root.SizeChanged += WindowSizeChanged;
         WindowSizeChanged();
+
+        var graph = new Graph(new Vector2(200, 200)) {
+            Name = "TorqueGraph"
+        };
+        AddChild(graph);
+        var dataset = new Graph.Dataset("Torque", 200, autoScale: true) {
+            Color = Colors.Green
+        };
+        for (int i = 0; i < 200; i++) {
+            dataset.Push((float)Car.Details.Engine.CalcTorqueFor(i*50));
+        }
+        graph.AddDataset(dataset);
+
+        dataset = new Graph.Dataset("kW", 200, autoScale: true) {
+            Color = Colors.Aqua
+        };
+        for (int i = 0; i < 200; i++) {
+            dataset.Push((float)Car.Details.Engine.CalcKwFor(i*50));
+        }
+        graph.AddDataset(dataset);
     }
 
     private void WindowSizeChanged() {
@@ -93,6 +125,9 @@ public partial class CarUI : Control {
         // force the speedo to the bottom right
         var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
         speedoRect.Position = GetViewportRect().End - speedoRect.Size;
+
+        var torqueGraph = GetNode<Graph>("TorqueGraph");
+        torqueGraph.Position = new Vector2(0, GetViewportRect().End.Y - torqueGraph.Size.Y);
     }
 
     private static string V3toStr(Vector3 v) {

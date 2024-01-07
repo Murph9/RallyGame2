@@ -131,7 +131,7 @@ public partial class DebugGUI : VBoxContainer {
 
         var name = prop?.Name ?? field.Name;
 
-        var dataset = new Graph.Dataset(name, graphAttribute.Min, graphAttribute.Max, graphAttribute.AutoScale) {
+        var dataset = new Graph.Dataset(name, 200, graphAttribute.Min, graphAttribute.Max, graphAttribute.AutoScale) {
             Color = graphAttribute.Color
         };
         var mapping = new GraphMapping() {
