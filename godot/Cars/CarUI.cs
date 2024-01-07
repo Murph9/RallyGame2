@@ -119,6 +119,7 @@ public partial class CarUI : Control {
 
         QueueRedraw();
 
+        // force the wheel outputs to the top left
         var wheels = GetNode<GridContainer>("WheelGridContainer");
         wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
 
@@ -126,6 +127,7 @@ public partial class CarUI : Control {
         var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
         speedoRect.Position = GetViewportRect().End - speedoRect.Size;
 
+        // force the wheel outputs to the bottom left
         var torqueGraph = GetNode<Graph>("TorqueGraph");
         torqueGraph.Position = new Vector2(0, GetViewportRect().End.Y - torqueGraph.Size.Y);
     }
