@@ -66,6 +66,20 @@ public partial class CarUI : Control {
         var speedStr = float.Round(speed, 0).ToString();
         var width = speedoRect.Size.X * 0.75f;
         DrawString(defaultFont, new Vector2(0, speedoRect.Size.Y - defaultFontSize - 10), speedStr, HorizontalAlignment.Right, width, fontSize: defaultFontSize * 3);
+
+        // render control bars
+        var controlBarX = middle.X + 10f;
+        const int CONTROL_BAR_WIDTH = 50;
+        const int CONTROL_BAR_HEIGHT = 10;
+        DrawRect(new Rect2(controlBarX, middle.Y, CONTROL_BAR_WIDTH, CONTROL_BAR_HEIGHT), Colors.Blue * 0.2f);
+        DrawRect(new Rect2(controlBarX, middle.Y, CONTROL_BAR_WIDTH * Car.AccelCur, CONTROL_BAR_HEIGHT), Colors.Blue * 0.7f);
+
+        DrawRect(new Rect2(controlBarX, middle.Y + CONTROL_BAR_HEIGHT, CONTROL_BAR_WIDTH, CONTROL_BAR_HEIGHT), Colors.Red * 0.2f);
+        DrawRect(new Rect2(controlBarX, middle.Y + CONTROL_BAR_HEIGHT, CONTROL_BAR_WIDTH * Car.BrakingCur, CONTROL_BAR_HEIGHT), Colors.Red * 0.7f);
+
+        DrawRect(new Rect2(controlBarX, middle.Y + CONTROL_BAR_HEIGHT*2, CONTROL_BAR_WIDTH, CONTROL_BAR_HEIGHT), Colors.White * 0.2f);
+        DrawRect(new Rect2(controlBarX + CONTROL_BAR_WIDTH/2 - CONTROL_BAR_HEIGHT/2 + (CONTROL_BAR_WIDTH - CONTROL_BAR_HEIGHT) * -Car.Steering,
+            middle.Y + CONTROL_BAR_HEIGHT * 2, CONTROL_BAR_HEIGHT, CONTROL_BAR_HEIGHT), Colors.White * 0.7f);
     }
 
     public override void _Process(double delta) {
@@ -75,10 +89,6 @@ public partial class CarUI : Control {
 
         var wheels = GetNode<GridContainer>("WheelGridContainer");
         wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
-
-        GetNode<ProgressBar>("VBoxContainer/ProgressBarSteering").Value = Car.Steering;
-        GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;
-        GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarBrake").Value = Car.BrakingCur;
 
         // force the speedo to the bottom right
         var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
