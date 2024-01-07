@@ -46,12 +46,10 @@ public partial class Graph : HBoxContainer {
     }
 
     private Vector2 GraphSize { get; }
-    public int Group { get; }
     private readonly List<Dataset> _datasets;
 
-    public Graph(Vector2 size, int group = 0, IEnumerable<Dataset> datasets = null) {
+    public Graph(Vector2 size, IEnumerable<Dataset> datasets = null) {
         GraphSize = size;
-        Group = group;
         _datasets = (datasets ?? Array.Empty<Dataset>()).ToList();
     }
 
@@ -82,10 +80,7 @@ public partial class Graph : HBoxContainer {
         foreach (var dataset in _datasets) {
             var l = new Label() {
                 Text = dataset.GraphName,
-                Name = "Label",
-                LabelSettings = new LabelSettings() {
-                    FontColor = dataset.Color
-                }
+                Name = "Label"
             };
             l.AddThemeColorOverride("font_color", dataset.Color);
             box.AddChild(l);

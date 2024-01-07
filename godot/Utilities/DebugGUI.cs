@@ -37,14 +37,36 @@ public class DebugGUIGraphAttribute : Attribute {
     }
 }
 
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+public class DebugGUITextAttribute : Attribute {
+    public Color Color { get; private set; }
+
+    public DebugGUITextAttribute(
+        // Color
+        float r = 1,
+        float g = 1,
+        float b = 1
+    )
+    {
+        Color = new Color(r, g, b, 0.9f);
+    }
+}
+
 public partial class DebugGUI : VBoxContainer {
 
     // from https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs
     static DebugGUI Instance;
 
-    record Mapping {
+    record GraphMapping {
         public Graph.Dataset Dataset;
         public Graph Graph;
+        public Node Node;
+        public FieldInfo FieldInfo;
+        public PropertyInfo PropertyInfo;
+        public int Group;
+    }
+    record TextMapping {
+        public Label Label;
         public Node Node;
         public FieldInfo FieldInfo;
         public PropertyInfo PropertyInfo;
@@ -52,8 +74,9 @@ public partial class DebugGUI : VBoxContainer {
 
     private static readonly double RESCAN_TIMER = 5; // big perf
     private double _rescanTimer = RESCAN_TIMER;
-    private readonly List<Graph> graphs = new();
-    private readonly Dictionary<Node, IList<Mapping>> Datasets = new ();
+
+    private readonly Dictionary<Node, IList<GraphMapping>> Datasets = new ();
+    private readonly Dictionary<Node, IList<TextMapping>> LabelSets = new ();
 
     public static void ForceReinitializeAttributes() {
         Instance.LoadAllAttributes(Instance.GetTree().Root);
@@ -71,15 +94,14 @@ public partial class DebugGUI : VBoxContainer {
     }
 
     public override void _Process(double delta) {
-        CallDeferred(nameof(GetGraphValues));
-        CallDeferred(nameof(CleanupOldGraphs));
+        CallDeferred(nameof(GetValues));
+        CallDeferred(nameof(CleanupOld));
 
         _rescanTimer -= delta;
         if (_rescanTimer < 0) {
             _rescanTimer = RESCAN_TIMER;
             CallDeferred(nameof(ForceReinitializeAttributes));
         }
-        //Position = new Vector2(GetViewportRect().Size.X - Size.X, 0);
     }
 
     private void LoadAllAttributes(Node node) {
@@ -90,68 +112,97 @@ public partial class DebugGUI : VBoxContainer {
 
         var objectProperties = nodeType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var objProp in objectProperties) {
-            if (Attribute.GetCustomAttribute(objProp, typeof(DebugGUIGraphAttribute)) is not DebugGUIGraphAttribute graphAttribute)
-                continue;
-
-            if (!DebugHelper.IsNumeric(objProp.GetValue(node))) {
-                GD.PrintErr("Field " + objProp.Name + " probably isn't a number, so not graphing it");
-                continue;
+            if (Attribute.GetCustomAttribute(objProp, typeof(DebugGUIGraphAttribute)) is DebugGUIGraphAttribute graphAttribute) {
+                if (DebugHelper.IsNumeric(objProp.GetValue(node))) {
+                    AddGraphMapping(node, graphAttribute, objProp, null);
+                } else {
+                    GD.PrintErr("Field " + objProp.Name + " probably isn't a number, so not graphing it");
+                }
             }
 
-            AddMapping(node, graphAttribute, objProp, null);
+            if (Attribute.GetCustomAttribute(objProp, typeof(DebugGUITextAttribute)) is DebugGUITextAttribute textAttribute) {
+                AddTextMapping(node, textAttribute, objProp, null);
+            }
         }
 
         var objectFields = nodeType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var objField in objectFields) {
-            if (Attribute.GetCustomAttribute(objField, typeof(DebugGUIGraphAttribute)) is not DebugGUIGraphAttribute graphAttribute)
-                continue;
-
-            if (!DebugHelper.IsNumeric(objField.GetValue(node))) {
-                GD.PrintErr("Field " + objField.Name + " probably isn't a number, so not graphing it");
-                continue;
+            if (Attribute.GetCustomAttribute(objField, typeof(DebugGUIGraphAttribute)) is DebugGUIGraphAttribute graphAttribute) {
+                if (DebugHelper.IsNumeric(objField.GetValue(node))) {
+                    AddGraphMapping(node, graphAttribute, null, objField);
+                } else {
+                    GD.PrintErr("Field " + objField.Name + " probably isn't a number, so not graphing it");
+                }
             }
 
-            AddMapping(node, graphAttribute, null, objField);
+            if (Attribute.GetCustomAttribute(objField, typeof(DebugGUITextAttribute)) is DebugGUITextAttribute textAttribute) {
+                AddTextMapping(node, textAttribute, null, objField);
+            }
         }
     }
 
-    private void AddMapping(Node node, DebugGUIGraphAttribute graphAttribute, PropertyInfo prop, FieldInfo field) {
+    private void AddTextMapping(Node node, DebugGUITextAttribute textAttribute, PropertyInfo prop, FieldInfo field) {
+        var name = prop?.Name ?? field.Name;
+
+        // store nodes to check if they are removed
+        if (!LabelSets.ContainsKey(node))
+            LabelSets.Add(node, new List<TextMapping>());
+        // check we haven't already added this one
+        if (LabelSets[node].Any(x => x.Node == node && x.FieldInfo == field && x.PropertyInfo == prop))
+            return;
+
+        var label = new Label();
+        label.AddThemeColorOverride("font_color", textAttribute.Color);
+        var mapping = new TextMapping() {
+            Label = label,
+            FieldInfo = field,
+            PropertyInfo = prop,
+            Node = node
+        };
+        // store fields against nodes
+        LabelSets[node].Add(mapping);
+
+        // add label to scene
+        AddChild(label);
+    }
+
+    private void AddGraphMapping(Node node, DebugGUIGraphAttribute graphAttribute, PropertyInfo prop, FieldInfo field) {
+        // store nodes to check if they are removed
+        if (!Datasets.ContainsKey(node))
+            Datasets.Add(node, new List<GraphMapping>());
+        // check we haven't already added this one
+        if (Datasets[node].Any(x => x.Node == node && x.FieldInfo == field && x.PropertyInfo == prop))
+            return;
+
         var name = prop?.Name ?? field.Name;
 
         var dataset = new Graph.Dataset(name, graphAttribute.Min, graphAttribute.Max, graphAttribute.AutoScale) {
             Color = graphAttribute.Color
         };
-        var mapping = new Mapping() {
+        var mapping = new GraphMapping() {
+            Group = graphAttribute.Group,
             Dataset = dataset,
             FieldInfo = field,
             PropertyInfo = prop,
             Node = node
         };
-
-        // store nodes to check if they are removed
-        if (!Datasets.ContainsKey(node))
-            Datasets.Add(node, new List<Mapping>());
-        // check we haven't already added this one
-        if (Datasets[node].Any(x => x.Node == node && x.FieldInfo == field && x.PropertyInfo == prop))
-            return;
         // store fields against nodes
         Datasets[node].Add(mapping);
 
         // create the graph if required
-        var graph = graphs.FirstOrDefault(x => x.Group == graphAttribute.Group);
+        var graph = Datasets[node].FirstOrDefault(x => x.Group == graphAttribute.Group)?.Graph;
         if (graph == null) {
-            graph = new Graph(new Vector2(200, 80), graphAttribute.Group);
-            graphs.Add(graph);
+            graph = new Graph(new Vector2(200, 80));
             AddChild(graph);
         }
 
+        // then add to scene
         graph.AddDataset(dataset);
         mapping.Graph = graph;
     }
 
-    private void GetGraphValues() {
-        foreach (var nodeMaps in Datasets)
-        {
+    private void GetValues() {
+        foreach (var nodeMaps in Datasets) {
             if (!IsInstanceValid(nodeMaps.Key))
                 continue;
 
@@ -161,34 +212,57 @@ public partial class DebugGUI : VBoxContainer {
                     if (val != null)
                         attr.Dataset.Push(val.Value);
                 }
-                if (attr.PropertyInfo is PropertyInfo propertyInfo)
-                {
+                if (attr.PropertyInfo is PropertyInfo propertyInfo) {
                     float? val = Convert.ToSingle(propertyInfo.GetValue(nodeMaps.Key, null));
                     if (val != null)
                         attr.Dataset.Push(val.Value);
                 }
             }
         }
+
+        foreach (var label in LabelSets) {
+            if (!IsInstanceValid(label.Key))
+                continue;
+
+            foreach (var attr in label.Value) {
+                if (attr.FieldInfo is FieldInfo fieldInfo) {
+                    attr.Label.Text = fieldInfo.Name + ": " + fieldInfo.GetValue(label.Key)?.ToString();
+                }
+                if (attr.PropertyInfo is PropertyInfo propertyInfo) {
+                    attr.Label.Text = propertyInfo.Name + ": " + propertyInfo.GetValue(label.Key)?.ToString();
+                }
+            }
+        }
     }
 
-    private void CleanupOldGraphs() {
-        // Clear out any graphs that no longer have attached nodes to the scene
-        foreach (var node in Datasets.ToList())
-        {
+    private void CleanupOld() {
+        // Clear out any nodes that no longer have attached nodes to the scene
+
+        foreach (var node in Datasets.ToList()) {
             if (IsInstanceValid(node.Key))
                 continue;
 
-            foreach (var key in node.Value)
-            {
+            foreach (var key in node.Value) {
                 var graph = key.Graph;
                 graph.RemoveDataset(key.Dataset);
                 if (graph.DatasetCount() == 0) {
                     RemoveChild(graph);
-                    graphs.Remove(graph);
                 }
             }
 
             Datasets.Remove(node.Key);
+        }
+
+        foreach (var label in LabelSets.ToList()) {
+            if (IsInstanceValid(label.Key))
+                continue;
+
+            foreach (var key in label.Value) {
+                var realLabel = key.Label;
+                RemoveChild(realLabel);
+            }
+
+            LabelSets.Remove(label.Key);
         }
     }
 }
