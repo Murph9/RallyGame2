@@ -44,7 +44,7 @@ public partial class Racing : Node3D {
 	{
 		var pos = _car.RigidBody.GlobalPosition;
 
-		if (pos.DistanceTo(_checkpoints[_currentCheckpoint]) < 5) {
+		if (pos.DistanceTo(_checkpoints[_currentCheckpoint]) < 15) {
 			if (_currentCheckpoint == 0) {
 				_currentLap++;
 				if (_currentLap > 1)

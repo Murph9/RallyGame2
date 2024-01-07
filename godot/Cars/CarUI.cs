@@ -43,7 +43,7 @@ public partial class CarUI : Control {
         var wheels = GetNode<GridContainer>("WheelGridContainer");
         wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
 
-        GetNode<ProgressBar>("VBoxContainer/ProgressBarSteering").Value = Car.SteeringLeft - Car.SteeringRight;
+        GetNode<ProgressBar>("VBoxContainer/ProgressBarSteering").Value = Car.Steering;
         GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;
         GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarBrake").Value = Car.BrakingCur;
 

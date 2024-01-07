@@ -18,8 +18,10 @@ public partial class Car : Node3D
     public bool HandbrakeCur { get; private set; }
     public float AccelCur { get; private set; }
     public float BrakingCur { get; private set; }
-    public float SteeringLeft { get; private set; }
-    public float SteeringRight { get; private set; }
+
+    private float _steeringLeftRaw;
+    private float _steeringRightRaw;
+    public float Steering { get; private set; }
 
     public float DriftAngle { get; private set; }
 
@@ -31,9 +33,7 @@ public partial class Car : Node3D
     public Vector3 DragForce;
 
 
-    [DebugGUIGraph]
     public double EngineTorque => Engine.CurrentTorque;
-    [DebugGUIGraph]
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
 
     public Car(CarDetails details, Transform3D worldSpawn) {
@@ -90,7 +90,7 @@ public partial class Car : Node3D
         foreach (var w in Wheels) {
             // rotate the front wheels (here because the wheels don't have their angle)
             if (w.Details.id < 2) {
-                w.Rotation = new Vector3(0, SteeringLeft - SteeringRight, 0);
+                w.Rotation = new Vector3(0, Steering, 0);
             }
         }
 
@@ -125,9 +125,17 @@ public partial class Car : Node3D
 
     private void ReadInputs()
     {
+        _steeringLeftRaw = Input.GetActionStrength("car_left") * Details.wMaxSteerAngle;
+        _steeringRightRaw = Input.GetActionStrength("car_right") * Details.wMaxSteerAngle;
+
+        var steeringWant = 0f;
+        if (_steeringLeftRaw != 0) //left
+            steeringWant += GetBestTurnAngle(_steeringLeftRaw, 1);
+        if (_steeringRightRaw != 0) //right
+            steeringWant -= GetBestTurnAngle(_steeringRightRaw, -1);
+        Steering = Mathf.Clamp(steeringWant, -Details.wMaxSteerAngle, Details.wMaxSteerAngle);
+
         HandbrakeCur = Input.IsActionPressed("car_handbrake");
-        SteeringLeft = Input.GetActionStrength("car_left") * Details.wMaxSteerAngle;
-        SteeringRight = Input.GetActionStrength("car_right") * Details.wMaxSteerAngle;
 
         BrakingCur = Input.GetActionStrength("car_brake");
         AccelCur = Input.GetActionStrength("car_accel");
@@ -137,6 +145,23 @@ public partial class Car : Node3D
             RigidBody.LinearVelocity = new Vector3();
             RigidBody.AngularVelocity = new Vector3();
         }
+    }
+
+    private float GetBestTurnAngle(float steeringRaw, int sign) {
+        var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
+        if (localVel.Z < 0 || ((-sign * DriftAngle) < 0 && Mathf.Abs(DriftAngle) > Mathf.DegToRad(Details.minDriftAngle))) {
+            //when going backwards, slow or needing to turning against drift, you get no speed factor
+            //eg: car is pointing more left than velocity, and is also turning left
+            //and drift angle needs to be large enough to matter
+            return steeringRaw;
+        }
+
+        if (localVel.LengthSquared() < 40) // prevent slow speed weirdness
+            return steeringRaw;
+
+        // this is magic, but: minimum should be best slip angle, but it doesn't catch up to the turning angle required
+        // so we just add some of the angular vel value to it
+        return TRACTION_MAXSLIP + RigidBody.AngularVelocity.Length()*0.125f;
     }
 
     private void CalcSuspension(Wheel w)
@@ -237,7 +262,7 @@ public partial class Car : Node3D
             w.RadSec = 0;
 
         w.SlipAngle = 0;
-        var steering = SteeringLeft - SteeringRight;
+        var steering = Steering;
         if (localVel.Z < 0) { // to flip the steering on moving in reverse
             steering *= -1;
         }
