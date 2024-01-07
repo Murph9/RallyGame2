@@ -5,59 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace murph9.RallyGame2.godot.Utilities;
-
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public class DebugGUIGraphAttribute : Attribute {
-    public float Min { get; private set; }
-    public float Max { get; private set; }
-    public Color Color { get; private set; }
-    public int Group { get; private set; }
-    public bool AutoScale { get; private set; }
-
-    public DebugGUIGraphAttribute(
-        // Line color
-        float r = 1,
-        float g = 1,
-        float b = 1,
-        // Values at top/bottom of graph
-        float min = 0,
-        float max = 1,
-        // Offset position on screen
-        int group = 0,
-        // Auto-adjust min/max to fit the values
-        bool autoScale = true
-    )
-    {
-        Color = new Color(r, g, b, 0.9f);
-        Min = min;
-        Max = max;
-        Group = group;
-        AutoScale = autoScale;
-    }
-}
-
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public class DebugGUITextAttribute : Attribute {
-    public Color Color { get; private set; }
-
-    public DebugGUITextAttribute(
-        // Color
-        float r = 1,
-        float g = 1,
-        float b = 1
-    )
-    {
-        Color = new Color(r, g, b, 0.9f);
-    }
-}
+namespace murph9.RallyGame2.godot.Utilities.DebugGUI;
 
 public partial class DebugGUI : VBoxContainer {
 
     // from https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs
     static DebugGUI Instance;
 
-    record GraphMapping {
+    private record GraphMapping {
         public Graph.Dataset Dataset;
         public Graph Graph;
         public Node Node;
@@ -65,7 +20,7 @@ public partial class DebugGUI : VBoxContainer {
         public PropertyInfo PropertyInfo;
         public int Group;
     }
-    record TextMapping {
+    private record TextMapping {
         public Label Label;
         public Node Node;
         public FieldInfo FieldInfo;
