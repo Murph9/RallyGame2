@@ -12,33 +12,66 @@ public partial class CarUI : Control {
             var node = GetNode<WheelUI>("WheelGridContainer/WheelUi" + i);
             node.Wheel = Car.Wheels[i];
         }
+
+        GetTree().Root.SizeChanged += WindowSizeChanged;
+        WindowSizeChanged();
+    }
+
+    private void WindowSizeChanged() {
+        const float REFERENCE_SIZE = (360f - 20f)/1080f;
+        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
+        speedoRect.CustomMinimumSize = new Vector2(1,1) * REFERENCE_SIZE * GetViewportRect().End.Y;
     }
 
     public override void _Draw() {
-        var screenSize = GetViewportRect().Size;
-
-        var arcSize = 100;
-        DrawArc(screenSize - new Vector2(arcSize + 10, arcSize + 10), arcSize, (float)Math.PI, (float)((1 + Car.Engine.CurRPM/10000f)*Math.PI), 32, Colors.White, 10, true);
-
-        var speed = Car.RigidBody.LinearVelocity.Length();
-        speed *= 3.6f;
+        const int ARC_WIDTH = 2;
         var defaultFont = ThemeDB.FallbackFont;
         int defaultFontSize = ThemeDB.FallbackFontSize;
+
+        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
+        DrawSetTransform(speedoRect.GlobalPosition);
+        var middle = speedoRect.Size / 2;
+
+        // rpm arc
+        var arcSize = speedoRect.Size.X / 2 - ARC_WIDTH / 2;
+        var rotation = (1 + Car.Engine.CurRPM/10000f)*Math.PI;
+        DrawArc(middle, arcSize, (float)Math.PI, (float)rotation, 32, Colors.White, ARC_WIDTH, true);
+        // rpm max rpm arc
+        DrawArc(middle, arcSize, (float)((1 + Car.Details.Engine.MaxRpm/10000f)*Math.PI), (float)Math.PI*2, 32, Colors.Red, ARC_WIDTH, true);
+
+        // rpm line(s)
+        var rotationQua = new Vector2(1, 0).Rotated((float)rotation);
+        DrawLine(middle, rotationQua * (arcSize * 0.9f) + middle, Colors.Red, 5);
+        DrawLine(middle + rotationQua * (arcSize * 0.99f), middle + rotationQua * (arcSize * 1.01f), Colors.Red, 5);
+
+        // rpm numbers
+        var numOffset = new Vector2(-defaultFontSize / 3, defaultFontSize / 2f);
+        for (int i = 0; i <= 10; i++) {
+            rotation = (1 + i/10f) * Math.PI;
+            rotationQua = new Vector2(1, 0).Rotated((float)rotation);
+
+            DrawString(defaultFont, middle + rotationQua * (arcSize - defaultFontSize*2) + numOffset, i.ToString(), HorizontalAlignment.Left);
+            DrawLine(middle + rotationQua * (arcSize - defaultFontSize), middle + rotationQua * arcSize, Colors.White, 2);
+        }
+
+        // rpm debug number
         var rpmStr = Car.Engine.CurRPM.ToString();
-        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * rpmStr.Length, 30), rpmStr, HorizontalAlignment.Right, -1, defaultFontSize);
+        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize), rpmStr, width: -1, fontSize: defaultFontSize);
 
         // show gear
-        DrawString(defaultFont, screenSize - new Vector2(100, 10), Car.Engine.CurGear.ToString(), HorizontalAlignment.Right, -1, defaultFontSize * 2);
+        DrawString(defaultFont, new Vector2(30, speedoRect.Size.Y - 20), Car.Engine.CurGear.ToString(), width: -1, fontSize: defaultFontSize * 4);
 
         // show speed
+        var speed = Car.RigidBody.LinearVelocity.Length() * 3.6f; // m/s -> km/h
         var speedStr = float.Round(speed, 0).ToString();
-        DrawString(defaultFont, screenSize - new Vector2(defaultFontSize * speedStr.Length, 10), speedStr, HorizontalAlignment.Right, -1, defaultFontSize * 2);
+        var width = speedoRect.Size.X * 0.75f;
+        DrawString(defaultFont, new Vector2(0, speedoRect.Size.Y - defaultFontSize - 10), speedStr, HorizontalAlignment.Right, width, fontSize: defaultFontSize * 3);
     }
 
     public override void _Process(double delta) {
         if (Car == null) return;
 
-        QueueRedraw(); // TODO please don't call this every frame if its not needed
+        QueueRedraw();
 
         var wheels = GetNode<GridContainer>("WheelGridContainer");
         wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
@@ -47,13 +80,9 @@ public partial class CarUI : Control {
         GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarAccel").Value = Car.AccelCur;
         GetNode<ProgressBar>("VBoxContainer/HBoxContainer/ProgressBarBrake").Value = Car.BrakingCur;
 
-        GetNode<RichTextLabel>("RichTextLabel").Text =
-$@"{Car}
-Position: {V3toStr(Car.RigidBody.Position)}
-Velocity: {V3toStr(Car.RigidBody.LinearVelocity)}
-DriftAngle: {float.Round(Car.DriftAngle, 2)}
-Drag: { V3toStr(Car.DragForce)}
-";
+        // force the speedo to the bottom right
+        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
+        speedoRect.Position = GetViewportRect().End - speedoRect.Size;
     }
 
     private static string V3toStr(Vector3 v) {

@@ -35,13 +35,6 @@ layout_mode = 2
 max_value = 1.0
 fill_mode = 3
 
-[node name="RichTextLabel" type="RichTextLabel" parent="."]
-layout_mode = 0
-offset_top = 229.0
-offset_right = 999.0
-offset_bottom = 269.0
-fit_content = true
-
 [node name="WheelGridContainer" type="GridContainer" parent="."]
 layout_mode = 0
 offset_right = 304.0
@@ -59,3 +52,16 @@ layout_mode = 2
 
 [node name="WheelUi3" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
+
+[node name="SpeedoReferenceRect" type="ReferenceRect" parent="."]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -150.0
+grow_horizontal = 0
+grow_vertical = 0

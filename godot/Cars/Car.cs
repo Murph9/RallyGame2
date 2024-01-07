@@ -26,7 +26,7 @@ public partial class Car : Node3D
     public float DriftAngle { get; private set; }
 
     public const float TRACTION_MAXSLIP = 0.2f;
-    public const float TRACTION_MAX = 2.5f;
+    public const float TRACTION_MAX = 2f;
     public const float TRACTION_MAXLENGTH = 0.2f;
     public const float TRACTION_DECAY = 3f;
 
