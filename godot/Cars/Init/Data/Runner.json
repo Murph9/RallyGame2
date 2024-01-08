@@ -9,7 +9,7 @@
   "aeroDrag": 0.33,
   "areoLinearDrag": 0.012,
   "autoChangeTime": 0.2,
-  "brakeMaxTorque": 8000,
+  "brakeMaxTorque": 3000,
   "camLookAtHeight": 1.3,
   "camOffsetLength": -6,
   "camOffsetHeight": 2.1,
