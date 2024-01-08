@@ -75,8 +75,8 @@ public partial class Car : Node3D
             RigidBody.AddChild(w);
         }
 
-        // add audio // TODO set engine sound from config
-        var stream = GD.Load<AudioStreamWav>("res://assets/sounds/engine.wav");
+        // add audio
+        var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
         var engine = new AudioStreamPlayer() {
             Stream = stream,
             Autoplay = true,

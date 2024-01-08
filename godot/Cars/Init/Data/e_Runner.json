@@ -1,5 +1,6 @@
 {
   "name": "e_Runner",
+  "sound": "sounds/engine.wav",
   "Parts": [
     {
       "name": "CylinderHead",
