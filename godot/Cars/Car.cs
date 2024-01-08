@@ -304,12 +304,12 @@ public partial class Car : Node3D
         var totalLongForce = Engine.WheelEngineTorque[w.Details.id] - wheel_force.Z
                 - (brakeCurrent2 * Details.brakeMaxTorque * Mathf.Sign(w.RadSec));
         // drive wheels have the engine to pull along
-        float wheelInertia = Details.Wheel_inertia(w.Details.id);
+        float wheelInertia = Details.WheelInertiaNoEngine(w.Details.id);
         if (Details.driveFront && (w.Details.id == 0 || w.Details.id == 1)) {
-            wheelInertia = Details.E_inertia();
+            wheelInertia = Details.WheelInertiaPlusEngine();
         }
         if (Details.driveRear && (w.Details.id == 2 || w.Details.id == 3)) {
-            wheelInertia = Details.E_inertia();
+            wheelInertia = Details.WheelInertiaPlusEngine();
         }
         var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.radius;
 

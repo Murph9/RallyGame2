@@ -78,6 +78,7 @@ public record CarDetails
     public float SpeedAtRpm(int gear, int rpm) {
         return rpm / (transGearRatios[gear] * transFinaldrive * (60 / (Mathf.Pi*2))) * DriveWheelRadius();
     }
+
     public int RpmAtSpeed(int gear, float speed) {
         return (int)(speed * (transGearRatios[gear] * transFinaldrive * (60 / (Mathf.Pi*2))) / DriveWheelRadius());
     }
@@ -91,20 +92,22 @@ public record CarDetails
         // but what we would really need is angle of attack -> much harder
 		return new Vector3(dragx, dragy, dragz);
 	}
+
 	//linear drag component (https://en.wikipedia.org/wiki/Rolling_resistance)
 	public float RollingResistance(int w_id, float susForce) {
 		return susForce*areoLinearDrag/wheelData[w_id].radius;
 	}
 
-	public float Wheel_inertia(int w_id) {
-		//NOTE: PERF: this is a disc, pls make a thicc pipe so its closer to real life
-		return wheelData[w_id].mass*wheelData[w_id].radius*wheelData[w_id].radius/2;
+	public float WheelInertiaNoEngine(int w_id) {
+		//this is a thin cylindrical shell
+		return wheelData[w_id].mass * wheelData[w_id].radius * wheelData[w_id].radius;
 	}
-	public float E_inertia() { //car internal engine + wheel inertia
+
+	public float WheelInertiaPlusEngine() { //car internal engine + wheel inertia
 
 		float wheels = 0;
 		for (int i = 0; i < wheelData.Length; i++)
-			wheels += Wheel_inertia(i);
+			wheels += WheelInertiaNoEngine(i);
 
 		if (driveFront && driveRear) {
 			return Engine.EngineMass + wheels*4;
