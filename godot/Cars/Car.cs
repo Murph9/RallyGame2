@@ -224,9 +224,6 @@ public partial class Car : Node3D
     }
 
     private void CalcTraction(Wheel w, double delta) {
-        float lastSlipAngle = w.SlipAngle;
-        float lastSlipRatio = w.SlipRatio;
-
         var angularVelocity = RigidBody.AngularVelocity;
 
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
@@ -270,9 +267,6 @@ public partial class Car : Node3D
             w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocityZ));
             DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
         }
-
-        // some hacks to help the simulation
-        SlipSimulationHacks(w, lastSlipRatio, lastSlipAngle, TRACTION_MAXSLIP, TRACTION_MAXSLIP);
 
         // merging the forces into a traction circle
         // normalise based on their independant max values
@@ -329,37 +323,6 @@ public partial class Car : Node3D
             RigidBody.ApplyForce(RigidBody.ToGlobal(wheel_force), RigidBody.ToGlobal(w.ContactPoint) - RigidBody.GlobalPosition);
         if (w.ContactRigidBody != null)
             RigidBody.ApplyForce(w.ContactRigidBody.ToGlobal(wheel_force), w.ContactRigidBody.ToGlobal(w.ContactPoint) - w.ContactRigidBody.GlobalPosition);
-    }
-
-    private void SlipSimulationHacks(Wheel w, float prevSlipRatio, float prevSlipAngle, float maxLatSlipAt, float maxLongSlipAt) {
-        // Hack1: prevent 'losing' traction through a large integration step, by detecting jumps past the curve peak
-		// this should only affect this class as its only affecting the force by affecting where on curve the current state is
-		if (Mathf.Abs(prevSlipAngle) < maxLatSlipAt
-				&& Mathf.Abs(w.SlipAngle) > maxLatSlipAt) {
-			w.SlipAngle = maxLatSlipAt * Mathf.Sign(w.SlipAngle);
-		}
-		if (Mathf.Abs(prevSlipAngle) > maxLatSlipAt
-				&& Mathf.Abs(w.SlipAngle) < maxLatSlipAt) {
-			w.SlipAngle = maxLatSlipAt * Mathf.Sign(prevSlipAngle);
-		}
-		if (BrakingCur == 0) { // needs to be disabled during braking as it prevents you from stopping
-			if (Mathf.Abs(prevSlipRatio) < maxLongSlipAt
-					&& Mathf.Abs(w.SlipRatio) > maxLongSlipAt) {
-				w.SlipRatio = maxLongSlipAt * Mathf.Sign(w.SlipRatio);
-			}
-			if (Mathf.Abs(prevSlipRatio) > maxLongSlipAt
-					&& Mathf.Abs(w.SlipRatio) < maxLongSlipAt) {
-				w.SlipRatio = maxLongSlipAt * Mathf.Sign(prevSlipRatio);
-			}
-		}
-		// Hack2: prevent flipping traction over 0 too fast, by always applying 0
-		// inbetween
-		if (Mathf.Abs(prevSlipAngle) * maxLatSlipAt < 0) { // will be negative if they have both signs
-			w.SlipAngle = 0;
-		}
-		if (Mathf.Abs(prevSlipRatio) * maxLongSlipAt < 0) { // will be negative if they have both signs
-			w.SlipRatio = 0;
-		}
     }
 
     private void ApplyWheelDrag(Wheel w) {
