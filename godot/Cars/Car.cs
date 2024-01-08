@@ -108,15 +108,8 @@ public partial class Car : Node3D
         foreach (var w in Wheels) {
             CalcSuspension(w);
 
-            // TODO all wheel forces should work off the ground
-            // like handbrake, brake and engine
-
-            if (w.InContact) {
-                CalcTraction(w, delta);
-                ApplyWheelDrag(w);
-            } else {
-                w.GripDir = new Vector3();
-            }
+            CalcTraction(w, delta);
+            ApplyWheelDrag(w);
 
             w._PhysicsProcess(delta);
         }
