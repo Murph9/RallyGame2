@@ -9,15 +9,12 @@ public partial class CarUI : Control {
 
     public Car Car { get; set; }
 
-    [DebugGUIText(r:0)]
-    private string CarPosition => V3toStr(Car.RigidBody.Position);
-    [DebugGUIText(b:0)]
-    private string CarVelocity => V3toStr(Car.RigidBody.LinearVelocity);
     [DebugGUIText(g:0)]
     [DebugGUIGraph(g:0)]
-    private float CarDriftAngle => float.Round(Car.DriftAngle, 2);
-    [DebugGUIText(r:0,g:0)]
-    private string CarDrag => V3toStr(Car.DragForce);
+    private float RadSec0 => Car.Wheels[0].RadSec;
+    [DebugGUIText(g:0.5f)]
+    [DebugGUIGraph(g:0.5f)]
+    private float RadSec1 => Car.Wheels[1].RadSec;
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {

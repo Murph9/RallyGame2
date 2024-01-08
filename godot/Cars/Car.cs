@@ -203,10 +203,14 @@ public partial class Car : Node3D
             var otherHitPositionGlobal = Wheels[w_id_other].Ray.GetCollisionPoint();
             var otherLength = w.Ray.TargetPosition.Length() - Wheels[w_id_other].Ray.GlobalPosition.DistanceTo(otherHitPositionGlobal);
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
+        } else if (w.InContact) {
+            // in contact but other not in contact, then its basically max sway
+            var otherLength = w.Ray.TargetPosition.Length();
+            w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
 
         w.SpringForce = (susDetails.preloadForce + w.SusTravelDistance) * susDetails.stiffness;
-        var totalForce = w.SwayForce + w.SpringForce - w.Damping;
+        var totalForce = w.SpringForce - w.Damping - w.SwayForce;
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = RigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
@@ -218,9 +222,7 @@ public partial class Car : Node3D
             w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
         }
 
-
         // TODO suspension keeps sending the car in the -x,+z direction
-        // TODO suspension seems to be applying the force on the wrong side of the car or badly during high angles
     }
 
     private void CalcTraction(Wheel w, double delta) {
