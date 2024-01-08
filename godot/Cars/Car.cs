@@ -327,7 +327,8 @@ public partial class Car : Node3D
         w.GripDir = wheel_force;
         if (wheel_force.LengthSquared() > 0)
             RigidBody.ApplyForce(RigidBody.ToGlobal(wheel_force), RigidBody.ToGlobal(w.ContactPoint) - RigidBody.GlobalPosition);
-        // TODO apply to other rigid body if it exists
+        if (w.ContactRigidBody != null)
+            RigidBody.ApplyForce(w.ContactRigidBody.ToGlobal(wheel_force), w.ContactRigidBody.ToGlobal(w.ContactPoint) - w.ContactRigidBody.GlobalPosition);
     }
 
     private void SlipSimulationHacks(Wheel w, float prevSlipRatio, float prevSlipAngle, float maxLatSlipAt, float maxLongSlipAt) {
