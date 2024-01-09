@@ -71,7 +71,7 @@ public class CarEngine {
         if (Mathf.Abs(CurRPM) > d.Engine.MaxRpm)
 			engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
 		else //normal path
-			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.transEfficiency - engineDrag;
+			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.Engine.TransmissionEfficency - engineDrag;
 
 		return (float)engineOutTorque;
     }

@@ -37,7 +37,6 @@ public record CarDetails
 	public float autoChangeTime;
 
 	//NOTE: please check torque curves are at the crank before using this value as anything other than 1.0f
-	public float transEfficiency; //apparently 0.9 is common (power is lost to rotating the transmission gears)
 	public float transFinaldrive; //helps set the total drive ratio
 	public float[] transGearRatios; //reverse,gear1,gear2,g3,g4,g5,g6,...
 

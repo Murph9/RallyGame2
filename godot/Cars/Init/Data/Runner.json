@@ -43,7 +43,6 @@
     "relax": 0.3,
     "stiffness": 25
   },
-  "transEfficiency": 0.85,
   "transFinaldrive": 3.5,
   "transGearRatios": [
     -2.9,
