@@ -7,10 +7,10 @@ namespace murph9.RallyGame2.godot.Cars.Init.Part;
 
 public class EngineDetails : EngineProperties {
 
-    // other props that aren't generated
+    // other props that aren't generated from parts
     public string Name { get; set; }
-    public int IdleRPM = 1000;
-    public int EngineMass = 20; // although this might be a sum all props in the future
+    public int IdleRPM { get; set; }
+    public int EngineInertia { get; set; }
     public string Sound { get; set; }
 
     public List<EnginePart> Parts { get; set; } = new List<EnginePart>();

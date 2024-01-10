@@ -109,9 +109,9 @@ public record CarDetails
 			wheels += WheelInertiaNoEngine(i);
 
 		if (driveFront && driveRear) {
-			return Engine.EngineMass + wheels*4;
+			return Engine.EngineInertia + wheels*4;
 		}
-		return Engine.EngineMass + wheels*2;
+		return Engine.EngineInertia + wheels*2;
 	}
 
 	//get the max power and rpm
