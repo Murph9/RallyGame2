@@ -21,7 +21,7 @@
       ]
     },
     {
-      "name": "Intake & AirFilter",
+      "name": "Intake & Air Filter",
       "levels" : [
         {"MaxIntakeAirPiston": 3000, "CombustionEffiency": 0.95},
         {"MaxIntakeAirPiston": 3500, "CombustionEffiency": 1.0},
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "name": "TransmissionDrivetrain",
+      "name": "Transmission & Drivetrain",
       "levels" : [
         {"TransmissionEfficency": 0.9},
         {"TransmissionEfficency": 0.95},

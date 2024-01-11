@@ -15,7 +15,7 @@ public class EngineDetails : EngineProperties {
 
     public List<EnginePart> Parts { get; set; } = new List<EnginePart>();
 
-    public static EngineDetails Load(string name) {
+    public static EngineDetails LoadFromFile(string name) {
         var engineDetails = FileLoader.ReadJsonFile<EngineDetails>("Cars", "Init", "Data", name + ".json");
 
         foreach (var part in engineDetails.Parts) {

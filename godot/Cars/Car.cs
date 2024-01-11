@@ -36,9 +36,9 @@ public partial class Car : Node3D
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
 
-    public Car(CarDetails details, Transform3D worldSpawn) {
+    public Car(CarDetails details, Transform3D? worldSpawn = null) {
         Details = details;
-        _worldSpawn = worldSpawn;
+        _worldSpawn = worldSpawn ?? Transform3D.Identity;
         Engine = new CarEngine(this);
 
         var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");

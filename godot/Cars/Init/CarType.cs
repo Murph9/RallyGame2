@@ -35,9 +35,9 @@ public enum CarType {
 
 public static class CarTypeExtensions
 {
-	public static CarDetails LoadCarDetails(this CarType type, Vector3 gravity) {
+	public static CarDetails LoadFromFile(this CarType type, Vector3 gravity) {
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
-        carDetails.Engine = EngineDetails.Load(carDetails.engineFileName);
+        carDetails.Engine = EngineDetails.LoadFromFile(carDetails.engineFileName);
 
 		// calculate wheel positions based on the model
 		Node3D carModel = null;
