@@ -1,10 +1,11 @@
-﻿using System;
-using Godot;
+﻿using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Part;
+using Newtonsoft.Json;
+using System;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
-public record CarDetails
+public class CarDetails
 {
     public string name;
     public string carModel;
@@ -135,5 +136,11 @@ public record CarDetails
 			return (wheelData[2].radius + wheelData[3].radius) / 2f;
 
 		throw new ArgumentException("No drive wheels set, no wheel radius found.");
+    }
+
+    public CarDetails Clone()
+    {
+        var serialized = JsonConvert.SerializeObject(this);
+        return JsonConvert.DeserializeObject<CarDetails>(serialized);
     }
 }
