@@ -3,29 +3,31 @@
   "idlerpm": 1000,
   "name": "e_Runner",
   "sound": "sounds/engine.wav",
+  "baseTorqueCurve": [0, 96.5, 168.8, 192.9, 205.0, 202.7, 195.7, 184.2, 0],
   "Parts": [
     {
       "name": "Cylinder Head & Spark Plugs",
       "levels" : [
-        {"CombustionEffiency": 0.95, "MaxRpm": 9000},
-        {"CombustionEffiency": 1.00, "MaxRpm": 9000},
-        {"CombustionEffiency": 1.05, "MaxRpm": 10000}
+        {"CombustionEfficiency": 1, "MaxRpm": 9000},
+        {"CombustionEfficiency": 1.2, "MaxRpm": 9000},
+        {"CombustionEfficiency": 1.4, "MaxRpm": 10000}
       ]
     },
     {
       "name": "Camshaft & Valves",
       "levels" : [
-        {"MaxIntakeAirPiston": 4000, "MaxRpm": 7500},
-        {"MaxIntakeAirPiston": 4500, "MaxRpm": 8500},
-        {"MaxIntakeAirPiston": 5000, "MaxRpm": 10000}
+        {"IntakeAirEffiency": 1, "MaxRpm": 7500},
+        {"IntakeAirEffiency": 1.2, "MaxRpm": 8500},
+        {"IntakeAirEffiency": 1.4, "MaxRpm": 10000}
       ]
     },
     {
       "name": "Intake & Air Filter",
       "levels" : [
-        {"MaxIntakeAirPiston": 3000, "CombustionEffiency": 0.95},
-        {"MaxIntakeAirPiston": 3500, "CombustionEffiency": 1.0},
-        {"MaxIntakeAirPiston": 5500, "CombustionEffiency": 1.1}
+        {"IntakeAirEffiency": 1},
+        {"IntakeAirEffiency": 1.4},
+        {"IntakeAirEffiency": 1.8},
+        {"IntakeAirEffiency": 99}
       ]
     },
     {
@@ -39,31 +41,32 @@
     {
       "name": "Exhaust",
       "levels" : [
-        {"MaxExhaustAirPiston": 3000},
-        {"MaxExhaustAirPiston": 5500},
-        {"MaxExhaustAirPiston": 10000}
+        {"ExhaustAirEffiency": 1},
+        {"ExhaustAirEffiency": 1.3},
+        {"ExhaustAirEffiency": 1.5},
+        {"ExhaustAirEffiency": 99}
       ]
     },
     {
       "name": "ECU",
       "levels" : [
-        {"CombustionEffiency": 0.9},
-        {"CombustionEffiency": 1},
-        {"CombustionEffiency": 1.1}
+        {"CombustionEfficiency": 1},
+        {"CombustionEfficiency": 1.2},
+        {"CombustionEfficiency": 1.3}
       ]
     },
     {
-      "name": "Pistons & Crankshaft",
+      "name": "Pistons & Cylinder",
       "levels" : [
-        {"MaxRpm": 8000, "Compression": 10},
-        {"MaxRpm": 9000, "Compression": 12},
-        {"MaxRpm": 10000, "Compression": 12}
+        {"MaxRpm": 8000, "Compression": 10, "CylinderBore": 0.085, "StrokeLength": 0.07},
+        {"MaxRpm": 10000, "Compression": 12, "CylinderBore": 0.086, "StrokeLength": 0.07},
+        {"MaxRpm": 10000, "Compression": 12, "CylinderBore": 0.09, "StrokeLength": 0.071}
       ]
     },
     {
       "name": "Block",
       "levels" : [
-        {"PistonCount": 4, "CylinderBore": 0.085, "StrokeLength": 0.07, "IdleDrag": 0.1, "PeakTorqueRPM": 3500}
+        {"PistonCount": 4, "CylinderBore": 0.1, "StrokeLength": 0.1, "IdleDrag": 0.1}
       ]
     },
     {
@@ -76,9 +79,9 @@
     {
       "name": "Transmission & Drivetrain",
       "levels" : [
-        {"TransmissionEfficency": 0.9},
-        {"TransmissionEfficency": 0.95},
-        {"TransmissionEfficency": 0.98}
+        {"TransmissionEfficiency": 0.9},
+        {"TransmissionEfficiency": 0.95},
+        {"TransmissionEfficiency": 0.98}
       ]
     }
   ]
