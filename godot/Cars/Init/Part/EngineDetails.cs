@@ -24,7 +24,9 @@ public class EngineDetails {
     public double CombustionEfficiency; // %
     public double CylinderBore; // m
     public double StrokeLength; // m
+
     public double TurboAirMult; // ratio
+    public double TurboAirStartRPM; // int
 
     public double IntakeAirEffiency; // L/s
     public double ExhaustAirEffiency; // L/s
@@ -51,6 +53,7 @@ public class EngineDetails {
         CylinderBore = double.MaxValue;
         StrokeLength = double.MaxValue;
         TurboAirMult = double.MaxValue;
+        TurboAirStartRPM = int.MaxValue;
         IntakeAirEffiency = double.MaxValue;
         ExhaustAirEffiency = double.MaxValue;
         MaxRpm = int.MaxValue;
@@ -58,32 +61,21 @@ public class EngineDetails {
         CoolingRate = double.MaxValue;
 
         foreach (var part in Parts) {
-            double value;
             var partValues = part.GetLevel();
-            if (partValues.TryGetValue(nameof(PistonCount), out value))
-                PistonCount = Mathf.Min(PistonCount, (int)value);
-            if (partValues.TryGetValue(nameof(IdleDrag), out value))
-                IdleDrag = Mathf.Min(IdleDrag, value);
-            if (partValues.TryGetValue(nameof(Compression), out value))
-                Compression = Mathf.Min(Compression, value);
-            if (partValues.TryGetValue(nameof(CombustionEfficiency), out value))
-                CombustionEfficiency = Mathf.Min(CombustionEfficiency, value);
-            if (partValues.TryGetValue(nameof(CylinderBore), out value))
-                CylinderBore = Mathf.Min(CylinderBore, value);
-            if (partValues.TryGetValue(nameof(StrokeLength), out value))
-                StrokeLength = Mathf.Min(StrokeLength, value);
-            if (partValues.TryGetValue(nameof(TurboAirMult), out value))
-                TurboAirMult = Mathf.Min(TurboAirMult, value);
-            if (partValues.TryGetValue(nameof(IntakeAirEffiency), out value))
-                IntakeAirEffiency = Mathf.Min(IntakeAirEffiency, value);
-            if (partValues.TryGetValue(nameof(ExhaustAirEffiency), out value))
-                ExhaustAirEffiency = Mathf.Min(ExhaustAirEffiency, value);
-            if (partValues.TryGetValue(nameof(MaxRpm), out value))
-                MaxRpm = Mathf.Min(MaxRpm, (int)value);
-            if (partValues.TryGetValue(nameof(TransmissionEfficiency), out value))
-                TransmissionEfficiency = Mathf.Min(TransmissionEfficiency, value);
-            if (partValues.TryGetValue(nameof(CoolingRate), out value))
-                CoolingRate = Mathf.Min(CoolingRate, value);
+
+            PistonCount = GetAndMin(nameof(PistonCount), partValues, PistonCount);
+            IdleDrag = GetAndMin(nameof(IdleDrag), partValues, IdleDrag);
+            Compression = GetAndMin(nameof(Compression), partValues, Compression);
+            CombustionEfficiency = GetAndMin(nameof(CombustionEfficiency), partValues, CombustionEfficiency);
+            CylinderBore = GetAndMin(nameof(CylinderBore), partValues, CylinderBore);
+            StrokeLength = GetAndMin(nameof(StrokeLength), partValues, StrokeLength);
+            TurboAirMult = GetAndMin(nameof(TurboAirMult), partValues, TurboAirMult);
+            TurboAirStartRPM = GetAndMin(nameof(TurboAirStartRPM), partValues, TurboAirStartRPM);
+            IntakeAirEffiency = GetAndMin(nameof(IntakeAirEffiency), partValues, IntakeAirEffiency);
+            ExhaustAirEffiency = GetAndMin(nameof(ExhaustAirEffiency), partValues, ExhaustAirEffiency);
+            MaxRpm = GetAndMin(nameof(MaxRpm), partValues, MaxRpm);
+            TransmissionEfficiency = GetAndMin(nameof(TransmissionEfficiency), partValues, TransmissionEfficiency);
+            CoolingRate = GetAndMin(nameof(CoolingRate), partValues, CoolingRate);
         }
 
         // validation
@@ -93,14 +85,32 @@ public class EngineDetails {
         }
     }
 
+    private static double GetAndMin(string name, Dictionary<string, double> dict, double original) {
+        if (dict.TryGetValue(name, out double value))
+            return Mathf.Min(original, value);
+        return original;
+    }
+    private static int GetAndMin(string name, Dictionary<string, double> dict, int original) {
+        if (dict.TryGetValue(name, out double value))
+            return Mathf.Min(original, (int)value);
+        return original;
+    }
+
     private double AreaOfPiston => Mathf.Pi * CylinderBore * CylinderBore / 4; // m^2
     private double DisplacementVolume => AreaOfPiston * StrokeLength * PistonCount; // m^3 (note that this is usually shown as cm^3 which is /1000)
 
     public double CalcTorqueFor(int rpm) {
-        // airflow is a multiplier on torque and anymore 'flow' over the max (intake or exhaust) has a negative effect
+
+        // airflow is a multiplier but it needs to support in and out air
         var airFlowEfficiency = Math.Min(IntakeAirEffiency, ExhaustAirEffiency);
 
-        // TODO turbo things
+        // turbo multiplies airflow about its value, and negative below it
+        if (TurboAirMult > 1) {
+            if (rpm > TurboAirStartRPM)
+                airFlowEfficiency *= TurboAirMult;
+            else
+                airFlowEfficiency /= TurboAirMult;
+        }
 
         var torqueBase = LerpTorque(rpm);
         return airFlowEfficiency * CombustionEfficiency * torqueBase; // Nm
@@ -110,7 +120,6 @@ public class EngineDetails {
         if (rpm <= 0) return 0;
 
         // torque curve will need to be stretched to work with MaxRpm:
-        // TODO it reduces torque at lower RPM
         var rpmFactor = BaseTorqueCurveMaxRPM / (float)MaxRpm;
         var rpmFloat = (float)rpm / 1000f * rpmFactor;
 
@@ -136,6 +145,7 @@ public class EngineDetails {
             && CylinderBore != double.MaxValue
             && StrokeLength != double.MaxValue
             && TurboAirMult != double.MaxValue
+            && TurboAirStartRPM != int.MaxValue
             && IntakeAirEffiency != double.MaxValue
             && ExhaustAirEffiency != double.MaxValue
             && MaxRpm != int.MaxValue
@@ -152,6 +162,7 @@ public class EngineDetails {
             {nameof(CylinderBore), CylinderBore},
             {nameof(StrokeLength), StrokeLength},
             {nameof(TurboAirMult), TurboAirMult},
+            {nameof(TurboAirStartRPM), TurboAirStartRPM},
             {nameof(IntakeAirEffiency), IntakeAirEffiency},
             {nameof(ExhaustAirEffiency), ExhaustAirEffiency},
             {nameof(MaxRpm), MaxRpm},
@@ -160,45 +171,3 @@ public class EngineDetails {
         };
     }
 }
-
-/*
-TODO
-
-http://www.thecartech.com/subjects/engine/engine_formulas.htm
-I think we just need to make up a shape and modify it using the parts
-
-The torque curve of an engine is typically divided into different sections, each influenced by specific factors. Here are the main sections of a torque curve and the factors that affect each one:
-
-1. **Low-End Torque (Low RPMs):**
-   - **Factors Influencing Low-End Torque:**
-     - **Cylinder Size and Design:** Larger cylinder size and well-designed combustion chambers enhance low-end torque.
-     - **Intake and Exhaust Systems:** Efficient intake and exhaust systems promote better airflow at low RPMs.
-     - **Forced Induction:** Turbochargers and superchargers can provide additional low-end torque by compressing air.
-
-2. **Mid-Range Torque (Mid RPMs):**
-   - **Factors Influencing Mid-Range Torque:**
-     - **Valvetrain Configuration:** Properly designed valvetrain systems contribute to good mid-range torque.
-     - **Fuel Injection System:** Optimal fuel injection improves combustion efficiency in the mid-range.
-     - **Turbocharging or Supercharging:** Forced induction systems play a significant role in boosting mid-range torque.
-
-3. **Peak Torque (Peak RPM):**
-   - **Factors Influencing Peak Torque:**
-     - **Engine Size and Design:** The overall design and displacement of the engine impact the maximum torque achievable.
-     - **Compression Ratio:** A well-optimized compression ratio contributes to peak torque.
-     - **Valvetrain and Timing:** Properly tuned valvetrains and ignition timing affect peak torque delivery.
-
-4. **High-End Torque (High RPMs):**
-   - **Factors Influencing High-End Torque:**
-     - **Valvetrain and Camshaft Design:** High-performance camshafts and optimized valvetrains enhance torque at high RPMs.
-     - **Exhaust System:** Efficient exhaust systems are crucial for expelling gases at high RPMs.
-     - **Engine Management Systems:** Advanced engine control units (ECUs) can adjust parameters for optimal performance at high RPMs.
-
-5. **Overrevving (Beyond Peak RPM):**
-   - **Factors Influencing Overrevving:**
-     - **Valvetrain Design:** The ability of the valvetrain to keep up with high RPMs without causing valve float affects overrevving.
-     - **Engine Management Systems:** Engine control units may limit or allow overrevving based on the design and purpose of the engine.
-
-It's important to note that the torque curve is a result of a delicate balance between various factors, and engineers aim to design engines that deliver a broad and usable torque band across different driving conditions. Additionally, the specific goals of the engine (e.g., efficiency, power, fuel economy) and the intended use of the vehicle influence the design choices made by manufacturers.
-
-
-*/
