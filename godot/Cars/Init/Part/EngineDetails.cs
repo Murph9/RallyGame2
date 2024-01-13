@@ -37,7 +37,7 @@ public class EngineDetails {
 
     public double CoolingRate; // K / min
 
-    public Dictionary<string, double> Values = new ();
+    public Dictionary<string, double> Values { get; private set; }= new ();
     public List<Part> Parts { get; set; } = new List<Part>();
 
     private static FieldInfo[] FIELD_CACHE;
@@ -93,6 +93,20 @@ public class EngineDetails {
 
     private double AreaOfPiston => Mathf.Pi * CylinderBore * CylinderBore / 4; // m^2
     private double DisplacementVolume => AreaOfPiston * StrokeLength * PistonCount; // m^3 (note that this is usually shown as cm^3 which is /1000)
+
+    public (double, int) MaxTorque() {
+        const int DIVISIONS = 10;
+        var max = 0d;
+        int atRpm = 0;
+        for (int i = 0; i <= MaxRpm/(float)DIVISIONS; i++) {
+            var torque = CalcTorqueFor(i*DIVISIONS);
+            if (torque > max) {
+                max = torque;
+                atRpm = i * DIVISIONS;
+            }
+        }
+        return (max, atRpm);
+    }
 
     public double CalcTorqueFor(int rpm) {
 

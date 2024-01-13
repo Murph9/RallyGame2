@@ -115,18 +115,6 @@ public class CarDetails
 		return Engine.EngineInertia + wheels*2;
 	}
 
-	//get the max power and rpm
-	public (float, float) GetMaxPower() {
-		float max = 0;
-		float maxrpm = 0;
-		for (int i = 0; i < Engine.MaxRpm; i += 10) {
-			float prevmax = max;
-			max = Mathf.Max(max, (float)Engine.CalcTorqueFor(i) * (1000*i)/9549);
-			if (prevmax != max) maxrpm = i;
-		} // http://www.autospeed.com/cms/article.html?&title=Power-versus-Torque-Part-1&A=108647
-		return (max, maxrpm*1000);
-	}
-
 	public float DriveWheelRadius() {
 		if (driveFront && driveRear)
 			return (wheelData[0].radius + wheelData[1].radius + wheelData[2].radius + wheelData[3].radius) / 4f;
