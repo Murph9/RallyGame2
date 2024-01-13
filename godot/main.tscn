@@ -45,5 +45,10 @@ layout_mode = 2
 [node name="WorldOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
+[node name="UpgradeButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Upgrade Test"
+
 [connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/PlayGameButton" to="." method="_on_play_game_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/UpgradeButton" to="." method="_on_upgrade_button_pressed"]

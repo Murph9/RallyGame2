@@ -47,4 +47,8 @@ public partial class Main : Node
     public void _on_play_game_button_pressed() {
         GetTree().ChangeSceneToFile("res://Racing.tscn");
     }
+
+    public void _on_upgrade_button_pressed() {
+        GetTree().ChangeSceneToFile("res://UpgradeMenu.tscn");
+    }
 }
