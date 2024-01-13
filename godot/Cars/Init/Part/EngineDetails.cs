@@ -107,6 +107,19 @@ public class EngineDetails {
         }
         return (max, atRpm);
     }
+    public (double, int) MaxKw() {
+        const int DIVISIONS = 10;
+        var max = 0d;
+        int atRpm = 0;
+        for (int i = 0; i <= MaxRpm/(float)DIVISIONS; i++) {
+            var torque = CalcKwFor(i*DIVISIONS);
+            if (torque > max) {
+                max = torque;
+                atRpm = i * DIVISIONS;
+            }
+        }
+        return (max, atRpm);
+    }
 
     public double CalcTorqueFor(int rpm) {
 

@@ -15,7 +15,7 @@ public partial class UpgradeMenu : CenterContainer
 	private Node[] _upgrades; // each containing a dropdown of level
 
 	private Graph _torqueGraph; //s?
-	private Label _stats;
+	private RichTextLabel _stats;
 
     public override void _Ready() {
 		_carDetailsPrevious = CarType.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
@@ -43,21 +43,51 @@ public partial class UpgradeMenu : CenterContainer
 		var statsBox = new VBoxContainer();
 		mainBox.AddChild(statsBox);
 
-		var maxTorque = _carDetails.Engine.MaxTorque();
-		_stats = new Label() {
-			Text =  $"Max kW (Nm): {double.Round(maxTorque.Item1, 2)} ({double.Round(EngineDetails.TorqueToKw(maxTorque.Item1, maxTorque.Item2), 2)}) @ {maxTorque.Item2} rpm]\n"
+		_stats = new RichTextLabel() {
+			LayoutMode = 2,
+			BbcodeEnabled = true,
+			SizeFlagsHorizontal = SizeFlags.Fill,
+			FitContent = true,
+			AutowrapMode = TextServer.AutowrapMode.Off
 		};
 		var causes = _carDetails.Engine.GetValueCauses();
 		statsBox.AddChild(_stats);
+
+		var maxTorque = _carDetails.Engine.MaxTorque();
+		var maxKw = _carDetails.Engine.MaxKw();
+		_stats.AppendText($"Max Torque (Nm): {double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm\n");
+		_stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
+		_stats.PushColor(Colors.White);
+		_stats.PushTable(4);
 		var prevDetails = _carDetailsPrevious.Engine.AsDict();
 		foreach (var entry in _carDetails.Engine.AsDict()) {
-			_stats.Text += entry.Key + " -> " + double.Round(entry.Value, 2);
+			_stats.PushCell();
+			_stats.AppendText(entry.Key);
+			_stats.Pop();
+			_stats.PushCell();
+			_stats.PushColor(Colors.Blue);
+			_stats.AppendText(double.Round(prevDetails[entry.Key], 2).ToString());
+			_stats.Pop();
+			_stats.Pop();
 			if (entry.Value != prevDetails[entry.Key]) {
-				_stats.Text += " was " + double.Round(prevDetails[entry.Key], 2);
+				_stats.PushCell();
+				_stats.PushColor(Colors.Green);
+				_stats.AppendText(double.Round(entry.Value, 2).ToString());
+				_stats.Pop();
+				_stats.Pop();
+			} else {
+				_stats.PushCell();
+				_stats.Pop();
 			}
-			_stats.Text += "set by " + string.Join(",", causes[entry.Key].Select(x => x.Name));
-			_stats.Text += "\n";
+			_stats.PushCell();
+			_stats.PushColor(Colors.Gray);
+			_stats.AddText(string.Join(", ", causes[entry.Key].Select(x => x.Name)));
+			_stats.Pop();
+			_stats.Pop();
 		}
+
+		_stats.Pop();
+		_stats.Pop();
 
         var datasetNew = new Graph.Dataset("Torque", 200, max: 500) {
             Color = Colors.Green
