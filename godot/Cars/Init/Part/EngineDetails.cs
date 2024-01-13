@@ -2,6 +2,8 @@ using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace murph9.RallyGame2.godot.Cars.Init.Part;
 
@@ -15,7 +17,7 @@ public class EngineDetails {
     public float[] BaseTorqueCurve { get; set; }
     public int BaseTorqueCurveMaxRPM => (BaseTorqueCurve.Length - 1) * 1000;
 
-    // all properties have max value defaults as all parts apply restrictions
+    // all fields have max value defaults as all parts apply restrictions
     public int PistonCount; // count
 
     public double IdleDrag; // ratio
@@ -38,6 +40,8 @@ public class EngineDetails {
     public Dictionary<string, double> Values = new ();
     public List<Part> Parts { get; set; } = new List<Part>();
 
+    private static FieldInfo[] FIELD_CACHE;
+
     public static EngineDetails LoadFromFile(string name) {
         var engineDetails = FileLoader.ReadJsonFile<EngineDetails>("Cars", "Init", "Data", name + ".json");
 
@@ -46,6 +50,15 @@ public class EngineDetails {
     }
 
     public void LoadProps() {
+        var fields = GetFields();
+
+        foreach (var field in fields) {
+            if (field.FieldType == typeof(int))
+                field.SetValue(this, int.MaxValue);
+            if (field.FieldType == typeof(double))
+                field.SetValue(this, double.MaxValue);
+        }
+
         PistonCount = int.MaxValue;
         IdleDrag = double.MaxValue;
         Compression = double.MaxValue;
@@ -63,19 +76,12 @@ public class EngineDetails {
         foreach (var part in Parts) {
             var partValues = part.GetLevel();
 
-            PistonCount = GetAndMin(nameof(PistonCount), partValues, PistonCount);
-            IdleDrag = GetAndMin(nameof(IdleDrag), partValues, IdleDrag);
-            Compression = GetAndMin(nameof(Compression), partValues, Compression);
-            CombustionEfficiency = GetAndMin(nameof(CombustionEfficiency), partValues, CombustionEfficiency);
-            CylinderBore = GetAndMin(nameof(CylinderBore), partValues, CylinderBore);
-            StrokeLength = GetAndMin(nameof(StrokeLength), partValues, StrokeLength);
-            TurboAirMult = GetAndMin(nameof(TurboAirMult), partValues, TurboAirMult);
-            TurboAirStartRPM = GetAndMin(nameof(TurboAirStartRPM), partValues, TurboAirStartRPM);
-            IntakeAirEffiency = GetAndMin(nameof(IntakeAirEffiency), partValues, IntakeAirEffiency);
-            ExhaustAirEffiency = GetAndMin(nameof(ExhaustAirEffiency), partValues, ExhaustAirEffiency);
-            MaxRpm = GetAndMin(nameof(MaxRpm), partValues, MaxRpm);
-            TransmissionEfficiency = GetAndMin(nameof(TransmissionEfficiency), partValues, TransmissionEfficiency);
-            CoolingRate = GetAndMin(nameof(CoolingRate), partValues, CoolingRate);
+            foreach (var field in fields) {
+                if (field.FieldType == typeof(int) && partValues.TryGetValue(field.Name, out double value))
+                    field.SetValue(this, Mathf.Min((int)field.GetValue(this), (int)value));
+                if (field.FieldType == typeof(double) && partValues.TryGetValue(field.Name, out value))
+                    field.SetValue(this, Mathf.Min((double)field.GetValue(this), value));
+            }
         }
 
         // validation
@@ -83,17 +89,6 @@ public class EngineDetails {
         if (!engineSet) {
             throw new Exception("Engine value not set, see" + this);
         }
-    }
-
-    private static double GetAndMin(string name, Dictionary<string, double> dict, double original) {
-        if (dict.TryGetValue(name, out double value))
-            return Mathf.Min(original, value);
-        return original;
-    }
-    private static int GetAndMin(string name, Dictionary<string, double> dict, int original) {
-        if (dict.TryGetValue(name, out double value))
-            return Mathf.Min(original, (int)value);
-        return original;
     }
 
     private double AreaOfPiston => Mathf.Pi * CylinderBore * CylinderBore / 4; // m^2
@@ -136,38 +131,49 @@ public class EngineDetails {
         return torque * 2 * Mathf.Pi * rpm / (60 * 1000); //kW
     }
 
+    private FieldInfo[] GetFields() {
+        if (FIELD_CACHE != null) return FIELD_CACHE;
+
+        FIELD_CACHE = GetType().GetFields();
+        return FIELD_CACHE;
+    }
 
     public bool AreAllSet() {
-        return PistonCount != int.MaxValue
-            && IdleDrag != double.MaxValue
-            && Compression != double.MaxValue
-            && CombustionEfficiency != double.MaxValue
-            && CylinderBore != double.MaxValue
-            && StrokeLength != double.MaxValue
-            && TurboAirMult != double.MaxValue
-            && TurboAirStartRPM != int.MaxValue
-            && IntakeAirEffiency != double.MaxValue
-            && ExhaustAirEffiency != double.MaxValue
-            && MaxRpm != int.MaxValue
-            && TransmissionEfficiency != double.MaxValue
-            && CoolingRate != double.MaxValue;
+        var fields = GetFields();
+
+        foreach (var field in fields) {
+            if (field.FieldType == typeof(int) && (int)field.GetValue(this) == int.MaxValue)
+                return false;
+            if (field.FieldType == typeof(double) && (double)field.GetValue(this) == double.MaxValue)
+                return false;
+        }
+
+        return true;
     }
 
     public Dictionary<string, double> AsDict() {
-        return new Dictionary<string, double>() {
-            {nameof(PistonCount), PistonCount},
-            {nameof(IdleDrag), IdleDrag},
-            {nameof(Compression), Compression},
-            {nameof(CombustionEfficiency), CombustionEfficiency},
-            {nameof(CylinderBore), CylinderBore},
-            {nameof(StrokeLength), StrokeLength},
-            {nameof(TurboAirMult), TurboAirMult},
-            {nameof(TurboAirStartRPM), TurboAirStartRPM},
-            {nameof(IntakeAirEffiency), IntakeAirEffiency},
-            {nameof(ExhaustAirEffiency), ExhaustAirEffiency},
-            {nameof(MaxRpm), MaxRpm},
-            {nameof(TransmissionEfficiency), TransmissionEfficiency},
-            {nameof(CoolingRate), CoolingRate}
-        };
+        return GetFields().ToDictionary(x => x.Name, x => {
+            if (x.FieldType == typeof(double))
+                return (double)x.GetValue(this);
+            if (x.FieldType == typeof(int))
+                return (int)x.GetValue(this);
+
+            return double.MinValue;
+        });
+    }
+
+    public Dictionary<string, List<Part>> GetValueCauses() {
+        var dict = AsDict().ToDictionary(x => x.Key, x => new List<Part>());
+
+        foreach (var part in Parts) {
+            var partValues = part.GetLevel();
+
+            foreach (var field in GetFields()) {
+                if (partValues.ContainsKey(field.Name))
+                    dict[field.Name].Add(part);
+            }
+        }
+
+        return dict;
     }
 }

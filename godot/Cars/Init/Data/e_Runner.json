@@ -6,7 +6,7 @@
   "baseTorqueCurve": [0, 96.5, 168.8, 192.9, 205.0, 202.7, 195.7, 184.2, 100],
   "Parts": [
     {
-      "name": "Cylinder Head & Spark Plugs",
+      "name": "Cylinder Head, Fuel Injectors & Spark Plugs",
       "levels" : [
         {"CombustionEfficiency": 1, "MaxRpm": 9000},
         {"CombustionEfficiency": 1.2, "MaxRpm": 9000, "Cost": 1000},
