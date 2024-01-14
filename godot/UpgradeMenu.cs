@@ -50,7 +50,6 @@ public partial class UpgradeMenu : CenterContainer
 			FitContent = true,
 			AutowrapMode = TextServer.AutowrapMode.Off
 		};
-		var causes = _carDetails.Engine.GetValueCauses();
 		statsBox.AddChild(_stats);
 
 		var maxTorque = _carDetails.Engine.MaxTorque();
@@ -60,6 +59,7 @@ public partial class UpgradeMenu : CenterContainer
 		_stats.PushColor(Colors.White);
 		_stats.PushTable(4);
 		var prevDetails = _carDetailsPrevious.Engine.AsDict();
+		var causes = _carDetails.Engine.GetValueCauses();
 		foreach (var entry in _carDetails.Engine.AsDict()) {
 			_stats.PushCell();
 			_stats.AppendText(entry.Key);
@@ -81,7 +81,7 @@ public partial class UpgradeMenu : CenterContainer
 			}
 			_stats.PushCell();
 			_stats.PushColor(Colors.Gray);
-			_stats.AddText(string.Join(", ", causes[entry.Key].Select(x => x.Name)));
+			_stats.AppendText(string.Join(", ", causes[entry.Key].Select(x => $"[color={x.Color}]{x.Name}[/color]")));
 			_stats.Pop();
 			_stats.Pop();
 		}
@@ -101,8 +101,9 @@ public partial class UpgradeMenu : CenterContainer
 		var datasetKwOld = new Graph.Dataset("kWOld", 200, max: 500) {
             Color = Colors.Blue
         };
+		var maxRpm = Mathf.Max(_carDetailsPrevious.Engine.MaxRpm, _carDetails.Engine.MaxRpm);
         for (int i = 0; i < 200; i++) {
-			if (i*50 < _carDetailsPrevious.Engine.MaxRpm) {
+			if (i*50 < maxRpm) {
             	datasetNew.Push((float)_carDetails.Engine.CalcTorqueFor(i*50));
             	datasetKwNew.Push((float)_carDetails.Engine.CalcKwFor(i*50));
             	datasetOld.Push((float)_carDetailsPrevious.Engine.CalcTorqueFor(i*50));
@@ -128,10 +129,18 @@ public partial class UpgradeMenu : CenterContainer
 			option.ItemSelected += (a) => {
 				ItemSelected(a, part);
 			};
-
-			optionsBox.AddChild(new Label() {
-				Text = part.Name + " ---> " + string.Join(",", part.GetLevel().Select(x => x.Key + ": " + x.Value))
-			});
+			var richLabel = new RichTextLabel() {
+				LayoutMode = 2,
+				BbcodeEnabled = true,
+				SizeFlagsHorizontal = SizeFlags.Fill,
+				FitContent = true,
+				AutowrapMode = TextServer.AutowrapMode.Off
+			};
+			richLabel.PushColor(Color.FromHtml(part.Color));
+			richLabel.AppendText(part.Name);
+			richLabel.Pop();
+			richLabel.AppendText(" " + string.Join(", ", part.GetLevel().Select(x => x.Key + ": " + x.Value)));
+			optionsBox.AddChild(richLabel);
 			optionsBox.AddChild(option);
 		}
 		var b = new Button() {

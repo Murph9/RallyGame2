@@ -74,6 +74,8 @@ public class EngineDetails {
         CoolingRate = double.MaxValue;
 
         foreach (var part in Parts) {
+            part.Validate();
+
             var partValues = part.GetLevel();
 
             foreach (var field in fields) {
@@ -82,6 +84,8 @@ public class EngineDetails {
                 if (field.FieldType == typeof(double) && partValues.TryGetValue(field.Name, out value))
                     field.SetValue(this, Mathf.Min((double)field.GetValue(this), value));
             }
+
+            part.PartColour = Color.FromHtml(part.Color);
         }
 
         // validation
