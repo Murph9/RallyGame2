@@ -7,7 +7,7 @@ namespace murph9.RallyGame2.godot.Cars;
 
 public partial class Car : Node3D
 {
-    private const float SLIP_SIMULATION_BUFFER = 0.95f;
+    private const float SLIP_SIMULATION_BUFFER = 0.05f;
 
     public RigidBody3D RigidBody { get; }
     public CarDetails Details { get; }
@@ -274,19 +274,14 @@ public partial class Car : Node3D
         // smooth slip values for slow speeds
         // http://web.archive.org/web/20050308061534/home.planet.nl/%7Emonstrous/tutstab.html
         // although this is just the first step as a differential equation
-        if (localVel.LengthSquared() < 25) {
-            // calc derivitive for smoother values
-            w.SlipAngleDt = (wantSlipAngle - w.SlipAngle)/(float)delta;
-            w.SlipAngleDt *= SLIP_SIMULATION_BUFFER;
-            w.SlipAngle += w.SlipAngleDt * (float)delta;
+        w.SlipAngleDt = wantSlipAngle - w.SlipAngle;
+        w.SlipAngleDt /= SLIP_SIMULATION_BUFFER;
+        w.SlipAngle += w.SlipAngleDt * (float)delta;
 
-            w.SlipRatioDt = (wantSlipRatio - w.SlipRatio)/(float)delta;
-            w.SlipRatioDt *= SLIP_SIMULATION_BUFFER;
-            w.SlipRatio += w.SlipRatioDt * (float)delta;
-        } else {
-            w.SlipAngle = wantSlipAngle;
-            w.SlipRatio = wantSlipRatio;
-        }
+        w.SlipRatioDt = wantSlipRatio - w.SlipRatio;
+        w.SlipRatioDt /= SLIP_SIMULATION_BUFFER;
+        w.SlipRatio += w.SlipRatioDt * (float)delta;
+
 
         // merging the forces into a traction circle
         // normalise based on their independant max values
