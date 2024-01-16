@@ -10,10 +10,10 @@ public partial class CarUI : Control {
     public Car Car { get; set; }
 
     [DebugGUIText(g:0)]
-    [DebugGUIGraph(g:0)]
+    [DebugGUIGraph(g:0, group: 2)]
     private float RadSec0 => Car.Wheels[0].RadSec;
     [DebugGUIText(g:0.5f)]
-    [DebugGUIGraph(g:0.5f)]
+    [DebugGUIGraph(g:0.5f, group: 2)]
     private float RadSec1 => Car.Wheels[1].RadSec;
 
     public override void _Ready() {

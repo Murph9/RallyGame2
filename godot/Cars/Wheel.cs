@@ -24,6 +24,8 @@ public partial class Wheel : Node3D {
 
     public float SlipAngle;
     public float SlipRatio;
+    public float SlipAngleDt;
+    public float SlipRatioDt;
     public float RadSec;
     public double SkidFraction;
     public Vector3 GripDir;
@@ -40,7 +42,7 @@ public partial class Wheel : Node3D {
     {
         var scene = GD.Load<PackedScene>("res://assets/" + Details.modelName);
         WheelModel = scene.Instantiate<Node3D>();
-        
+
         if (Details.id % 2 == 1)
             WheelModel.Rotate(Vector3.Up, Mathf.DegToRad(180));
         Position = Details.position;

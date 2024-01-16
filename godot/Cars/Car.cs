@@ -1,6 +1,5 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
-using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Linq;
 
@@ -8,6 +7,8 @@ namespace murph9.RallyGame2.godot.Cars;
 
 public partial class Car : Node3D
 {
+    private const float SLIP_SIMULATION_BUFFER = 0.95f;
+
     public RigidBody3D RigidBody { get; }
     public CarDetails Details { get; }
     public CarEngine Engine { get; }
@@ -31,7 +32,6 @@ public partial class Car : Node3D
     public const float TRACTION_DECAY = 3f;
 
     public Vector3 DragForce;
-
 
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
@@ -235,39 +235,57 @@ public partial class Car : Node3D
 			localVel.X = 0.0001f;
 
         // Linear Accelerations: = player.car.length * player.car.yawrate (in rad/sec)
-        float angVel = 0;
+        var angVel = 0f;
         if (!float.IsNaN(angularVelocity.Y))
             angVel = angularVelocity.Y;
 
         var objectRelVelocity = new Vector3();
         if (w.ContactRigidBody != null) // convert contact object to local co-ords
             objectRelVelocity = w.ContactRigidBody.LinearVelocity * RigidBody.GlobalBasis;
-        float groundVelocityZ = localVel.Z - objectRelVelocity.Z;
+        var groundVelocity = localVel - objectRelVelocity;
 
-        float slipr = w.RadSec * w.Details.radius - groundVelocityZ;
-        if (groundVelocityZ == 0)
-            w.SlipRatio = 0;
+        var slipr = w.RadSec * w.Details.radius - groundVelocity.Z;
+        float wantSlipRatio;
+        if (groundVelocity.Z == 0)
+            wantSlipRatio = 0;
         else
-            w.SlipRatio = slipr / Mathf.Abs(groundVelocityZ);
+            wantSlipRatio = slipr / Mathf.Abs(groundVelocity.Z);
 
         if (HandbrakeCur && w.Details.id >= 2) // rearwheels only
             w.RadSec = 0;
 
-        w.SlipAngle = 0;
         var steering = Steering;
         if (localVel.Z < 0) { // to flip the steering on moving in reverse
             steering *= -1;
         }
 
+        float wantSlipAngle;
         if (w.Details.id < 2) {
             // front wheels
-            float slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocityZ)) - steering;
+            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
+            wantSlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocity.Z)) - steering;
         } else {
             // rear wheels
-            float slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocityZ));
-            DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
+            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
+            wantSlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocity.Z));
+            DriftAngle = Mathf.RadToDeg(wantSlipAngle); // set drift angle as the rear amount
+        }
+
+        // smooth slip values for slow speeds
+        // http://web.archive.org/web/20050308061534/home.planet.nl/%7Emonstrous/tutstab.html
+        // although this is just the first step as a differential equation
+        if (localVel.LengthSquared() < 25) {
+            // calc derivitive for smoother values
+            w.SlipAngleDt = (wantSlipAngle - w.SlipAngle)/(float)delta;
+            w.SlipAngleDt *= SLIP_SIMULATION_BUFFER;
+            w.SlipAngle += w.SlipAngleDt * (float)delta;
+
+            w.SlipRatioDt = (wantSlipRatio - w.SlipRatio)/(float)delta;
+            w.SlipRatioDt *= SLIP_SIMULATION_BUFFER;
+            w.SlipRatio += w.SlipRatioDt * (float)delta;
+        } else {
+            w.SlipAngle = wantSlipAngle;
+            w.SlipRatio = wantSlipRatio;
         }
 
         // merging the forces into a traction circle
