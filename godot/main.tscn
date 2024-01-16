@@ -37,7 +37,7 @@ text = "Add Ball"
 
 [node name="PlayGameButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = "Play Game"
+text = "Drive"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
