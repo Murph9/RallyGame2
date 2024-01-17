@@ -48,17 +48,6 @@ public partial class WheelUI : VBoxContainer
 		gridContainer.AddChild(new Label() {
 			Text = float.Round(Wheel.Damping, 2).ToString()
 		});
-
-		if (Wheel.ExtraDetails != null) {
-			foreach (var e in Wheel.ExtraDetails) {
-				gridContainer.AddChild(new Label() {
-					Text = e.Key
-				});
-				gridContainer.AddChild(new Label() {
-					Text = float.Round(e.Value, 2).ToString()
-				});
-			}
-		}
 	}
 
     public override void _Draw() {

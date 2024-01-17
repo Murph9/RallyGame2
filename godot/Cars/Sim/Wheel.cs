@@ -30,8 +30,6 @@ public partial class Wheel : Node3D {
     public double SkidFraction;
     public Vector3 GripDir;
 
-    public Dictionary<string, float> ExtraDetails;
-
     public Wheel(Car car, WheelDetails details, RayCast3D ray) {
         Car = car;
         Details = details;
