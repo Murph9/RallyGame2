@@ -48,13 +48,13 @@ public static class CarTypeExtensions
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
 			carDetails.wheelData[0].id = 0;
-			carDetails.wheelData[0].position = wheelPoss[CarPart.wheel_fl.ToString()].Position;
+			carDetails.wheelData[0].position = wheelPoss[CarModelName.wheel_fl.ToString()].Position;
 			carDetails.wheelData[1].id = 1;
-			carDetails.wheelData[1].position = wheelPoss[CarPart.wheel_fr.ToString()].Position;
+			carDetails.wheelData[1].position = wheelPoss[CarModelName.wheel_fr.ToString()].Position;
 			carDetails.wheelData[2].id = 2;
-			carDetails.wheelData[2].position = wheelPoss[CarPart.wheel_rl.ToString()].Position;
+			carDetails.wheelData[2].position = wheelPoss[CarModelName.wheel_rl.ToString()].Position;
 			carDetails.wheelData[3].id = 3;
-			carDetails.wheelData[3].position = wheelPoss[CarPart.wheel_rr.ToString()].Position;
+			carDetails.wheelData[3].position = wheelPoss[CarModelName.wheel_rr.ToString()].Position;
 		} catch (Exception e) {
 			GD.Print(e);
 		} finally {
@@ -63,14 +63,14 @@ public static class CarTypeExtensions
 
 		// validate that the wheels are in the correct quadrant for a car
         if (carDetails.wheelData[0].position.X < 0 || carDetails.wheelData[0].position.Z < 0)
-            throw new Exception(CarPart.wheel_fl + " should be in pos x and pos z");
+            throw new Exception(CarModelName.wheel_fl + " should be in pos x and pos z");
         if (carDetails.wheelData[1].position.X > 0 || carDetails.wheelData[1].position.Z < 0)
-            throw new Exception(CarPart.wheel_fr + " should be in neg x and pos z");
+            throw new Exception(CarModelName.wheel_fr + " should be in neg x and pos z");
 
         if (carDetails.wheelData[2].position.X < 0 || carDetails.wheelData[2].position.Z > 0)
-            throw new Exception(CarPart.wheel_rl + " should be in pos x and neg z");
+            throw new Exception(CarModelName.wheel_rl + " should be in pos x and neg z");
         if (carDetails.wheelData[3].position.X > 0 || carDetails.wheelData[3].position.Z > 0)
-            throw new Exception(CarPart.wheel_rr + " should be in neg x and neg z");
+            throw new Exception(CarModelName.wheel_rr + " should be in neg x and neg z");
 
 
         // Wheel validation

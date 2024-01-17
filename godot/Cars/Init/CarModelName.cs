@@ -1,6 +1,6 @@
 namespace murph9.RallyGame2.godot.Cars.Init;
 
-public enum CarPart {
+public enum CarModelName {
 	Chassis, //main model
 	Exhaust1, // only one side
 	Exhaust2, //only one side
@@ -8,7 +8,7 @@ public enum CarPart {
 	wheel_fr, //front right
 	wheel_rl, //rear left
 	wheel_rr, //rear right
-	
+
 	Headlight_L, //only one side
 	Taillight_L, //only one side
 
