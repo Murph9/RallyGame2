@@ -69,7 +69,7 @@ public partial class WorldPieces : Node3D, IWorld {
 
         try {
             var w = new WorldPieceLayoutGenerator(_pieces);
-            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.LargeCircle);
+            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.VeryLongLine);
 
             var curPos = new Vector3();
             var curRot = Quaternion.Identity;

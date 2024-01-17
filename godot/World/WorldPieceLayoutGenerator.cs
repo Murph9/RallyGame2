@@ -13,6 +13,7 @@ public class WorldPieceLayoutGenerator {
     public enum CircuitLayout {
         SimpleLoop,
         LargeCircle,
+        VeryLongLine,
         Random
     }
 
@@ -38,6 +39,20 @@ public class WorldPieceLayoutGenerator {
             yield return GetPieceByName("left_long");
             yield return GetPieceByName("straight");
             yield return GetPieceByName("straight");
+            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long");
+            yield break;
+        }
+
+        if (layout == CircuitLayout.VeryLongLine) {
+            for (int i = 0; i < 100; i++) {
+                yield return GetPieceByName("straight");
+            }
+            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long");
+            for (int i = 0; i < 100; i++) {
+                yield return GetPieceByName("straight");
+            }
             yield return GetPieceByName("left_long");
             yield return GetPieceByName("left_long");
             yield break;
