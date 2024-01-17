@@ -135,6 +135,9 @@ public partial class Car : Node3D
             RigidBody.Transform = _worldSpawn;
             RigidBody.LinearVelocity = new Vector3();
             RigidBody.AngularVelocity = new Vector3();
+            foreach (var w in Wheels) {
+                w.RadSec = 0;
+            }
         }
     }
 
