@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace murph9.RallyGame2.godot.Cars;
+namespace murph9.RallyGame2.godot.Cars.Sim;
 
 public class CalcWheelTraction {
 
@@ -9,7 +9,7 @@ public class CalcWheelTraction {
     /// <summary>
     /// no pacejka, based on a stepped function instead
     /// every input is meant to be positive
-    /// _S = radians, peak traction point 
+    /// _S = radians, peak traction point
     /// _T = number, peak traction amount
     /// _L = radians, peak length
     /// _D = radians-ish, traction drop off after peak
@@ -20,7 +20,7 @@ public class CalcWheelTraction {
         if (slip < 0) {
             return Mathf.Sign(slip) * Calc(Math.Abs(slip), s, t, l, d);
         }
-        
+
         // before peak, quick ramp to t
         if (slip < s) {
             return t*slip/s;

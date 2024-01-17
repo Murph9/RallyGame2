@@ -1,7 +1,7 @@
 using Godot;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.Cars;
+namespace murph9.RallyGame2.godot.Cars.Sim;
 
 public class CarEngine {
 
