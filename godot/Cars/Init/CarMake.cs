@@ -7,12 +7,10 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
-public enum CarType {
-	Survivor,
-
-	Normal,
+public enum CarMake {
+//	Normal,
 	Runner,
-	Rally,
+	/*Rally,
 	Roadster,
 
 	Hunter,
@@ -30,12 +28,12 @@ public enum CarType {
 	WhiteSloth,
 	Rocket,
 
-	Debug
+	Debug*/
 }
 
-public static class CarTypeExtensions
+public static class CarMakeExtensions
 {
-	public static CarDetails LoadFromFile(this CarType type, Vector3 gravity) {
+	public static CarDetails LoadFromFile(this CarMake type, Vector3 gravity) {
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
         carDetails.Engine = EngineDetails.LoadFromFile(carDetails.engineFileName);
 

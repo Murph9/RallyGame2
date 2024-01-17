@@ -29,7 +29,7 @@ public partial class Racing : Node3D {
 		var worldPieces = new SimpleWorldPieces();
         AddChild(worldPieces);
 
-        var details = CarType.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
+        var details = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
         Car = new Car(details, worldPieces.GetSpawn());
 		AddChild(Car);
 

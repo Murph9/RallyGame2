@@ -18,7 +18,7 @@ public partial class UpgradeMenu : CenterContainer
 	private RichTextLabel _stats;
 
     public override void _Ready() {
-		_carDetailsPrevious = CarType.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
+		_carDetailsPrevious = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 		_carDetails = _carDetailsPrevious.Clone();
 
 		LoadPage();
