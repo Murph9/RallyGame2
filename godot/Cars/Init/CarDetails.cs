@@ -2,6 +2,8 @@
 using murph9.RallyGame2.godot.Cars.Init.Part;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
@@ -64,6 +66,109 @@ public class CarDetails
 	//no idea category
 	public float minDriftAngle;
 	public Vector3 JUMP_FORCE;
+
+	public void LoadSelf(Vector3 gravity) {
+		// calculate wheel positions based on the model
+		Node3D carScene = null;
+		try {
+			var scene = GD.Load<PackedScene>("res://assets/" + carModel);
+			carScene = scene.Instantiate<Node3D>();
+			var wheelPoss = carScene.GetChildren()
+				.OfType<Node3D>()
+				.ToDictionary(x => x.Name.ToString());
+			wheelData[0].id = 0;
+			wheelData[0].position = wheelPoss[CarModelName.wheel_fl.ToString()].Position;
+			wheelData[1].id = 1;
+			wheelData[1].position = wheelPoss[CarModelName.wheel_fr.ToString()].Position;
+			wheelData[2].id = 2;
+			wheelData[2].position = wheelPoss[CarModelName.wheel_rl.ToString()].Position;
+			wheelData[3].id = 3;
+			wheelData[3].position = wheelPoss[CarModelName.wheel_rr.ToString()].Position;
+		} catch (Exception e) {
+			GD.Print(e);
+		} finally {
+			carScene?.QueueFree();
+		}
+
+		// validate that the wheels are in the correct quadrant for a car
+        if (wheelData[0].position.X < 0 || wheelData[0].position.Z < 0)
+            throw new Exception(CarModelName.wheel_fl + " should be in pos x and pos z");
+        if (wheelData[1].position.X > 0 || wheelData[1].position.Z < 0)
+            throw new Exception(CarModelName.wheel_fr + " should be in neg x and pos z");
+
+        if (wheelData[2].position.X < 0 || wheelData[2].position.Z > 0)
+            throw new Exception(CarModelName.wheel_rl + " should be in pos x and neg z");
+        if (wheelData[3].position.X > 0 || wheelData[3].position.Z > 0)
+            throw new Exception(CarModelName.wheel_rr + " should be in neg x and neg z");
+
+
+        // Wheel validation
+        float quarterMassForce = Mathf.Abs(gravity.Y) * mass / 4f;
+
+        // generate the load quadratic value
+        wheelLoadQuadratic = 1/(quarterMassForce*4);
+        for (int i = 0; i < wheelData.Length; i++) {
+            var sus = SusByWheelNum(i);
+
+            // Validate that rest suspension position is within min and max
+            float minSusForce = (sus.preloadForce + sus.stiffness) * 0 * 1000;
+            float maxSusForce = sus.stiffness * (sus.preloadForce + sus.maxTravel - sus.minTravel) * 1000;
+            if (quarterMassForce < minSusForce) {
+                throw new Exception("!! Sus min range too high: " + quarterMassForce + " < " + minSusForce + ", decrease pre-load or stiffness");
+            }
+            if (quarterMassForce > maxSusForce) {
+                throw new Exception("!! Sus max range too low: " + quarterMassForce + " > " + maxSusForce + ", increase pre-load or stiffness");
+            }
+        }
+
+
+		// Output the optimal gear up change point based on the torque curve
+        int redlineOffset = 500;
+        var changeTimes = new List<(int, float)>();
+        float maxTransSpeed = SpeedAtRpm(transGearRatios.Length - 1, Engine.MaxRpm - redlineOffset);
+        for (float speed = 0; speed < maxTransSpeed; speed += 0.1f) {
+            int bestGear = -1;
+            float bestTorque = -1;
+            for (int gear = 1; gear < transGearRatios.Length; gear++) {
+                int rpm = RpmAtSpeed(gear, speed);
+                if (rpm > Engine.MaxRpm - redlineOffset) //just a bit off of redline because its not that smooth
+                    continue;
+                float wheelTorque = (float)Engine.CalcTorqueFor(rpm) * transGearRatios[gear] * transFinaldrive;
+                if (bestTorque < wheelTorque) {
+                    bestTorque = wheelTorque;
+                    bestGear = gear;
+                }
+                // This prints a more detailed graph: Log.p(speed * 3.6f, wheelTorque, gear);
+            }
+
+            // This prints a nice graph: Log.p(speed * 3.6f, bestTorque, bestGear);
+            changeTimes.Add(new (bestGear, speed));
+        }
+
+        autoGearDownSpeed = new float[transGearRatios.Length];
+        autoGearDownSpeed[0] = float.MaxValue; // never change out of reverse
+        autoGearUpSpeed = new float[transGearRatios.Length];
+        autoGearUpSpeed[0] = float.MaxValue; // never change out of reverse
+        // Get the first and last value for each gear
+		foreach (var entry in changeTimes.GroupBy(x => x.Item1)) {
+			int gear = entry.Key;
+			float downValue = entry.First().Item2;
+            float upValue = entry.Last().Item2;
+
+			// set the auto up and down changes
+            autoGearDownSpeed[gear] = downValue - 2f; // buffer so they overlap a little
+            autoGearUpSpeed[gear] = upValue;
+		}
+
+        // Checking that there is gear overlap between up and down (as it prevents the
+        // car from changing gear):
+        // [2>----[3>-<2]---<3] not [2>----<2]--[3>---<3]
+        for (int i = 1; i < transGearRatios.Length - 1; i++) {
+            if (GetGearUpSpeed(i) < GetGearDownSpeed(i + 1)) {
+                throw new Exception("Gear overlap test failed for up: " + i + " down: " + (i + 1));
+            }
+        }
+	}
 
     public CarSusDetails SusByWheelNum(int i) {
         return i < 2 ? susF : susR;

@@ -28,7 +28,8 @@ public partial class UpgradeMenu : CenterContainer
 		foreach (var child in GetChildren().ToList()) {
 			RemoveChild(child);
 		}
-		_carDetails.Engine.LoadProps();
+		_carDetails.LoadSelf(Main.DEFAULT_GRAVITY);
+		_carDetails.Engine.LoadSelf();
 
 		var root = new VBoxContainer();
 		AddChild(root);

@@ -54,3 +54,19 @@ a UI for selecting parts
 
 Some way to calculate the starting time to beat
 - maybe get AI to drive it in the future
+
+---
+
+/*
+Unused property colours:
+#e6194B
+#ffe119
+#3cb44b
+#42d4f4
+#4363d8
+#911eb4
+#f032e6
+#fabed4
+#fffac8
+#dcbeff
+*/

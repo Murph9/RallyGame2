@@ -45,11 +45,11 @@ public class EngineDetails {
     public static EngineDetails LoadFromFile(string name) {
         var engineDetails = FileLoader.ReadJsonFile<EngineDetails>("Cars", "Init", "Data", name + ".json");
 
-        engineDetails.LoadProps();
+        engineDetails.LoadSelf();
         return engineDetails;
     }
 
-    public void LoadProps() {
+    public void LoadSelf() {
         var fields = GetFields();
 
         foreach (var field in fields) {
