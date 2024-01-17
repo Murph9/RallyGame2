@@ -232,30 +232,13 @@ public partial class Car : Node3D
     }
 
     private void CalcTraction(Wheel w, double delta) {
-        var angularVelocity = RigidBody.AngularVelocity;
-
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
-		if (localVel.Z == 0) // NaN on divide avoidance strategy
-			localVel.Z = 0.0001f;
-		if (localVel.X == 0) // NaN on divide avoidance strategy
-			localVel.X = 0.0001f;
 
-        // Linear Accelerations: = player.car.length * player.car.yawrate (in rad/sec)
-        var angVel = 0f;
-        if (!float.IsNaN(angularVelocity.Y))
-            angVel = angularVelocity.Y;
-
-        var objectRelVelocity = new Vector3();
-        if (w.ContactRigidBody != null) // convert contact object to local co-ords
-            objectRelVelocity = w.ContactRigidBody.LinearVelocity * RigidBody.GlobalBasis;
+        var objectRelVelocity = (w.ContactRigidBody?.LinearVelocity ?? new Vector3()) * RigidBody.GlobalBasis;
         var groundVelocity = localVel - objectRelVelocity;
 
         var slipr = w.RadSec * w.Details.radius - groundVelocity.Z;
-        float wantSlipRatio;
-        if (groundVelocity.Z == 0)
-            wantSlipRatio = 0;
-        else
-            wantSlipRatio = slipr / Mathf.Abs(groundVelocity.Z);
+        w.SlipRatio = slipr / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
 
         if (HandbrakeCur && w.Details.id >= 2) // rearwheels only
             w.RadSec = 0;
@@ -265,29 +248,16 @@ public partial class Car : Node3D
             steering *= -1;
         }
 
-        float wantSlipAngle;
         if (w.Details.id < 2) {
-            // front wheels
-            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            wantSlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocity.Z)) - steering;
+            // front wheels (player.car.length * player.car.yawrate (in rad/sec))
+            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * RigidBody.AngularVelocity.Y;
+            w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocity.Z)) - steering;
         } else {
-            // rear wheels
-            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * angVel;
-            wantSlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocity.Z));
-            DriftAngle = Mathf.RadToDeg(wantSlipAngle); // set drift angle as the rear amount
+            // rear wheels (player.car.length * player.car.yawrate (in rad/sec))
+            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * RigidBody.AngularVelocity.Y;
+            w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocity.Z));
+            DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
         }
-
-        // smooth slip values for slow speeds
-        // http://web.archive.org/web/20050308061534/home.planet.nl/%7Emonstrous/tutstab.html
-        // although this is just the first step as a differential equation
-        w.SlipAngleDt = wantSlipAngle - w.SlipAngle;
-        w.SlipAngleDt /= SLIP_SIMULATION_BUFFER;
-        w.SlipAngle += w.SlipAngleDt * (float)delta;
-
-        w.SlipRatioDt = wantSlipRatio - w.SlipRatio;
-        w.SlipRatioDt /= SLIP_SIMULATION_BUFFER;
-        w.SlipRatio += w.SlipRatioDt * (float)delta;
-
 
         // merging the forces into a traction circle
         // normalise based on their independant max values
@@ -296,7 +266,7 @@ public partial class Car : Node3D
         float p = Mathf.Sqrt(ratiofract * ratiofract + anglefract * anglefract);
         w.SkidFraction = p;
         if (p == 0) {
-            // if p is zero then both anglefract and ratiofract are 0. So to prevent a 'div 0' we just make the denominator 1
+            // if p is zero then both anglefract and ratiofract are 0. So to prevent a 'div by 0' we just make the denominator 1
             p = 1;
             w.SkidFraction = 0;
         }
