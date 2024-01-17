@@ -1,6 +1,5 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
-using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
 using System.Linq;
 
@@ -8,8 +7,6 @@ namespace murph9.RallyGame2.godot.Cars.Sim;
 
 public partial class Car : Node3D
 {
-    private const float SLIP_SIMULATION_BUFFER = 0.05f;
-
     public RigidBody3D RigidBody { get; }
     public CarDetails Details { get; }
     public CarEngine Engine { get; }
@@ -33,11 +30,6 @@ public partial class Car : Node3D
     public const float TRACTION_DECAY = 3f;
 
     public Vector3 DragForce;
-
-    [DebugGUIGraph(group: 1, autoScale:true)]
-    private float SlipAngle3 => Wheels[3].SlipAngle;
-    [DebugGUIGraph(r:0, group: 1, min:-20, max:20, autoScale:false)]
-    private float SlipAngle3Dt => Wheels[3].SlipAngleDt;
 
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
