@@ -232,6 +232,9 @@ public partial class Car : Node3D
     }
 
     private void CalcTraction(Wheel w, double delta) {
+        w.SlipAngleLast = w.SlipAngle;
+        w.SlipRatioLast = w.SlipRatio;
+
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
 
         var objectRelVelocity = (w.ContactRigidBody?.LinearVelocity ?? new Vector3()) * RigidBody.GlobalBasis;
@@ -288,8 +291,8 @@ public partial class Car : Node3D
 
         // braking and abs
         var brakeCurrent2 = BrakingCur;
-        if (Mathf.Abs(w.SlipRatio / TRACTION_MAXSLIP) >= 1 && localVel.Length() > 10 && BrakingCur > 0)
-            brakeCurrent2 = 0; // very good abs
+        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/2 > TRACTION_MAXSLIP && localVel.Length() > 4)
+            brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 2 frames and stop braking)
 
         // add the wheel force after merging the forces
         var totalLongForce = Engine.WheelEngineTorque[w.Details.id] - wheel_force.Z
