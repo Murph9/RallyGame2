@@ -59,17 +59,10 @@ public partial class Car : Node3D
         RigidBody.Transform = _worldSpawn;
         AddChild(RigidBody);
 
-        Wheels = Details.wheelData.Select(x => {
-            var sus = Details.SusByWheelNum(x.id);
-            return new Wheel(this, x, new RayCast3D() {
-                    Position = x.position + new Vector3(0, sus.maxTravel, 0),
-                    TargetPosition = new Vector3(0, -sus.TravelTotal() - x.radius, 0)
-                });
-        }).ToArray();
+        Wheels = Details.wheelData.Select(x => new Wheel(this, x)).ToArray();
 
         // attach wheels to car
         foreach (var w in Wheels) {
-            RigidBody.AddChild(w.Ray); // ray should not be attached to the wheel so it can detect height
             RigidBody.AddChild(w);
         }
 
@@ -193,7 +186,7 @@ public partial class Car : Node3D
             w.SwayForce = (Wheels[w_id_other].SusTravelDistance - w.SusTravelDistance) * susDetails.antiroll;
         } else if (w.InContact) {
             // in contact but other not in contact, then its basically max sway
-            var otherLength = w.Ray.TargetPosition.Length();
+            var otherLength = w.RayDir.Length();
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
 
@@ -201,7 +194,7 @@ public partial class Car : Node3D
         var totalForce = w.SpringForce - w.Damping - w.SwayForce;
         if (totalForce > 0) {
             // reduce force based on angle to surface
-            var rayDirectionGlobal = RigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
+            var rayDirectionGlobal = RigidBody.GlobalBasis * w.RayDir.Normalized();
             var surfaceNormalFactor = w.ContactNormalGlobal.Dot(-rayDirectionGlobal);
 
             w.SusForce = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
