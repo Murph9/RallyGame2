@@ -103,6 +103,11 @@ public partial class Car : Node3D
 
         Engine._PhysicsProcess(delta);
 
+        var physicsState = GetWorld3D().DirectSpaceState;
+        foreach (var w in Wheels) {
+            w.DoRaycast(physicsState, RigidBody);
+        }
+
         foreach (var w in Wheels) {
             CalcSuspension(w);
 
@@ -158,17 +163,8 @@ public partial class Car : Node3D
         return TRACTION_MAXSLIP + RigidBody.AngularVelocity.Length()*0.125f;
     }
 
-    private void CalcSuspension(Wheel w)
-    {
-        var hitPositionGlobal = w.Ray.GetCollisionPoint();
-        var hitNormalGlobal = w.Ray.GetCollisionNormal();
-
-        w.InContact = w.Ray.IsColliding();
-        if (!w.Ray.IsColliding()) {
-            w.ContactPoint = new Vector3();
-            w.ContactNormal = new Vector3();
-            w.SusTravelDistance = 0;
-            w.ContactRigidBody = null;
+    private void CalcSuspension(Wheel w) {
+        if (!w.InContact) {
             w.SusForce = new Vector3();
             w.SwayForce = 0;
             w.Damping = 0;
@@ -176,21 +172,15 @@ public partial class Car : Node3D
             return;
         }
 
-        w.ContactPoint = RigidBody.ToLocal(hitPositionGlobal);
-        w.ContactNormal = RigidBody.ToLocal(hitNormalGlobal);
+        // TODO suspension keeps sending the car in the -x,+z direction
 
-        var distance = w.Ray.GlobalPosition.DistanceTo(hitPositionGlobal);
-        var maxDist = w.Ray.TargetPosition.Length();
-        w.SusTravelDistance = Math.Clamp(maxDist - distance, 0, maxDist);
-
-        var hitVelocity = RigidBody.LinearVelocity + RigidBody.AngularVelocity.Cross(hitPositionGlobal - RigidBody.GlobalPosition);
+        var hitVelocity = RigidBody.LinearVelocity + RigidBody.AngularVelocity.Cross(w.ContactPointGlobal - RigidBody.GlobalPosition);
         // then calc other thing velocity if its a rigidbody
-        w.ContactRigidBody = w.Ray.GetCollider() as RigidBody3D;
         if (w.ContactRigidBody != null)
-            hitVelocity += w.ContactRigidBody.LinearVelocity + w.ContactRigidBody.AngularVelocity.Cross(hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
+            hitVelocity += w.ContactRigidBody.LinearVelocity + w.ContactRigidBody.AngularVelocity.Cross(w.ContactPointGlobal - w.ContactRigidBody.GlobalPosition);
 
         // Suspension Dampening
-        var relVel = hitNormalGlobal.Dot(hitVelocity);
+        var relVel = w.ContactNormalGlobal.Dot(hitVelocity);
         var susDetails = Details.SusByWheelNum(w.Details.id);
         w.Damping = susDetails.Relax() * relVel;
         if (relVel > 0) {
@@ -200,10 +190,7 @@ public partial class Car : Node3D
         w.SwayForce = 0f;
         int w_id_other = w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2; // fetch the index of the other side
         if (Wheels[w_id_other].InContact) {
-            // calc the other wheels distance (perf isn't that important)
-            var otherHitPositionGlobal = Wheels[w_id_other].Ray.GetCollisionPoint();
-            var otherLength = w.Ray.TargetPosition.Length() - Wheels[w_id_other].Ray.GlobalPosition.DistanceTo(otherHitPositionGlobal);
-            w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
+            w.SwayForce = (Wheels[w_id_other].SusTravelDistance - w.SusTravelDistance) * susDetails.antiroll;
         } else if (w.InContact) {
             // in contact but other not in contact, then its basically max sway
             var otherLength = w.Ray.TargetPosition.Length();
@@ -215,15 +202,13 @@ public partial class Car : Node3D
         if (totalForce > 0) {
             // reduce force based on angle to surface
             var rayDirectionGlobal = RigidBody.GlobalBasis * w.Ray.TargetPosition.Normalized();
-            var surfaceNormalFactor = hitNormalGlobal.Dot(-rayDirectionGlobal);
+            var surfaceNormalFactor = w.ContactNormalGlobal.Dot(-rayDirectionGlobal);
 
             w.SusForce = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;
-            RigidBody.ApplyForce(w.SusForce, hitPositionGlobal - RigidBody.GlobalPosition);
+            RigidBody.ApplyForce(w.SusForce, w.ContactPointGlobal - RigidBody.GlobalPosition);
 
-            w.ContactRigidBody?.ApplyForce(-w.SusForce, hitPositionGlobal - w.ContactRigidBody.GlobalPosition);
+            w.ContactRigidBody?.ApplyForce(-w.SusForce, w.ContactPointGlobal - w.ContactRigidBody.GlobalPosition);
         }
-
-        // TODO suspension keeps sending the car in the -x,+z direction
     }
 
     private void CalcTraction(Wheel w, double delta) {
@@ -309,9 +294,9 @@ public partial class Car : Node3D
 
         w.GripDir = wheel_force;
         if (wheel_force.LengthSquared() > 0)
-            RigidBody.ApplyForce(RigidBody.ToGlobal(wheel_force), RigidBody.ToGlobal(w.ContactPoint) - RigidBody.GlobalPosition);
+            RigidBody.ApplyForce(RigidBody.Basis * wheel_force, w.ContactPointGlobal - RigidBody.GlobalPosition);
         if (w.ContactRigidBody != null)
-            RigidBody.ApplyForce(w.ContactRigidBody.ToGlobal(wheel_force), w.ContactRigidBody.ToGlobal(w.ContactPoint) - w.ContactRigidBody.GlobalPosition);
+            RigidBody.ApplyForce(w.ContactRigidBody.Basis * wheel_force, w.ContactPointGlobal - w.ContactRigidBody.GlobalPosition);
     }
 
     private void ApplyWheelDrag(Wheel w) {
@@ -320,9 +305,9 @@ public partial class Car : Node3D
 
     private void ApplyCentralDrag() {
         // quadratic drag (air resistance)
-        var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
         DragForce = Details.QuadraticDrag(RigidBody.LinearVelocity);
 
+        var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
 		float dragDown = -0.5f * Details.aeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
 		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
