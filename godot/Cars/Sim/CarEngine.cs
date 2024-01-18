@@ -20,7 +20,7 @@ public class CarEngine {
     public CarEngine(Car car) {
         _car = car;
         CurGear = 1;
-        WheelEngineTorque = new float[car.Details.wheelData.Length];
+        WheelEngineTorque = new float[car.Details.WheelData.Length];
     }
 
     public void _PhysicsProcess(double delta) {
@@ -28,12 +28,13 @@ public class CarEngine {
 
         var d = _car.Details;
         var wheelRadius = d.DriveWheelRadius();
-        if (d.driveFront && d.driveRear) {
-			WheelEngineTorque[0] = WheelEngineTorque[1] = WheelEngineTorque[2] = WheelEngineTorque[3]
-             = engineTorque/(4 * wheelRadius);
-        } else if (d.driveFront)
+        if (d.DriveFront && d.DriveRear) {
+            float balance = Mathf.Clamp(d.TransPowerBalance, 0, 1);
+			WheelEngineTorque[0] = WheelEngineTorque[1] = (1 - balance) * engineTorque/(4 * wheelRadius);
+            WheelEngineTorque[2] = WheelEngineTorque[3] = balance * engineTorque/(4 * wheelRadius);
+        } else if (d.DriveFront)
 			WheelEngineTorque[0] = WheelEngineTorque[1] = engineTorque/(2 * wheelRadius);
-		else if (d.driveRear)
+		else if (d.DriveRear)
             WheelEngineTorque[2] = WheelEngineTorque[3] = engineTorque/(2 * wheelRadius);
 
         var localVelocity = _car.RigidBody.LinearVelocity * _car.RigidBody.GlobalBasis;
@@ -44,19 +45,19 @@ public class CarEngine {
         var d = _car.Details;
         var w = _car.Wheels;
 
-        if (!d.driveFront && !d.driveRear)
+        if (!d.DriveFront && !d.DriveRear)
             return 0;
 
-        float curGearRatio = d.transGearRatios[CurGear];
-        float diffRatio = d.transFinaldrive;
+        float curGearRatio = d.TransGearRatios[CurGear];
+        float diffRatio = d.TransFinaldrive;
 
         float wheelrot = 0;
 		//get the drive wheels rotation speed
-		if (d.driveFront && d.driveRear)
+		if (d.DriveFront && d.DriveRear)
 			wheelrot = (w[0].RadSec + w[1].RadSec + w[2].RadSec + w[3].RadSec)/4;
-		else if (d.driveFront)
+		else if (d.DriveFront)
 			wheelrot = (w[0].RadSec + w[1].RadSec)/2;
-		else if (d.driveRear)
+		else if (d.DriveRear)
 			wheelrot = (w[2].RadSec + w[3].RadSec)/2;
 
         CurRPM = (int)(wheelrot*curGearRatio*diffRatio*(60/Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
@@ -93,11 +94,11 @@ public class CarEngine {
 
         var d = _car.Details;
 
-		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.transGearRatios.Length - 1) {
-			_gearChangeTime = d.autoChangeTime;
+		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.TransGearRatios.Length - 1) {
+			_gearChangeTime = d.AutoChangeTime;
 			_gearChangeTo = CurGear + 1;
 		} else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1) {
-			_gearChangeTime = d.autoChangeTime;
+			_gearChangeTime = d.AutoChangeTime;
 			_gearChangeTo = CurGear - 1;
 		}
     }

@@ -19,6 +19,7 @@
   "driveRear": true,
   "engineFileName": "e_Runner",
   "mass": 1200,
+  "maxSteerAngle": 0.5,
   "minDriftAngle": 7,
   "name": "runner",
   "nitroForce": 300,
@@ -54,7 +55,6 @@
     0.84
   ],
   "transPowerBalance": 0.5,
-  "wMaxSteerAngle": 0.5,
   "wheelData": [
     {
       "mass": 10,

@@ -13,8 +13,8 @@ public partial class CarCamera : Node3D {
     public CarCamera(Car car) {
         _car = car;
 
-        _offset = new Vector3(0, _car.Details.camOffsetHeight, _car.Details.camOffsetLength);
-        _lookAt = new Vector3(0, _car.Details.camLookAtHeight, 0);
+        _offset = new Vector3(0, _car.Details.CamOffsetHeight, _car.Details.CamOffsetLength);
+        _lookAt = new Vector3(0, _car.Details.CamLookAtHeight, 0);
     }
 
     public override void _PhysicsProcess(double delta) {

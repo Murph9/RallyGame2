@@ -47,7 +47,7 @@ public partial class Car : Node3D
         var camera = new CarCamera(this);
         AddChild(camera);
 
-        var scene = GD.Load<PackedScene>("res://assets/" + Details.carModel);
+        var scene = GD.Load<PackedScene>("res://assets/" + Details.CarModel);
         var carModel = scene.Instantiate<Node3D>();
         RigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
         var parent = RigidBody.GetParent();
@@ -55,11 +55,11 @@ public partial class Car : Node3D
         parent.QueueFree();
 
         // set values from the details
-        RigidBody.Mass = Details.mass;
+        RigidBody.Mass = Details.Mass;
         RigidBody.Transform = _worldSpawn;
         AddChild(RigidBody);
 
-        Wheels = Details.wheelData.Select(x => new Wheel(this, x)).ToArray();
+        Wheels = Details.WheelData.Select(x => new Wheel(this, x)).ToArray();
 
         // attach wheels to car
         foreach (var w in Wheels) {
@@ -114,15 +114,16 @@ public partial class Car : Node3D
 
     private void ReadInputs()
     {
-        _steeringLeftRaw = Input.GetActionStrength("car_left") * Details.wMaxSteerAngle;
-        _steeringRightRaw = Input.GetActionStrength("car_right") * Details.wMaxSteerAngle;
+        // TODO speed factor
+        _steeringLeftRaw = Input.GetActionStrength("car_left") * Details.MaxSteerAngle;
+        _steeringRightRaw = Input.GetActionStrength("car_right") * Details.MaxSteerAngle;
 
         var steeringWant = 0f;
         if (_steeringLeftRaw != 0) //left
             steeringWant += GetBestTurnAngle(_steeringLeftRaw, 1);
         if (_steeringRightRaw != 0) //right
             steeringWant -= GetBestTurnAngle(_steeringRightRaw, -1);
-        Steering = Mathf.Clamp(steeringWant, -Details.wMaxSteerAngle, Details.wMaxSteerAngle);
+        Steering = Mathf.Clamp(steeringWant, -Details.MaxSteerAngle, Details.MaxSteerAngle);
 
         HandbrakeCur = Input.IsActionPressed("car_handbrake");
 
@@ -141,7 +142,7 @@ public partial class Car : Node3D
 
     private float GetBestTurnAngle(float steeringRaw, int sign) {
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
-        if (localVel.Z < 0 || ((-sign * DriftAngle) < 0 && Mathf.Abs(DriftAngle) > Mathf.DegToRad(Details.minDriftAngle))) {
+        if (localVel.Z < 0 || ((-sign * DriftAngle) < 0 && Mathf.Abs(DriftAngle) > Mathf.DegToRad(Details.MinDriftAngle))) {
             //when going backwards, slow or needing to turning against drift, you get no speed factor
             //eg: car is pointing more left than velocity, and is also turning left
             //and drift angle needs to be large enough to matter
@@ -269,13 +270,13 @@ public partial class Car : Node3D
 
         // add the wheel force after merging the forces
         var totalLongForce = Engine.WheelEngineTorque[w.Details.id] - wheel_force.Z
-                - (brakeCurrent2 * Details.brakeMaxTorque * Mathf.Sign(w.RadSec));
+                - (brakeCurrent2 * Details.BrakeMaxTorque * Mathf.Sign(w.RadSec));
         // drive wheels have the engine to pull along
         float wheelInertia = Details.WheelInertiaNoEngine(w.Details.id);
-        if (Details.driveFront && (w.Details.id == 0 || w.Details.id == 1)) {
+        if (Details.DriveFront && (w.Details.id == 0 || w.Details.id == 1)) {
             wheelInertia = Details.WheelInertiaPlusEngine();
         }
-        if (Details.driveRear && (w.Details.id == 2 || w.Details.id == 3)) {
+        if (Details.DriveRear && (w.Details.id == 2 || w.Details.id == 3)) {
             wheelInertia = Details.WheelInertiaPlusEngine();
         }
         var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.radius;
@@ -301,7 +302,7 @@ public partial class Car : Node3D
         DragForce = Details.QuadraticDrag(RigidBody.LinearVelocity);
 
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
-		float dragDown = -0.5f * Details.aeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
+		float dragDown = -0.5f * Details.AeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
 		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
 }
