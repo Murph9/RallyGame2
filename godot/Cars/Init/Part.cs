@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.Cars.Init.Part;
+namespace murph9.RallyGame2.godot.Cars.Init;
 
 public class Part {
     public string Name { get; set; }

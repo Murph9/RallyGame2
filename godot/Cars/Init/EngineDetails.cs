@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace murph9.RallyGame2.godot.Cars.Init.Part;
+namespace murph9.RallyGame2.godot.Cars.Init;
 
 public class EngineDetails {
 
@@ -37,7 +37,6 @@ public class EngineDetails {
 
     public double CoolingRate; // K / min
 
-    public Dictionary<string, double> Values { get; private set; }= new ();
     public List<Part> Parts { get; set; } = new List<Part>();
 
     private static FieldInfo[] FIELD_CACHE;
