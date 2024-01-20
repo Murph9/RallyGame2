@@ -2,14 +2,11 @@ using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
-public class EngineDetails {
+public class EngineDetails : IHaveParts {
 
-    // other props that aren't generated from parts
     public string Name { get; set; }
     public int IdleRPM { get; set; }
     public int EngineInertia { get; set; }
@@ -17,29 +14,43 @@ public class EngineDetails {
     public float[] BaseTorqueCurve { get; set; }
     public int BaseTorqueCurveMaxRPM => (BaseTorqueCurve.Length - 1) * 1000;
 
-    // all fields have max value defaults as all parts apply restrictions
+    [PartField(int.MaxValue)]
     public int PistonCount; // count
-
+    [PartField(double.MaxValue)]
     public double IdleDrag; // ratio
 
+    [PartField(double.MaxValue)]
     public double Compression; // ratio
+    [PartField(double.MaxValue)]
     public double CombustionEfficiency; // %
+    [PartField(double.MaxValue)]
     public double CylinderBore; // m
+    [PartField(double.MaxValue)]
     public double StrokeLength; // m
 
+    [PartField(double.MaxValue)]
     public double TurboAirMult; // ratio
+    [PartField(double.MaxValue)]
     public double TurboAirStartRPM; // int
 
+    [PartField(double.MaxValue)]
     public double IntakeAirEffiency; // L/s
+    [PartField(double.MaxValue)]
     public double ExhaustAirEffiency; // L/s
+    [PartField(int.MaxValue)]
     public int MaxRpm; // w/min
+    [PartField(double.MaxValue)]
     public double TransmissionEfficiency; // ratio
 
+    [PartField(double.MaxValue)]
     public double CoolingRate; // K / min
 
-    public List<Part> Parts { get; set; } = new List<Part>();
+    private PartReader PartReader { get; init; }
+    public List<Part> Parts { get; init; } = new List<Part>();
 
-    private static FieldInfo[] FIELD_CACHE;
+    public EngineDetails() {
+        PartReader = new PartReader(this);
+    }
 
     public static EngineDetails LoadFromFile(string name) {
         var engineDetails = FileLoader.ReadJsonFile<EngineDetails>("Cars", "Init", "Data", name + ".json");
@@ -49,48 +60,26 @@ public class EngineDetails {
     }
 
     public void LoadSelf() {
-        var fields = GetFields();
+        PartReader.Init();
 
-        foreach (var field in fields) {
-            if (field.FieldType == typeof(int))
-                field.SetValue(this, int.MaxValue);
-            if (field.FieldType == typeof(double))
-                field.SetValue(this, double.MaxValue);
-        }
-
-        PistonCount = int.MaxValue;
-        IdleDrag = double.MaxValue;
-        Compression = double.MaxValue;
-        CombustionEfficiency = double.MaxValue;
-        CylinderBore = double.MaxValue;
-        StrokeLength = double.MaxValue;
-        TurboAirMult = double.MaxValue;
-        TurboAirStartRPM = int.MaxValue;
-        IntakeAirEffiency = double.MaxValue;
-        ExhaustAirEffiency = double.MaxValue;
-        MaxRpm = int.MaxValue;
-        TransmissionEfficiency = double.MaxValue;
-        CoolingRate = double.MaxValue;
-
+        // apply our custom values
+        var fields = PartReader.GetFields();
         foreach (var part in Parts) {
-            part.Validate();
-
             var partValues = part.GetLevel();
 
             foreach (var field in fields) {
+                // we use min for this class
                 if (field.FieldType == typeof(int) && partValues.TryGetValue(field.Name, out double value))
                     field.SetValue(this, Mathf.Min((int)field.GetValue(this), (int)value));
                 if (field.FieldType == typeof(double) && partValues.TryGetValue(field.Name, out value))
                     field.SetValue(this, Mathf.Min((double)field.GetValue(this), value));
             }
-
-            part.PartColour = Color.FromHtml(part.Color);
         }
 
         // validation
-        var engineSet = AreAllSet();
+        var engineSet = PartReader.AreAllSet();
         if (!engineSet) {
-            throw new Exception("Engine value not set, see" + this);
+            throw new Exception("Engine Details value not set, see" + this);
         }
     }
 
@@ -161,49 +150,6 @@ public class EngineDetails {
         return torque * 2 * Mathf.Pi * rpm / (60 * 1000); //kW
     }
 
-    private FieldInfo[] GetFields() {
-        if (FIELD_CACHE != null) return FIELD_CACHE;
-
-        FIELD_CACHE = GetType().GetFields();
-        return FIELD_CACHE;
-    }
-
-    public bool AreAllSet() {
-        var fields = GetFields();
-
-        foreach (var field in fields) {
-            if (field.FieldType == typeof(int) && (int)field.GetValue(this) == int.MaxValue)
-                return false;
-            if (field.FieldType == typeof(double) && (double)field.GetValue(this) == double.MaxValue)
-                return false;
-        }
-
-        return true;
-    }
-
-    public Dictionary<string, double> AsDict() {
-        return GetFields().ToDictionary(x => x.Name, x => {
-            if (x.FieldType == typeof(double))
-                return (double)x.GetValue(this);
-            if (x.FieldType == typeof(int))
-                return (int)x.GetValue(this);
-
-            return double.MinValue;
-        });
-    }
-
-    public Dictionary<string, List<Part>> GetValueCauses() {
-        var dict = AsDict().ToDictionary(x => x.Key, x => new List<Part>());
-
-        foreach (var part in Parts) {
-            var partValues = part.GetLevel();
-
-            foreach (var field in GetFields()) {
-                if (partValues.ContainsKey(field.Name))
-                    dict[field.Name].Add(part);
-            }
-        }
-
-        return dict;
-    }
+    public Dictionary<string, double> AsDict() => PartReader.ResultAsDict();
+    public Dictionary<string, List<Part>> GetValueCauses() => PartReader.GetValueCauses();
 }
