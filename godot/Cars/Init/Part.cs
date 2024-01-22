@@ -44,51 +44,88 @@ public interface IHaveParts {
 
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public class PartFieldAttribute : Attribute {
-    public object? DefaultValue { get; init; }
-    public PartFieldAttribute(object? defaultValue) {
-        DefaultValue = defaultValue;
-    }
+public class PartFieldAttribute(object defaultValue, string howToApply) : Attribute {
+    public object DefaultValue { get; init; } = defaultValue;
+    public string HowToApply { get; init; } = howToApply;
 }
 
 public class PartReader {
+    record FieldProps(object? DefaultValue, string Action);
+
+    public const string APPLY_SET = "apply_set";
+    public const string APPLY_MIN = "apply_min";
+
     private readonly IHaveParts _self;
-    private readonly Dictionary<FieldInfo, object?> _fields;
+    private readonly Dictionary<FieldInfo, FieldProps> _fields = [];
     public PartReader(IHaveParts self) {
         _self = self;
-        _fields = new Dictionary<FieldInfo, object?>();
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
-                _fields.Add(field, partFieldAttribute.DefaultValue);
+                _fields.Add(field, new FieldProps(partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply));
             }
         }
     }
 
-    public void Init() {
+    public bool ValidateAndSetFields() {
         foreach (var part in _self.Parts) {
             part.Validate();
         }
 
+        // set defaults
         foreach (var field in _fields) {
-            field.Key.SetValue(_self, field.Value);
+            field.Key.SetValue(_self, field.Value.DefaultValue);
         }
+
+        // then apply given method of setting them
+        foreach (var part in _self.Parts) {
+            var partValues = part.GetLevel();
+
+            foreach (var fieldEntry in _fields) {
+                var field = fieldEntry.Key;
+
+                if (!partValues.TryGetValue(field.Name, out double value))
+                    continue;
+
+                if (fieldEntry.Value.Action == APPLY_SET) {
+                    if (field.FieldType == typeof(int))
+                        field.SetValue(_self, (int)value);
+                    if (field.FieldType == typeof(float))
+                        field.SetValue(_self, (float)value);
+                    if (field.FieldType == typeof(double))
+                        field.SetValue(_self, value);
+
+                } else if (fieldEntry.Value.Action == APPLY_MIN) {
+                    var currentValue = field.GetValue(_self);
+                    if (field.FieldType == typeof(int))
+                        field.SetValue(_self, Mathf.Min((int)currentValue, (int)value));
+                    if (field.FieldType == typeof(float))
+                        field.SetValue(_self, Mathf.Min((float)currentValue, (float)value));
+                    if (field.FieldType == typeof(double))
+                        field.SetValue(_self, Mathf.Min((double)currentValue, value));
+                }
+            }
+        }
+
+        return AreAllSet();
     }
 
     public IEnumerable<FieldInfo> GetFields() => _fields.Keys;
 
     public Dictionary<string, double> ResultAsDict() {
         return GetFields().ToDictionary(x => x.Name, x => {
-            if (x.FieldType == typeof(double))
-                return (double)x.GetValue(_self);
             if (x.FieldType == typeof(int))
                 return (int)x.GetValue(_self);
+            if (x.FieldType == typeof(float))
+                return (float)x.GetValue(_self);
+            if (x.FieldType == typeof(double))
+                return (double)x.GetValue(_self);
 
             return double.MinValue;
         });
     }
 
     public Dictionary<string, List<Part>> GetValueCauses() {
-        var dict = ResultAsDict().ToDictionary(x => x.Key, x => new List<Part>());
+        var dict = GetFields().ToDictionary(x => x.Name, x => new List<Part>());
 
         foreach (var part in _self.Parts) {
             var partValues = part.GetLevel();
@@ -104,7 +141,7 @@ public class PartReader {
 
     public bool AreAllSet() {
         foreach (var field in _fields)
-            if (field.Key.GetValue(_self) == field.Value)
+            if (field.Key.GetValue(_self) == field.Value.DefaultValue)
                 return false;
 
         return true;

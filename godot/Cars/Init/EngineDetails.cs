@@ -14,39 +14,39 @@ public class EngineDetails : IHaveParts {
     public float[] BaseTorqueCurve { get; set; }
     public int BaseTorqueCurveMaxRPM => (BaseTorqueCurve.Length - 1) * 1000;
 
-    [PartField(int.MaxValue)]
+    [PartField(int.MaxValue, PartReader.APPLY_MIN)]
     public int PistonCount; // count
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double IdleDrag; // ratio
 
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double Compression; // ratio
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double CombustionEfficiency; // %
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double CylinderBore; // m
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double StrokeLength; // m
 
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double TurboAirMult; // ratio
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double TurboAirStartRPM; // int
 
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double IntakeAirEffiency; // L/s
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double ExhaustAirEffiency; // L/s
-    [PartField(int.MaxValue)]
+    [PartField(int.MaxValue, PartReader.APPLY_MIN)]
     public int MaxRpm; // w/min
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double TransmissionEfficiency; // ratio
 
-    [PartField(double.MaxValue)]
+    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double CoolingRate; // K / min
 
     private PartReader PartReader { get; init; }
-    public List<Part> Parts { get; init; } = new List<Part>();
+    public List<Part> Parts { get; init; } = [];
 
     public EngineDetails() {
         PartReader = new PartReader(this);
@@ -60,25 +60,7 @@ public class EngineDetails : IHaveParts {
     }
 
     public void LoadSelf() {
-        PartReader.Init();
-
-        // apply our custom values
-        var fields = PartReader.GetFields();
-        foreach (var part in Parts) {
-            var partValues = part.GetLevel();
-
-            foreach (var field in fields) {
-                // we use min for this class
-                if (field.FieldType == typeof(int) && partValues.TryGetValue(field.Name, out double value))
-                    field.SetValue(this, Mathf.Min((int)field.GetValue(this), (int)value));
-                if (field.FieldType == typeof(double) && partValues.TryGetValue(field.Name, out value))
-                    field.SetValue(this, Mathf.Min((double)field.GetValue(this), value));
-            }
-        }
-
-        // validation
-        var engineSet = PartReader.AreAllSet();
-        if (!engineSet) {
+        if (!PartReader.ValidateAndSetFields()) {
             throw new Exception("Engine Details value not set, see" + this);
         }
     }

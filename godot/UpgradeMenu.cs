@@ -11,11 +11,6 @@ public partial class UpgradeMenu : CenterContainer
 	private CarDetails _carDetailsPrevious;
 	private CarDetails _carDetails;
 
-	private Node[] _upgrades; // each containing a dropdown of level
-
-	private Graph _torqueGraph; //s?
-	private RichTextLabel _stats;
-
     public override void _Ready() {
 		_carDetailsPrevious = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 		_carDetails = _carDetailsPrevious.Clone();
@@ -28,7 +23,6 @@ public partial class UpgradeMenu : CenterContainer
 			RemoveChild(child);
 		}
 		_carDetails.LoadSelf(Main.DEFAULT_GRAVITY);
-		_carDetails.Engine.LoadSelf();
 
 		var root = new VBoxContainer();
 		AddChild(root);
@@ -43,51 +37,61 @@ public partial class UpgradeMenu : CenterContainer
 		var statsBox = new VBoxContainer();
 		mainBox.AddChild(statsBox);
 
-		_stats = new RichTextLabel() {
+		var stats = new RichTextLabel() {
 			LayoutMode = 2,
 			BbcodeEnabled = true,
 			SizeFlagsHorizontal = SizeFlags.Fill,
 			FitContent = true,
 			AutowrapMode = TextServer.AutowrapMode.Off
 		};
-		statsBox.AddChild(_stats);
+		statsBox.AddChild(stats);
 
 		var maxTorque = _carDetails.Engine.MaxTorque();
 		var maxKw = _carDetails.Engine.MaxKw();
-		_stats.AppendText($"Max Torque (Nm): {double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm\n");
-		_stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
-		_stats.PushColor(Colors.White);
-		_stats.PushTable(4);
-		var prevDetails = _carDetailsPrevious.Engine.AsDict();
+		stats.AppendText($"Max Torque (Nm): {double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm\n");
+		stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
+		stats.PushColor(Colors.White);
+		stats.PushTable(4);
+		var prevDetails = _carDetailsPrevious.AsDict();
+		foreach (var entry in _carDetailsPrevious.Engine.AsDict()) {
+			prevDetails.Add(entry.Key, entry.Value);
+		}
 		var causes = _carDetails.Engine.GetValueCauses();
-		foreach (var entry in _carDetails.Engine.AsDict()) {
-			_stats.PushCell();
-			_stats.AppendText(entry.Key);
-			_stats.Pop();
-			_stats.PushCell();
-			_stats.PushColor(Colors.Blue);
-			_stats.AppendText(double.Round(prevDetails[entry.Key], 2).ToString());
-			_stats.Pop();
-			_stats.Pop();
+		foreach (var entry in _carDetails.GetValueCauses()) {
+			causes.Add(entry.Key, entry.Value);
+		}
+		var list = _carDetails.Engine.AsDict();
+		foreach (var entry in _carDetails.AsDict()) {
+			list.Add(entry.Key, entry.Value);
+		}
+		foreach (var entry in list) {
+			stats.PushCell();
+			stats.AppendText(entry.Key);
+			stats.Pop();
+			stats.PushCell();
+			stats.PushColor(Colors.Blue);
+			stats.AppendText(double.Round(prevDetails[entry.Key], 2).ToString());
+			stats.Pop();
+			stats.Pop();
 			if (entry.Value != prevDetails[entry.Key]) {
-				_stats.PushCell();
-				_stats.PushColor(Colors.Green);
-				_stats.AppendText(double.Round(entry.Value, 2).ToString());
-				_stats.Pop();
-				_stats.Pop();
+				stats.PushCell();
+				stats.PushColor(Colors.Green);
+				stats.AppendText(double.Round(entry.Value, 2).ToString());
+				stats.Pop();
+				stats.Pop();
 			} else {
-				_stats.PushCell();
-				_stats.Pop();
+				stats.PushCell();
+				stats.Pop();
 			}
-			_stats.PushCell();
-			_stats.PushColor(Colors.Gray);
-			_stats.AppendText(string.Join(", ", causes[entry.Key].Select(x => $"[color={x.Color}]{x.Name}[/color]")));
-			_stats.Pop();
-			_stats.Pop();
+			stats.PushCell();
+			stats.PushColor(Colors.Gray);
+			stats.AppendText(string.Join(", ", causes[entry.Key].Select(x => $"[color={x.Color}]{x.Name}[/color]")));
+			stats.Pop();
+			stats.Pop();
 		}
 
-		_stats.Pop();
-		_stats.Pop();
+		stats.Pop();
+		stats.Pop();
 
         var datasetNew = new Graph.Dataset("Torque", 200, max: 500) {
             Color = Colors.Green
@@ -110,14 +114,16 @@ public partial class UpgradeMenu : CenterContainer
             	datasetKwOld.Push((float)_carDetailsPrevious.Engine.CalcKwFor(i*50));
 			}
         }
-		_torqueGraph = new Graph(new Vector2(300, 250), new [] { datasetNew, datasetOld });
-		statsBox.AddChild(_torqueGraph);
+		var torqueGraph = new Graph(new Vector2(300, 250), new [] { datasetNew, datasetOld });
+		statsBox.AddChild(torqueGraph);
 
 		var kWGraph = new Graph(new Vector2(300, 250), new [] { datasetKwNew, datasetKwOld });
 		statsBox.AddChild(kWGraph);
 
 		// options to select
-		foreach (var part in _carDetails.Engine.Parts) {
+		var parts = _carDetails.Engine.Parts.ToList();
+		parts.AddRange(_carDetails.Parts);
+		foreach (var part in parts) {
 			var option = new OptionButton();
 			var popup = option.GetPopup();
 			int i = 0;

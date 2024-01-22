@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
-public class CarDetails {
+public class CarDetails : IHaveParts {
     public string Name;
     public string CarModel;
 
@@ -52,7 +52,11 @@ public class CarDetails {
 	public float FuelMax = 80;
 	public float FuelRpmRate = 0.00003f;
 
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float BrakeMaxTorque;
+
+	private PartReader PartReader { get; init; }
+    public List<Part> Parts { get; set; } = [];
 
 	////////
 	//Wheels
@@ -64,7 +68,17 @@ public class CarDetails {
 	public float MinDriftAngle;
 	public Vector3 JUMP_FORCE;
 
+	public CarDetails() {
+		PartReader = new PartReader(this);
+	}
+
 	public void LoadSelf(Vector3 gravity) {
+        if (!PartReader.ValidateAndSetFields()) {
+            throw new Exception("Car Details value not set, see" + this);
+        }
+
+		Engine.LoadSelf();
+
 		// calculate wheel positions based on the model
 		Node3D carScene = null;
 		try {
@@ -223,4 +237,7 @@ public class CarDetails {
         var serialized = JsonConvert.SerializeObject(this);
         return JsonConvert.DeserializeObject<CarDetails>(serialized);
     }
+
+	public Dictionary<string, double> AsDict() => PartReader.ResultAsDict();
+	public Dictionary<string, List<Part>> GetValueCauses() => PartReader.GetValueCauses();
 }
