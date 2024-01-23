@@ -24,9 +24,11 @@ public class CarDetails : IHaveParts {
 
     public float Mass; //kg (total, do NOT add wheel or engine mass/inertia to this)
 
-	public float AeroDrag;
 	public float AreoLinearDrag; //0.003 to 0.02 (dimensionless number)
 	public float AeroCrossSection; //m^2 front area
+	[PartField(0f, PartReader.APPLY_ADD)]
+	public float AeroDrag;
+	[PartField(0f, PartReader.APPLY_ADD)]
 	public float AeroDownforce; //not a default yet
 
 	// travel values are relative to wheel offset pos

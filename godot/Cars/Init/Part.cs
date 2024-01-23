@@ -28,7 +28,7 @@ public class Part {
         return GetLevel().Where(x => propNames.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
     }
 
-    public void Validate() {
+    public void Validate(IEnumerable<FieldInfo> allFields) {
         if (string.IsNullOrWhiteSpace(Name))
             throw new Exception("No name set for part with levels " + Levels.Length);
         if (CurrentLevel < 0 || CurrentLevel > Levels.Length - 1)
@@ -37,6 +37,14 @@ public class Part {
             throw new Exception($"Part {Name}: Level {Levels.Length} has different amount to LevelCost {LevelCost.Length}");
         if (!Godot.Color.HtmlIsValid(Color))
             throw new Exception($"Part {Name}: no colour set");
+
+        foreach (var props in Levels) {
+            foreach (var field in props) {
+                if (!allFields.Any(x => x.Name == field.Key)) {
+                    throw new Exception($"Part {Name} applies prop '{field.Key}' but it doesn't exist to set");
+                }
+            }
+        }
     }
 }
 
@@ -56,6 +64,7 @@ public class PartReader {
 
     public const string APPLY_SET = "apply_set";
     public const string APPLY_MIN = "apply_min";
+    public const string APPLY_ADD = "apply_add";
 
     private readonly IHaveParts _self;
     private readonly Dictionary<FieldInfo, FieldProps> _fields = [];
@@ -70,7 +79,7 @@ public class PartReader {
 
     public bool ValidateAndSetFields() {
         foreach (var part in _self.Parts) {
-            part.Validate();
+            part.Validate(_fields.Keys);
         }
 
         // set defaults
@@ -88,6 +97,8 @@ public class PartReader {
                 if (!partValues.TryGetValue(field.Name, out JsonElement value))
                     continue;
 
+                var currentValue = field.GetValue(_self);
+
                 if (fieldEntry.Value.Action == APPLY_SET) {
                     if (field.FieldType == typeof(bool))
                         field.SetValue(_self, value.GetBoolean());
@@ -103,7 +114,6 @@ public class PartReader {
                     }
 
                 } else if (fieldEntry.Value.Action == APPLY_MIN) {
-                    var currentValue = field.GetValue(_self);
                     if (field.FieldType == typeof(int))
                         field.SetValue(_self, Mathf.Min((int)currentValue, value.GetInt32()));
                     else if (field.FieldType == typeof(float))
@@ -112,6 +122,17 @@ public class PartReader {
                         field.SetValue(_self, Mathf.Min((double)currentValue, value.GetDouble()));
                     else {
                         throw new Exception($"Unsupported option: {field.FieldType} with APPLY_MIN");
+                    }
+
+                } else if (fieldEntry.Value.Action == APPLY_ADD) {
+                    if (field.FieldType == typeof(int))
+                        field.SetValue(_self, (int)currentValue + value.GetInt32());
+                    else if (field.FieldType == typeof(float))
+                        field.SetValue(_self, (float)currentValue + (float)value.GetDouble());
+                    else if (field.FieldType == typeof(double))
+                        field.SetValue(_self, (double)currentValue + value.GetDouble());
+                    else {
+                        throw new Exception($"Unsupported option: {field.FieldType} with APPLY_ADD");
                     }
                 }
             }

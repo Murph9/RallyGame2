@@ -59,9 +59,7 @@ Some way to calculate the starting time to beat
 
 /*
 Unused property colours:
-#42d4f4
 #4363d8
-#911eb4
 #f032e6
 #fabed4
 #fffac8
