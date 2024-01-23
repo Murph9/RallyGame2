@@ -52,28 +52,18 @@ public partial class UpgradeMenu : CenterContainer
 		stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
 		stats.PushColor(Colors.White);
 		stats.PushTable(4);
-		var prevDetails = _carDetailsPrevious.AsDict();
-		foreach (var entry in _carDetailsPrevious.Engine.AsDict()) {
-			prevDetails.Add(entry.Key, entry.Value);
-		}
-		var causes = _carDetails.Engine.GetValueCauses();
-		foreach (var entry in _carDetails.GetValueCauses()) {
-			causes.Add(entry.Key, entry.Value);
-		}
-		var list = _carDetails.Engine.AsDict();
-		foreach (var entry in _carDetails.AsDict()) {
-			list.Add(entry.Key, entry.Value);
-		}
-		foreach (var entry in list) {
+		var prevDetails = _carDetailsPrevious.GetResults();
+		var details = _carDetails.GetResults();
+		foreach (var entry in details) {
 			stats.PushCell();
-			stats.AppendText(entry.Key);
+			stats.AppendText(entry.Name);
 			stats.Pop();
 			stats.PushCell();
 			stats.PushColor(Colors.Blue);
-			stats.AppendText(ToStringWithRounding(prevDetails[entry.Key], 2));
+			stats.AppendText(ToStringWithRounding(prevDetails.First(x => x.Name == entry.Name).Value, 2));
 			stats.Pop();
 			stats.Pop();
-			if ((dynamic)entry.Value != (dynamic)prevDetails[entry.Key]) {
+			if ((dynamic)entry.Value != (dynamic)prevDetails.First(x => x.Name == entry.Name).Value) {
 				// https://stackoverflow.com/a/8855857/9353639
 				// TODO support arrays
 				stats.PushCell();
@@ -87,7 +77,7 @@ public partial class UpgradeMenu : CenterContainer
 			}
 			stats.PushCell();
 			stats.PushColor(Colors.Gray);
-			stats.AppendText(string.Join(", ", causes[entry.Key].Select(x => $"[color={x.Color}]{x.Name}[/color]")));
+			stats.AppendText(string.Join(", ", entry.BecauseOf.Select(x => $"[color={x.Color}]{x.Name}[/color]")));
 			stats.Pop();
 			stats.Pop();
 		}

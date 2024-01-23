@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public class PartReader {
-    record FieldProps(object? DefaultValue, string Action);
+    record FieldProps(object? DefaultValue, string Action, HigherIs HigherIs);
 
     public const string APPLY_SET = "apply_set";
     public const string APPLY_MIN = "apply_min";
@@ -20,7 +20,7 @@ public class PartReader {
         _self = self;
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
-                _fields.Add(field, new FieldProps(partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply));
+                _fields.Add(field, new FieldProps(partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs));
             }
         }
     }
@@ -88,35 +88,22 @@ public class PartReader {
             }
         }
 
-        return AreAllSet();
-    }
-
-    public IEnumerable<FieldInfo> GetFields() => _fields.Keys;
-
-    public Dictionary<string, object> ResultAsDict() {
-        return GetFields().ToDictionary(x => x.Name, x => x.GetValue(_self));
-    }
-
-    public Dictionary<string, List<Part>> GetValueCauses() {
-        var dict = GetFields().ToDictionary(x => x.Name, x => new List<Part>());
-
-        foreach (var part in _self.Parts) {
-            var partValues = part.GetLevel();
-
-            foreach (var field in GetFields()) {
-                if (partValues.ContainsKey(field.Name))
-                    dict[field.Name].Add(part);
-            }
-        }
-
-        return dict;
-    }
-
-    public bool AreAllSet() {
         foreach (var field in _fields)
             if (field.Key.GetValue(_self) == field.Value.DefaultValue)
                 return false;
 
         return true;
+    }
+
+    public IEnumerable<PartResult> GetResults() {
+        foreach (var field in _fields) {
+            var li = new List<Part>();
+            foreach (var part in _self.Parts) {
+                var partValues = part.GetLevel();
+                if (partValues.ContainsKey(field.Key.Name))
+                    li.Add(part);
+            }
+            yield return new PartResult(field.Key.Name, field.Key.GetValue(_self), field.Value.HigherIs, li);
+        }
     }
 }

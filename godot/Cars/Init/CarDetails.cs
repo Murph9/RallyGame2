@@ -262,6 +262,14 @@ public class CarDetails : IHaveParts {
 		return cloned;
     }
 
-	public Dictionary<string, object> AsDict() => PartReader.ResultAsDict();
-	public Dictionary<string, List<Part>> GetValueCauses() => PartReader.GetValueCauses();
+	public IEnumerable<PartResult> GetResults() {
+		var details = new List<PartResult>();
+		foreach (var result in PartReader.GetResults()) {
+			details.Add(result);
+		}
+		foreach (var result in Engine.GetResults()) {
+			details.Add(result);
+		}
+		return details;
+	}
 }
