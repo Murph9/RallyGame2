@@ -55,7 +55,7 @@ public partial class Car : Node3D
         parent.QueueFree();
 
         // set values from the details
-        RigidBody.Mass = Details.Mass;
+        RigidBody.Mass = (float)Details.TotalMass;
         RigidBody.Transform = _worldSpawn;
         AddChild(RigidBody);
 

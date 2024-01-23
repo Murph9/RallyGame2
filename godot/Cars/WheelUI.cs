@@ -52,7 +52,7 @@ public partial class WheelUI : VBoxContainer
 
     public override void _Draw() {
 		var control = GetNode<Control>("Control");
-		var dir = new Vector2(Wheel.GripDir.X, Wheel.GripDir.Z) / (Wheel.Car.Details.Mass + Car.TRACTION_MAX);
+		var dir = new Vector2(Wheel.GripDir.X, Wheel.GripDir.Z) / ((float)Wheel.Car.Details.TotalMass + Car.TRACTION_MAX);
 		var start = control.Position + control.Size/2;
 		DrawLine(start, start + dir * control.Size/2, Colors.Red, width: 4);
     }

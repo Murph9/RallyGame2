@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,9 @@ public class CarDetails : IHaveParts {
 	public float CamOffsetHeight; // from the middle of the model up
 	public float CamShake;
 
-    public float Mass; //kg (total, do NOT add wheel or engine mass/inertia to this)
+	[PartField(0f, PartReader.APPLY_ADD)]
+    public float BodyMass; // kg (total, do NOT add wheel or engine mass/inertia to this)
+	public double TotalMass => BodyMass + Engine.EngineMass + WheelDetails.Sum(x => x.Mass);
 
 	public float AreoLinearDrag; //0.003 to 0.02 (dimensionless number)
 	public float AeroCrossSection; //m^2 front area
@@ -134,7 +136,7 @@ public class CarDetails : IHaveParts {
 
 
         // Wheel validation
-        float quarterMassForce = Mathf.Abs(gravity.Y) * Mass / 4f;
+        float quarterMassForce = Mathf.Abs(gravity.Y) * (float)TotalMass / 4f;
 
         // generate the load quadratic value
         for (int i = 0; i < WheelDetails.Length; i++) {
@@ -227,7 +229,7 @@ public class CarDetails : IHaveParts {
 
 	public float WheelInertiaNoEngine(int w_id) {
 		// this is a thin cylindrical shell
-		return WheelDetails[w_id].mass * WheelDetails[w_id].radius * WheelDetails[w_id].radius;
+		return WheelDetails[w_id].Mass * WheelDetails[w_id].radius * WheelDetails[w_id].radius;
 	}
 
 	public float WheelInertiaPlusEngine() { //car internal engine + wheel inertia

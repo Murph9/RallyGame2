@@ -83,7 +83,7 @@
       "name": "Block",
       "levelCost": [0],
       "levels": [
-        {"PistonCount": 4, "CylinderBore": 0.1, "StrokeLength": 0.1, "IdleDrag": 0.1}
+        {"PistonCount": 4, "CylinderBore": 0.1, "StrokeLength": 0.1, "IdleDrag": 0.1, "EngineMass": 100}
       ]
     },
     {

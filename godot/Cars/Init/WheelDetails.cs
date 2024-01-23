@@ -6,7 +6,7 @@ public record WheelDetails {
 	public string modelName;
 
 	public float radius;
-	public float mass;
+	public float Mass;
 	public float width;
 
 	public int id;

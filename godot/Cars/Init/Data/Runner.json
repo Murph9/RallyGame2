@@ -14,7 +14,6 @@
   "driveFront": false,
   "driveRear": true,
   "engineFileName": "e_Runner",
-  "mass": 1200,
   "maxSteerAngle": 0.5,
   "minDriftAngle": 7,
   "name": "runner",
@@ -98,10 +97,11 @@
     },
     {
       "color": "#ffffff",
-      "name": "Car Body",
-      "levelCost": [0],
+      "name": "Chassis Weight Reduction",
+      "levelCost": [0, 1500],
       "levels": [
-        {"AeroDownforce": 0.05, "AeroDrag": 0.33}
+        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1050},
+        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1000}
       ]
     },
     {
