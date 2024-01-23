@@ -73,7 +73,9 @@ public partial class UpgradeMenu : CenterContainer
 			stats.AppendText(ToStringWithRounding(prevDetails[entry.Key], 2));
 			stats.Pop();
 			stats.Pop();
-			if (entry.Value != prevDetails[entry.Key]) {
+			if ((dynamic)entry.Value != (dynamic)prevDetails[entry.Key]) {
+				// https://stackoverflow.com/a/8855857/9353639
+				// TODO support arrays
 				stats.PushCell();
 				stats.PushColor(Colors.Green);
 				stats.AppendText(ToStringWithRounding(entry.Value, 2));

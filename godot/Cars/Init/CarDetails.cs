@@ -23,13 +23,13 @@ public class CarDetails : IHaveParts {
 	public float CamOffsetHeight; // from the middle of the model up
 	public float CamShake;
 
-	[PartField(0f, PartReader.APPLY_ADD)]
+	[PartField(0f, PartReader.APPLY_ADD, HigherIs.Bad)]
     public float BodyMass; // kg (total, do NOT add wheel or engine mass/inertia to this)
 	public double TotalMass => BodyMass + Engine.EngineMass + WheelDetails.Sum(x => x.Mass);
 
 	public float AreoLinearDrag; //0.003 to 0.02 (dimensionless number)
 	public float AeroCrossSection; //m^2 front area
-	[PartField(0f, PartReader.APPLY_ADD)]
+	[PartField(0f, PartReader.APPLY_ADD, HigherIs.Bad)]
 	public float AeroDrag;
 	[PartField(0f, PartReader.APPLY_ADD)]
 	public float AeroDownforce; //not a default yet
@@ -50,14 +50,14 @@ public class CarDetails : IHaveParts {
 	[JsonIgnore]
     public float[] AutoGearDownSpeed; // m/s for triggering the next gear [calculated]
 
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(0f, PartReader.APPLY_SET, HigherIs.Bad)]
 	public float AutoChangeTime;
 
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(0f, PartReader.APPLY_SET, HigherIs.Neutral)]
 	public float TransFinaldrive; // helps set the total drive ratio
-	[PartField(new float[]{2f, 2f, 1f}, PartReader.APPLY_SET)]
+	[PartField(new float[]{2f, 2f, 1f}, PartReader.APPLY_SET, HigherIs.Neutral)]
 	public float[] TransGearRatios; // reverse,gear1,gear2,g3,g4,g5,g6,...
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(0f, PartReader.APPLY_SET, HigherIs.Neutral)]
 	public float TransPowerBalance; // Only used in all wheel drive cars, 0 front <-> 1 rear
 
 	[PartField(false, PartReader.APPLY_SET)]
