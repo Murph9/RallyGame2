@@ -126,7 +126,7 @@ public partial class UpgradeMenu : CenterContainer
 			var option = new OptionButton();
 			var popup = option.GetPopup();
 			int i = 0;
-			foreach (var l in part.Levels) {
+			foreach (var l in part.GetAllValues()) {
 				popup.AddItem("Level: " + i.ToString() + " " + string.Join(", ", l.Select(x => x.Key + ": " + x.Value)));
 				i++;
 			}

@@ -42,43 +42,45 @@ public class PartReader {
             foreach (var fieldEntry in _fields) {
                 var field = fieldEntry.Key;
 
-                if (!partValues.TryGetValue(field.Name, out JsonElement value))
+                if (!partValues.TryGetValue(field.Name, out object value))
                     continue;
+
+                var jsonValue = (JsonElement)value;
 
                 var currentValue = field.GetValue(_self);
 
                 if (fieldEntry.Value.Action == APPLY_SET) {
                     if (field.FieldType == typeof(bool))
-                        field.SetValue(_self, value.GetBoolean());
+                        field.SetValue(_self, jsonValue.GetBoolean());
                     else if (field.FieldType == typeof(int))
-                        field.SetValue(_self, value.GetDouble());
+                        field.SetValue(_self, jsonValue.GetDouble());
                     else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, (float)value.GetDouble());
+                        field.SetValue(_self, (float)jsonValue.GetDouble());
                     else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, value.GetInt32());
+                        field.SetValue(_self, jsonValue.GetInt32());
                     else if (field.FieldType == typeof(float[])) {
-                        var array = value.GetArrayLength();
-                        field.SetValue(_self, value.Clone().EnumerateArray().Select(x => (float)x.GetDouble()).ToArray());
+                        var array = jsonValue.GetArrayLength();
+                        field.SetValue(_self, jsonValue.Clone().EnumerateArray().Select(x => (float)x.GetDouble()).ToArray());
                     }
 
                 } else if (fieldEntry.Value.Action == APPLY_MIN) {
                     if (field.FieldType == typeof(int))
-                        field.SetValue(_self, Mathf.Min((int)currentValue, value.GetInt32()));
+                        field.SetValue(_self, Mathf.Min((int)currentValue, jsonValue.GetInt32()));
                     else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, Mathf.Min((float)currentValue, (float)value.GetDouble()));
+                        field.SetValue(_self, Mathf.Min((float)currentValue, (float)jsonValue.GetDouble()));
                     else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, Mathf.Min((double)currentValue, value.GetDouble()));
+                        field.SetValue(_self, Mathf.Min((double)currentValue, jsonValue.GetDouble()));
                     else {
                         throw new Exception($"Unsupported option: {field.FieldType} with APPLY_MIN");
                     }
 
                 } else if (fieldEntry.Value.Action == APPLY_ADD) {
                     if (field.FieldType == typeof(int))
-                        field.SetValue(_self, (int)currentValue + value.GetInt32());
+                        field.SetValue(_self, (int)currentValue + jsonValue.GetInt32());
                     else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, (float)currentValue + (float)value.GetDouble());
+                        field.SetValue(_self, (float)currentValue + (float)jsonValue.GetDouble());
                     else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, (double)currentValue + value.GetDouble());
+                        field.SetValue(_self, (double)currentValue + jsonValue.GetDouble());
                     else {
                         throw new Exception($"Unsupported option: {field.FieldType} with APPLY_ADD");
                     }

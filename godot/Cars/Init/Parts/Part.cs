@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
@@ -16,17 +15,14 @@ public class Part {
     public int CurrentLevel { get; set; }
     public double[] LevelCost { get; set; }
 
-    // TODO do not let JSONElement out of this class
-    public Dictionary<string, JsonElement>[] Levels { get; set; }
-    public Dictionary<string, JsonElement> GetLevel() => Levels[CurrentLevel];
+    public Dictionary<string, object>[] Levels { get; set; }
 
     public Part() {
         PartColour = Godot.Color.FromHtml(Color);
     }
 
-    public Dictionary<string, JsonElement> GetValues(IEnumerable<string> propNames) {
-        return GetLevel().Where(x => propNames.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
-    }
+    public Dictionary<string, object> GetLevel() => GetAllValues()[CurrentLevel];
+    public Dictionary<string, object>[] GetAllValues() => Levels;
 
     public void Validate(IEnumerable<FieldInfo> allFields) {
         if (string.IsNullOrWhiteSpace(Name))
