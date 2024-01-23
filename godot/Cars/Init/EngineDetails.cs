@@ -132,6 +132,6 @@ public class EngineDetails : IHaveParts {
         return torque * 2 * Mathf.Pi * rpm / (60 * 1000); //kW
     }
 
-    public Dictionary<string, double> AsDict() => PartReader.ResultAsDict();
+    public Dictionary<string, object> AsDict() => PartReader.ResultAsDict();
     public Dictionary<string, List<Part>> GetValueCauses() => PartReader.GetValueCauses();
 }

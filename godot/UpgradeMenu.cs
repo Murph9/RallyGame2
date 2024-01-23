@@ -70,13 +70,13 @@ public partial class UpgradeMenu : CenterContainer
 			stats.Pop();
 			stats.PushCell();
 			stats.PushColor(Colors.Blue);
-			stats.AppendText(double.Round(prevDetails[entry.Key], 2).ToString());
+			stats.AppendText(ToStringWithRounding(prevDetails[entry.Key], 2));
 			stats.Pop();
 			stats.Pop();
 			if (entry.Value != prevDetails[entry.Key]) {
 				stats.PushCell();
 				stats.PushColor(Colors.Green);
-				stats.AppendText(double.Round(entry.Value, 2).ToString());
+				stats.AppendText(ToStringWithRounding(entry.Value, 2));
 				stats.Pop();
 				stats.Pop();
 			} else {
@@ -97,13 +97,13 @@ public partial class UpgradeMenu : CenterContainer
             Color = Colors.Green
         };
 		var datasetKwNew = new Graph.Dataset("kW", 200, max: 500) {
-            Color = Colors.Green
+            Color = Colors.Green * 0.8f
         };
 		var datasetOld = new Graph.Dataset("TorqueOld", 200, max: 500) {
             Color = Colors.Blue
         };
 		var datasetKwOld = new Graph.Dataset("kWOld", 200, max: 500) {
-            Color = Colors.Blue
+            Color = Colors.Blue * 0.8f
         };
 		var maxRpm = Mathf.Max(_carDetailsPrevious.Engine.MaxRpm, _carDetails.Engine.MaxRpm);
         for (int i = 0; i < 200; i++) {
@@ -114,11 +114,8 @@ public partial class UpgradeMenu : CenterContainer
             	datasetKwOld.Push((float)_carDetailsPrevious.Engine.CalcKwFor(i*50));
 			}
         }
-		var torqueGraph = new Graph(new Vector2(300, 250), new [] { datasetNew, datasetOld });
-		statsBox.AddChild(torqueGraph);
-
-		var kWGraph = new Graph(new Vector2(300, 250), new [] { datasetKwNew, datasetKwOld });
-		statsBox.AddChild(kWGraph);
+		var powerGraph = new Graph(new Vector2(300, 250), [datasetNew, datasetOld, datasetKwNew, datasetKwOld]);
+		statsBox.AddChild(powerGraph);
 
 		// options to select
 		var parts = _carDetails.Engine.Parts.ToList();
@@ -128,12 +125,13 @@ public partial class UpgradeMenu : CenterContainer
 			var popup = option.GetPopup();
 			int i = 0;
 			foreach (var l in part.Levels) {
-				popup.AddItem(i.ToString());
+				popup.AddItem("Level: " + i.ToString() + " " + string.Join(", ", l.Select(x => x.Key + ": " + x.Value)));
 				i++;
 			}
 			option.Selected = part.CurrentLevel;
-			option.ItemSelected += (a) => {
-				ItemSelected(a, part);
+			option.ItemSelected += (id) => {
+				part.CurrentLevel = (int)id;
+				LoadPage();
 			};
 			var richLabel = new RichTextLabel() {
 				LayoutMode = 2,
@@ -144,8 +142,6 @@ public partial class UpgradeMenu : CenterContainer
 			};
 			richLabel.PushColor(Color.FromHtml(part.Color));
 			richLabel.AppendText(part.Name);
-			richLabel.Pop();
-			richLabel.AppendText(" " + string.Join(", ", part.GetLevel().Select(x => x.Key + ": " + x.Value)));
 			optionsBox.AddChild(richLabel);
 			optionsBox.AddChild(option);
 		}
@@ -159,11 +155,13 @@ public partial class UpgradeMenu : CenterContainer
 		optionsBox.AddChild(b);
 	}
 
-	private void ItemSelected(long id, Part part) {
-		Console.WriteLine(id + " " + part.Name);
-		part.CurrentLevel = (int)id;
-		LoadPage();
-	}
-
     public override void _Process(double delta) {}
+
+	private static string ToStringWithRounding(object obj, int length) {
+		if (obj is float f)
+			return float.Round(f, length).ToString();
+		if (obj is double d)
+			return double.Round(d, length).ToString();
+		return obj.ToString();
+	}
 }

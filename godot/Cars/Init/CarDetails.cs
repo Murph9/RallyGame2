@@ -1,13 +1,20 @@
 ﻿using Godot;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
 public class CarDetails : IHaveParts {
-    public string Name;
+	private static readonly JsonSerializerOptions CloneSerializeOptions = new () {
+		AllowTrailingCommas = true,
+		PropertyNameCaseInsensitive = true,
+		IncludeFields = true
+	};
+
+	public string Name;
     public string CarModel;
 
     public float CamLookAtHeight; //from the middle of the model up
@@ -33,19 +40,28 @@ public class CarDetails : IHaveParts {
 	public string EngineFileName;
     public EngineDetails Engine;
 
-    public float[] AutoGearUpSpeed; //m/s for triggering the next gear [calculated]
+	[JsonIgnore]
+    public float[] AutoGearUpSpeed; // m/s for triggering the next gear [calculated]
+	[JsonIgnore]
     public float[] AutoGearDownSpeed; // m/s for triggering the next gear [calculated]
+
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float AutoChangeTime;
 
-	//NOTE: please check torque curves are at the crank before using this value as anything other than 1.0f
-	public float TransFinaldrive; //helps set the total drive ratio
-	public float[] TransGearRatios; //reverse,gear1,gear2,g3,g4,g5,g6,...
-
+	[PartField(0f, PartReader.APPLY_SET)]
+	public float TransFinaldrive; // helps set the total drive ratio
+	[PartField(new float[]{2f, 2f, 1f}, PartReader.APPLY_SET)]
+	public float[] TransGearRatios; // reverse,gear1,gear2,g3,g4,g5,g6,...
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float TransPowerBalance; // Only used in all wheel drive cars, 0 front <-> 1 rear
 
+	[PartField(false, PartReader.APPLY_SET)]
 	public bool NitroEnabled;
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float NitroForce;
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float NitroRate;
+	[PartField(0f, PartReader.APPLY_SET)]
 	public float NitroMax;
 
 	public bool FuelEnabled;
@@ -55,6 +71,7 @@ public class CarDetails : IHaveParts {
 	[PartField(0f, PartReader.APPLY_SET)]
 	public float BrakeMaxTorque;
 
+	[JsonIgnore]
 	private PartReader PartReader { get; init; }
     public List<Part> Parts { get; set; } = [];
 
@@ -234,10 +251,12 @@ public class CarDetails : IHaveParts {
 
     public CarDetails Clone()
     {
-        var serialized = JsonConvert.SerializeObject(this);
-        return JsonConvert.DeserializeObject<CarDetails>(serialized);
+        var serialized = JsonSerializer.Serialize(this, CloneSerializeOptions);
+		var cloned = JsonSerializer.Deserialize<CarDetails>(serialized, CloneSerializeOptions);
+		cloned.LoadSelf(Main.DEFAULT_GRAVITY);
+		return cloned;
     }
 
-	public Dictionary<string, double> AsDict() => PartReader.ResultAsDict();
+	public Dictionary<string, object> AsDict() => PartReader.ResultAsDict();
 	public Dictionary<string, List<Part>> GetValueCauses() => PartReader.GetValueCauses();
 }
