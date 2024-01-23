@@ -20,7 +20,7 @@ public class CarEngine {
     public CarEngine(Car car) {
         _car = car;
         CurGear = 1;
-        WheelEngineTorque = new float[car.Details.WheelData.Length];
+        WheelEngineTorque = new float[car.Details.WheelDetails.Length];
     }
 
     public void _PhysicsProcess(double delta) {

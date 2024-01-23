@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
@@ -18,9 +18,9 @@ public class CarDetails : IHaveParts {
 	public string Name;
     public string CarModel;
 
-    public float CamLookAtHeight; //from the middle of the model up
-	public float CamOffsetLength; //from the middle of the model back
-	public float CamOffsetHeight; //from the middle of the model up
+    public float CamLookAtHeight; // from the middle of the model up
+	public float CamOffsetLength; // from the middle of the model back
+	public float CamOffsetHeight; // from the middle of the model up
 	public float CamShake;
 
     public float Mass; //kg (total, do NOT add wheel or engine mass/inertia to this)
@@ -82,7 +82,7 @@ public class CarDetails : IHaveParts {
 	//Wheels
 	public float MaxSteerAngle; //in radians
 
-	public WheelDetails[] WheelData;
+	public WheelDetails[] WheelDetails;
 
 	//no idea category
 	public float MinDriftAngle;
@@ -107,14 +107,14 @@ public class CarDetails : IHaveParts {
 			var wheelPoss = carScene.GetChildren()
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
-			WheelData[0].id = 0;
-			WheelData[0].position = wheelPoss[CarModelName.wheel_fl.ToString()].Position;
-			WheelData[1].id = 1;
-			WheelData[1].position = wheelPoss[CarModelName.wheel_fr.ToString()].Position;
-			WheelData[2].id = 2;
-			WheelData[2].position = wheelPoss[CarModelName.wheel_rl.ToString()].Position;
-			WheelData[3].id = 3;
-			WheelData[3].position = wheelPoss[CarModelName.wheel_rr.ToString()].Position;
+			WheelDetails[0].id = 0;
+			WheelDetails[0].position = wheelPoss[CarModelName.wheel_fl.ToString()].Position;
+			WheelDetails[1].id = 1;
+			WheelDetails[1].position = wheelPoss[CarModelName.wheel_fr.ToString()].Position;
+			WheelDetails[2].id = 2;
+			WheelDetails[2].position = wheelPoss[CarModelName.wheel_rl.ToString()].Position;
+			WheelDetails[3].id = 3;
+			WheelDetails[3].position = wheelPoss[CarModelName.wheel_rr.ToString()].Position;
 		} catch (Exception e) {
 			GD.Print(e);
 		} finally {
@@ -122,14 +122,14 @@ public class CarDetails : IHaveParts {
 		}
 
 		// validate that the wheels are in the correct quadrant for a car
-        if (WheelData[0].position.X < 0 || WheelData[0].position.Z < 0)
+        if (WheelDetails[0].position.X < 0 || WheelDetails[0].position.Z < 0)
             throw new Exception(CarModelName.wheel_fl + " should be in pos x and pos z");
-        if (WheelData[1].position.X > 0 || WheelData[1].position.Z < 0)
+        if (WheelDetails[1].position.X > 0 || WheelDetails[1].position.Z < 0)
             throw new Exception(CarModelName.wheel_fr + " should be in neg x and pos z");
 
-        if (WheelData[2].position.X < 0 || WheelData[2].position.Z > 0)
+        if (WheelDetails[2].position.X < 0 || WheelDetails[2].position.Z > 0)
             throw new Exception(CarModelName.wheel_rl + " should be in pos x and neg z");
-        if (WheelData[3].position.X > 0 || WheelData[3].position.Z > 0)
+        if (WheelDetails[3].position.X > 0 || WheelDetails[3].position.Z > 0)
             throw new Exception(CarModelName.wheel_rr + " should be in neg x and neg z");
 
 
@@ -137,7 +137,7 @@ public class CarDetails : IHaveParts {
         float quarterMassForce = Mathf.Abs(gravity.Y) * Mass / 4f;
 
         // generate the load quadratic value
-        for (int i = 0; i < WheelData.Length; i++) {
+        for (int i = 0; i < WheelDetails.Length; i++) {
             var sus = SusByWheelNum(i);
 
             // Validate that rest suspension position is within min and max
@@ -222,17 +222,17 @@ public class CarDetails : IHaveParts {
 
 	public float RollingResistance(int w_id, float susForce) {
 		// linear drag component (https://en.wikipedia.org/wiki/Rolling_resistance)
-		return susForce * AreoLinearDrag / WheelData[w_id].radius;
+		return susForce * AreoLinearDrag / WheelDetails[w_id].radius;
 	}
 
 	public float WheelInertiaNoEngine(int w_id) {
 		// this is a thin cylindrical shell
-		return WheelData[w_id].mass * WheelData[w_id].radius * WheelData[w_id].radius;
+		return WheelDetails[w_id].mass * WheelDetails[w_id].radius * WheelDetails[w_id].radius;
 	}
 
 	public float WheelInertiaPlusEngine() { //car internal engine + wheel inertia
 		float wheels = 0;
-		for (int i = 0; i < WheelData.Length; i++)
+		for (int i = 0; i < WheelDetails.Length; i++)
 			wheels += WheelInertiaNoEngine(i);
 
 		if (DriveFront && DriveRear) {
@@ -243,11 +243,11 @@ public class CarDetails : IHaveParts {
 
 	public float DriveWheelRadius() {
 		if (DriveFront && DriveRear)
-			return (WheelData[0].radius + WheelData[1].radius + WheelData[2].radius + WheelData[3].radius) / 4f;
+			return (WheelDetails[0].radius + WheelDetails[1].radius + WheelDetails[2].radius + WheelDetails[3].radius) / 4f;
 		if (DriveFront)
-			return (WheelData[0].radius + WheelData[1].radius) / 2f;
+			return (WheelDetails[0].radius + WheelDetails[1].radius) / 2f;
 		if (DriveRear)
-			return (WheelData[2].radius + WheelData[3].radius) / 2f;
+			return (WheelDetails[2].radius + WheelDetails[3].radius) / 2f;
 
 		throw new ArgumentException("No drive wheels set, no wheel radius found.");
     }

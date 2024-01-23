@@ -59,7 +59,7 @@ public partial class Car : Node3D
         RigidBody.Transform = _worldSpawn;
         AddChild(RigidBody);
 
-        Wheels = Details.WheelData.Select(x => new Wheel(this, x)).ToArray();
+        Wheels = Details.WheelDetails.Select(x => new Wheel(this, x)).ToArray();
 
         // attach wheels to car
         foreach (var w in Wheels) {
