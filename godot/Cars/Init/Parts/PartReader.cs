@@ -8,102 +8,114 @@ using System.Text.Json;
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public class PartReader {
-    record FieldProps(object? DefaultValue, string Action, HigherIs HigherIs);
+    record FieldProps(FieldInfo Field, object DefaultValue, string Action, HigherIs HigherIs);
 
     public const string APPLY_SET = "apply_set";
     public const string APPLY_MIN = "apply_min";
     public const string APPLY_ADD = "apply_add";
 
     private readonly IHaveParts _self;
-    private readonly Dictionary<FieldInfo, FieldProps> _fields = [];
+    private readonly ICollection<FieldProps> _fieldProps = [];
     public PartReader(IHaveParts self) {
         _self = self;
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
-                _fields.Add(field, new FieldProps(partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs));
+                _fieldProps.Add(new FieldProps(field, partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs));
             }
         }
     }
 
-    public bool ValidateAndSetFields() {
+    public string ValidateAndSetFields() {
+        var fieldInfos = _fieldProps.Select(x => x.Field);
         foreach (var part in _self.Parts) {
-            part.Validate(_fields.Keys);
+            part.Validate(fieldInfos);
         }
 
         // set defaults
-        foreach (var field in _fields) {
-            field.Key.SetValue(_self, field.Value.DefaultValue);
+        foreach (var fieldProp in _fieldProps) {
+            fieldProp.Field.SetValue(_self, fieldProp.DefaultValue);
         }
 
         // then apply given method of setting them
         foreach (var part in _self.Parts) {
             var partValues = part.GetLevel();
 
-            foreach (var fieldEntry in _fields) {
-                var field = fieldEntry.Key;
+            foreach (var fieldProp in _fieldProps) {
+                var field = fieldProp.Field;
 
-                if (!partValues.TryGetValue(field.Name, out object value))
+                if (!partValues.TryGetValue(field.Name, out object partValue))
                     continue;
 
-                var jsonValue = (JsonElement)value;
+                var jsonPartValue = (JsonElement)partValue;
 
-                var currentValue = field.GetValue(_self);
-
-                if (fieldEntry.Value.Action == APPLY_SET) {
-                    if (field.FieldType == typeof(bool))
-                        field.SetValue(_self, jsonValue.GetBoolean());
-                    else if (field.FieldType == typeof(int))
-                        field.SetValue(_self, jsonValue.GetDouble());
-                    else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, (float)jsonValue.GetDouble());
-                    else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, jsonValue.GetInt32());
-                    else if (field.FieldType == typeof(float[])) {
-                        var array = jsonValue.GetArrayLength();
-                        field.SetValue(_self, jsonValue.Clone().EnumerateArray().Select(x => (float)x.GetDouble()).ToArray());
-                    }
-
-                } else if (fieldEntry.Value.Action == APPLY_MIN) {
-                    if (field.FieldType == typeof(int))
-                        field.SetValue(_self, Mathf.Min((int)currentValue, jsonValue.GetInt32()));
-                    else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, Mathf.Min((float)currentValue, (float)jsonValue.GetDouble()));
-                    else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, Mathf.Min((double)currentValue, jsonValue.GetDouble()));
-                    else {
-                        throw new Exception($"Unsupported option: {field.FieldType} with APPLY_MIN");
-                    }
-
-                } else if (fieldEntry.Value.Action == APPLY_ADD) {
-                    if (field.FieldType == typeof(int))
-                        field.SetValue(_self, (int)currentValue + jsonValue.GetInt32());
-                    else if (field.FieldType == typeof(float))
-                        field.SetValue(_self, (float)currentValue + (float)jsonValue.GetDouble());
-                    else if (field.FieldType == typeof(double))
-                        field.SetValue(_self, (double)currentValue + jsonValue.GetDouble());
-                    else {
-                        throw new Exception($"Unsupported option: {field.FieldType} with APPLY_ADD");
-                    }
+                switch (fieldProp.Action) {
+                    case APPLY_SET: ApplySet(field, _self, jsonPartValue); break;
+                    case APPLY_MIN: ApplyMin(field, _self, jsonPartValue); break;
+                    case APPLY_ADD: ApplyAdd(field, _self, jsonPartValue); break;
+                    default:
+                        throw new Exception("Unknown field action type: " + fieldProp.Action);
                 }
             }
         }
 
-        foreach (var field in _fields)
-            if (field.Key.GetValue(_self) == field.Value.DefaultValue)
-                return false;
+        foreach (var fieldProp in _fieldProps)
+            if (fieldProp.Field.GetValue(_self) == fieldProp.DefaultValue)
+                return $"Field {fieldProp.Field.Name} was still on the default value of {fieldProp.DefaultValue}";
 
-        return true;
+        return null;
     }
 
     public IEnumerable<PartResult> GetResults() {
-        foreach (var field in _fields) {
+        foreach (var fieldProp in _fieldProps) {
             var li = new List<Part>();
             foreach (var part in _self.Parts) {
                 var partValues = part.GetLevel();
-                if (partValues.ContainsKey(field.Key.Name))
+                if (partValues.ContainsKey(fieldProp.Field.Name))
                     li.Add(part);
             }
-            yield return new PartResult(field.Key.Name, field.Key.GetValue(_self), field.Value.HigherIs, li);
+            yield return new PartResult(fieldProp.Field.Name, fieldProp.Field.GetValue(_self), fieldProp.HigherIs, li);
+        }
+    }
+
+    private static void ApplySet(FieldInfo field, object self, JsonElement jsonPartValue) {
+        if (field.FieldType == typeof(bool))
+            field.SetValue(self, jsonPartValue.GetBoolean());
+        else if (field.FieldType == typeof(int))
+            field.SetValue(self, jsonPartValue.GetDouble());
+        else if (field.FieldType == typeof(float))
+            field.SetValue(self, (float)jsonPartValue.GetDouble());
+        else if (field.FieldType == typeof(double))
+            field.SetValue(self, jsonPartValue.GetInt32());
+        else if (field.FieldType == typeof(float[])) {
+            var array = jsonPartValue.GetArrayLength();
+            field.SetValue(self, jsonPartValue.Clone().EnumerateArray().Select(x => (float)x.GetDouble()).ToArray());
+        } else {
+            throw new Exception($"Unsupported field type: {field.FieldType} with APPLY_SET");
+        }
+    }
+
+    private static void ApplyMin(FieldInfo field, object self, JsonElement jsonPartValue) {
+        var currentValue = field.GetValue(self);
+        if (field.FieldType == typeof(int))
+            field.SetValue(self, Mathf.Min((int)currentValue, jsonPartValue.GetInt32()));
+        else if (field.FieldType == typeof(float))
+            field.SetValue(self, Mathf.Min((float)currentValue, (float)jsonPartValue.GetDouble()));
+        else if (field.FieldType == typeof(double))
+            field.SetValue(self, Mathf.Min((double)currentValue, jsonPartValue.GetDouble()));
+        else {
+            throw new Exception($"Unsupported field type: {field.FieldType} with APPLY_MIN");
+        }
+    }
+
+    private static void ApplyAdd(FieldInfo field, object self, JsonElement jsonPartValue) {
+        if (field.FieldType == typeof(int))
+            field.SetValue(self, (int)field.GetValue(self) + jsonPartValue.GetInt32());
+        else if (field.FieldType == typeof(float))
+            field.SetValue(self, (float)field.GetValue(self) + jsonPartValue.GetSingle());
+        else if (field.FieldType == typeof(double))
+            field.SetValue(self, (double)field.GetValue(self) + jsonPartValue.GetDouble());
+        else {
+            throw new Exception($"Unsupported field type: {field.FieldType} with APPLY_ADD");
         }
     }
 }

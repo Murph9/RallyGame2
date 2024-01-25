@@ -64,8 +64,8 @@ public class EngineDetails : IHaveParts {
     }
 
     public void LoadSelf() {
-        if (!PartReader.ValidateAndSetFields()) {
-            throw new Exception("Engine Details value not set, see" + this);
+        if (PartReader.ValidateAndSetFields() is string str) {
+            throw new Exception("Engine Details value not set, see: " + str);
         }
     }
 

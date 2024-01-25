@@ -96,8 +96,8 @@
       ]
     },
     {
-      "color": "#ffffff",
-      "name": "Chassis Weight Reduction",
+      "color": "#ffffdd",
+      "name": "Chassis and Weight Reduction",
       "levelCost": [0, 1500],
       "levels": [
         {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1050},

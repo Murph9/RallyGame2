@@ -86,7 +86,7 @@ public class CarDetails : IHaveParts {
 
 	public WheelDetails[] WheelDetails;
 
-	//no idea category
+	// no idea category
 	public float MinDriftAngle;
 	public Vector3 JUMP_FORCE;
 
@@ -95,8 +95,8 @@ public class CarDetails : IHaveParts {
 	}
 
 	public void LoadSelf(Vector3 gravity) {
-        if (!PartReader.ValidateAndSetFields()) {
-            throw new Exception("Car Details value not set, see" + this);
+        if (PartReader.ValidateAndSetFields() is string str) {
+            throw new Exception("Car Details value not set, see: " + str);
         }
 
 		Engine.LoadSelf();
@@ -106,17 +106,17 @@ public class CarDetails : IHaveParts {
 		try {
 			var scene = GD.Load<PackedScene>("res://assets/" + CarModel);
 			carScene = scene.Instantiate<Node3D>();
-			var wheelPoss = carScene.GetChildren()
+			var modelWheelNodes = carScene.GetChildren()
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
 			WheelDetails[0].id = 0;
-			WheelDetails[0].position = wheelPoss[CarModelName.wheel_fl.ToString()].Position;
+			WheelDetails[0].position = modelWheelNodes[CarModelName.wheel_fl.ToString()].Position;
 			WheelDetails[1].id = 1;
-			WheelDetails[1].position = wheelPoss[CarModelName.wheel_fr.ToString()].Position;
+			WheelDetails[1].position = modelWheelNodes[CarModelName.wheel_fr.ToString()].Position;
 			WheelDetails[2].id = 2;
-			WheelDetails[2].position = wheelPoss[CarModelName.wheel_rl.ToString()].Position;
+			WheelDetails[2].position = modelWheelNodes[CarModelName.wheel_rl.ToString()].Position;
 			WheelDetails[3].id = 3;
-			WheelDetails[3].position = wheelPoss[CarModelName.wheel_rr.ToString()].Position;
+			WheelDetails[3].position = modelWheelNodes[CarModelName.wheel_rr.ToString()].Position;
 		} catch (Exception e) {
 			GD.Print(e);
 		} finally {
