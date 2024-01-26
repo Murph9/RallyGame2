@@ -81,11 +81,11 @@ public class PartReader {
         if (field.FieldType == typeof(bool))
             field.SetValue(self, jsonPartValue.GetBoolean());
         else if (field.FieldType == typeof(int))
-            field.SetValue(self, jsonPartValue.GetDouble());
-        else if (field.FieldType == typeof(float))
-            field.SetValue(self, (float)jsonPartValue.GetDouble());
-        else if (field.FieldType == typeof(double))
             field.SetValue(self, jsonPartValue.GetInt32());
+        else if (field.FieldType == typeof(float))
+            field.SetValue(self, jsonPartValue.GetSingle());
+        else if (field.FieldType == typeof(double))
+            field.SetValue(self, jsonPartValue.GetDouble());
         else if (field.FieldType == typeof(float[])) {
             var array = jsonPartValue.GetArrayLength();
             field.SetValue(self, jsonPartValue.Clone().EnumerateArray().Select(x => (float)x.GetDouble()).ToArray());
