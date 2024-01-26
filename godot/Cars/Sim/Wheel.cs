@@ -54,10 +54,8 @@ public partial class Wheel : Node3D {
 
         var sus = Car.Details.SusByWheelNum(Details.Id);
         Position = Details.Position + new Vector3(0, sus.maxTravel, 0);
-    }
 
-    public override void _EnterTree() {
-        GetTree().Root.AddChild(_skid);
+        Car.AddChild(_skid);
     }
 
     public override void _Process(double delta) {
@@ -89,9 +87,5 @@ public partial class Wheel : Node3D {
         var maxDist = RayDir.Length();
 
         SusTravelDistance = Math.Clamp(maxDist - distance, 0, maxDist);
-    }
-
-    public override void _ExitTree() {
-        GetTree().Root.RemoveChild(_skid);
     }
 }

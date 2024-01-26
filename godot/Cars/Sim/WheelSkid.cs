@@ -12,13 +12,9 @@ public partial class WheelSkid(Wheel w) : Node3D {
 
     private SkidPos lastPos;
 
-    public override void _Ready() {
-        base._Ready();
-    }
+    public override void _Ready() {}
 
     public override void _Process(double delta) {
-        base._Process(delta);
-
         var skidding = _wheel.SkidFraction > 1;
         if (!skidding) {
             lastPos = null;
