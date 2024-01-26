@@ -171,7 +171,7 @@ public partial class Car : Node3D
         // Suspension Dampening
         var relVel = w.ContactNormalGlobal.Dot(hitVelocity);
         var susDetails = Details.SusByWheelNum(w.Details.Id);
-        w.Damping = susDetails.Relax() * relVel;
+        w.Damping = susDetails.Rebound() * relVel;
         if (relVel > 0) {
             w.Damping = susDetails.Compression() * relVel;
         }
@@ -179,14 +179,14 @@ public partial class Car : Node3D
         w.SwayForce = 0f;
         var otherSideWheel = GetOtherWheel(w); // fetch the index of the other side
         if (otherSideWheel.InContact) {
-            w.SwayForce = (otherSideWheel.SusTravelDistance - w.SusTravelDistance) * susDetails.antiroll;
+            w.SwayForce = (otherSideWheel.SusTravelDistance - w.SusTravelDistance) * susDetails.Antiroll;
         } else if (w.InContact) {
             // in contact but other not in contact, then its basically max sway
             var otherLength = w.RayDir.Length();
-            w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
+            w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.Antiroll;
         }
 
-        w.SpringForce = (susDetails.preloadDistance + w.SusTravelDistance) * susDetails.stiffness;
+        w.SpringForce = (susDetails.PreloadDistance + w.SusTravelDistance) * susDetails.Stiffness;
         var totalForce = w.SpringForce - w.Damping - w.SwayForce;
         if (totalForce > 0) {
             // reduce force based on angle to surface

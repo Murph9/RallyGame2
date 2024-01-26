@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 namespace murph9.RallyGame2.godot.Cars.Init;
 
 #pragma warning disable IDE0044 // Add readonly modifier, because all private fields are loaded by json
+#pragma warning disable CS0649 // Will always have the default value, but also loaded by json
 public class SuspensionDetails : IHaveParts {
     [PartField(0, PartReader.APPLY_SET)]
     private float FrontAntiroll;
@@ -48,24 +49,8 @@ public class SuspensionDetails : IHaveParts {
 
     public IEnumerable<PartResult> GetResults() => PartReader.GetResults();
 
-    public CarSusDetails Front => new () {
-        antiroll = FrontAntiroll,
-        comp = FrontComp,
-        maxTravel = FrontMaxTravel,
-        minTravel = FrontMinTravel,
-        preloadDistance = FrontPreloadDistance,
-        relax = FrontRelax,
-        stiffness = FrontStiffness
-    };
-    public CarSusDetails Rear => new () {
-        antiroll = RearAntiroll,
-        comp = RearComp,
-        maxTravel = RearMaxTravel,
-        minTravel = RearMinTravel,
-        preloadDistance = RearPreloadDistance,
-        relax = RearRelax,
-        stiffness = RearStiffness
-    };
+    public CarSusDetails Front => new (FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
+    public CarSusDetails Rear => new (RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);
 
     public void LoadSelf() {
         if (PartReader.ValidateAndSetFields() is string str) {
@@ -80,22 +65,22 @@ public class SuspensionDetails : IHaveParts {
         return tractionDetails;
     }
 }
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CS0649 // will always have default value
 
 
-public record CarSusDetails
+public record CarSusDetails(float Antiroll, float Comp, float MaxTravel, float MinTravel, float PreloadDistance, float Relax, float Stiffness)
 {
 	// travel values are relative to wheel offset pos
-	public float minTravel; // m [-0.3 - 0.3] upper travel length - closer to car
-	public float maxTravel; // m [-0.3 - 0.3] lower travel length - closer to ground
-	public float TravelTotal() { return maxTravel - minTravel; }
+	// minTravel m [-0.3 - 0.3] upper travel length - closer to car
+	// maxTravel m [-0.3 - 0.3] lower travel length - closer to ground
+	// preloadDistance m [~ 0.2] spring travel at max sus travel
+	// stiffness kg/mm [10-200] 10 is soft car, 100 is race car
+	// antiroll kg/mm [2 - 20], same as stiffness between the axle's other wheel
+	// comp [0.2] should be less than relax
+	// relax [0.3]
 
-	public float preloadDistance; // m [~0.2 spring travel at max sus travel]
-	public float stiffness; // kg/mm [10-200]
-	public float antiroll; // kg/mm [2 - 20]
-
-	public float comp; // [0.2] should be less than relax
-	public float relax; // [0.3]
-	public float Compression() { return comp * 2 * Mathf.Sqrt(stiffness); }
-	public float Relax() { return relax * 2 * Mathf.Sqrt(stiffness); }
+	public float TravelTotal() { return MaxTravel - MinTravel; }
+	public float Compression() { return Comp * 2 * Mathf.Sqrt(Stiffness); }
+	public float Rebound() { return Relax * 2 * Mathf.Sqrt(Stiffness); }
 }
-#pragma warning restore IDE0044 // Add readonly modifier

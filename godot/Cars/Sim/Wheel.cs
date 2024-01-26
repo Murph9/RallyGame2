@@ -53,7 +53,7 @@ public partial class Wheel : Node3D {
         AddChild(WheelModel);
 
         var sus = Car.Details.SusByWheelNum(Details.Id);
-        Position = Details.Position + new Vector3(0, sus.maxTravel, 0);
+        Position = Details.Position + new Vector3(0, sus.MaxTravel, 0);
 
         Car.AddChild(_skid);
     }
