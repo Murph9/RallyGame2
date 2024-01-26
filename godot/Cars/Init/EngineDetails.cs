@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
 
@@ -49,6 +50,7 @@ public class EngineDetails : IHaveParts {
     [PartField(double.MaxValue, PartReader.APPLY_MIN)]
     public double CoolingRate; // K / min
 
+    [JsonIgnore]
     private PartReader PartReader { get; init; }
     public List<Part> Parts { get; init; } = [];
 

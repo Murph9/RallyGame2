@@ -186,7 +186,7 @@ public partial class Car : Node3D
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.antiroll;
         }
 
-        w.SpringForce = (susDetails.preloadForce + w.SusTravelDistance) * susDetails.stiffness;
+        w.SpringForce = (susDetails.preloadDistance + w.SusTravelDistance) * susDetails.stiffness;
         var totalForce = w.SpringForce - w.Damping - w.SwayForce;
         if (totalForce > 0) {
             // reduce force based on angle to surface

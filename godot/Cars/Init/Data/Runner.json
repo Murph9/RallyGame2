@@ -13,28 +13,11 @@
   "carModel": "track1_2.blend",
   "driveFront": false,
   "driveRear": true,
-  "engineFileName": "e_Runner",
+  "engineFileName": "engine_Runner",
   "maxSteerAngle": 0.5,
   "minDriftAngle": 7,
   "name": "runner",
-  "susF": {
-    "antiroll": 0.7,
-    "comp": 0.2,
-    "maxTravel": 0.1,
-    "minTravel": -0.1,
-    "preloadDistance": 0.1,
-    "relax": 0.3,
-    "stiffness": 25
-  },
-  "susR": {
-    "antiroll": 1,
-    "comp": 0.2,
-    "maxTravel": 0.1,
-    "minTravel": -0.1,
-    "preloadDistance": 0.1,
-    "relax": 0.3,
-    "stiffness": 25
-  },
+  "suspensionFileName": "suspension_Runner",
   "tractionControl": true,
   "tractionFileName": "traction_Runner",
   "wheelDetails": [

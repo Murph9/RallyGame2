@@ -33,6 +33,7 @@ public static class CarMakeExtensions
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
         carDetails.Engine = EngineDetails.LoadFromFile(carDetails.EngineFileName);
 		carDetails.TractionDetails = TractionDetails.LoadFromFile(carDetails.TractionFileName);
+		carDetails.SuspensionDetails = SuspensionDetails.LoadFromFile(carDetails.SuspensionFileName);
 
         carDetails.LoadSelf(gravity);
 		return carDetails;

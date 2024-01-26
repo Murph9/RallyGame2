@@ -35,8 +35,8 @@ public class CarDetails : IHaveParts {
 	public float AeroDownforce; //not a default yet
 
 	// travel values are relative to wheel offset pos
-	public CarSusDetails SusF;
-	public CarSusDetails SusR;
+	public string SuspensionFileName;
+	public SuspensionDetails SuspensionDetails;
 
 	public bool TractionControl;
 
@@ -148,8 +148,8 @@ public class CarDetails : IHaveParts {
             var sus = SusByWheelNum(i);
 
             // Validate that rest suspension position is within min and max
-            float minSusForce = (sus.preloadForce + sus.stiffness) * 0 * 1000;
-            float maxSusForce = sus.stiffness * (sus.preloadForce + sus.maxTravel - sus.minTravel) * 1000;
+            float minSusForce = (sus.preloadDistance + sus.stiffness) * 0 * 1000;
+            float maxSusForce = sus.stiffness * (sus.preloadDistance + sus.maxTravel - sus.minTravel) * 1000;
             if (quarterMassForce < minSusForce) {
                 throw new Exception("!! Sus min range too high: " + quarterMassForce + " < " + minSusForce + ", decrease pre-load or stiffness");
             }
@@ -207,7 +207,7 @@ public class CarDetails : IHaveParts {
         }
 	}
 
-    public CarSusDetails SusByWheelNum(int i) => i < 2 ? SusF : SusR;
+    public CarSusDetails SusByWheelNum(int i) => i < 2 ? SuspensionDetails.Front : SuspensionDetails.Rear;
 	public bool IsIdADriveWheel(int i) {
 		if (DriveFront && i < 3)
 			return true;
