@@ -35,6 +35,7 @@
     "relax": 0.3,
     "stiffness": 25
   },
+  "tractionControl": true,
   "wheelDetails": [
     {
       "mass": 10,
