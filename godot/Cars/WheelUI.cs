@@ -13,8 +13,8 @@ public partial class WheelUI : VBoxContainer
 	{
 		QueueRedraw();
 
-		GetNode<Label>("Label").Text = Wheel.Details.id + " " + float.Round(Wheel.RadSec, 2);
-		GetNode<ProgressBar>("ProgressBar").Value = Wheel.SusTravelDistance / Wheel.Car.Details.SusByWheelNum(Wheel.Details.id).TravelTotal();
+		GetNode<Label>("Label").Text = Wheel.Details.Id + " " + float.Round(Wheel.RadSec, 2);
+		GetNode<ProgressBar>("ProgressBar").Value = Wheel.SusTravelDistance / Wheel.Car.Details.SusByWheelNum(Wheel.Details.Id).TravelTotal();
 
 		var gridContainer = GetNode<GridContainer>("GridContainer");
 		foreach (var f in gridContainer.GetChildren()) {

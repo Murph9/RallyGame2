@@ -111,14 +111,14 @@ public class CarDetails : IHaveParts {
 			var modelWheelNodes = carScene.GetChildren()
 				.OfType<Node3D>()
 				.ToDictionary(x => x.Name.ToString());
-			WheelDetails[0].id = 0;
-			WheelDetails[0].position = modelWheelNodes[CarModelName.wheel_fl.ToString()].Position;
-			WheelDetails[1].id = 1;
-			WheelDetails[1].position = modelWheelNodes[CarModelName.wheel_fr.ToString()].Position;
-			WheelDetails[2].id = 2;
-			WheelDetails[2].position = modelWheelNodes[CarModelName.wheel_rl.ToString()].Position;
-			WheelDetails[3].id = 3;
-			WheelDetails[3].position = modelWheelNodes[CarModelName.wheel_rr.ToString()].Position;
+			WheelDetails[0].Id = 0;
+			WheelDetails[0].Position = modelWheelNodes[CarModelName.wheel_fl.ToString()].Position;
+			WheelDetails[1].Id = 1;
+			WheelDetails[1].Position = modelWheelNodes[CarModelName.wheel_fr.ToString()].Position;
+			WheelDetails[2].Id = 2;
+			WheelDetails[2].Position = modelWheelNodes[CarModelName.wheel_rl.ToString()].Position;
+			WheelDetails[3].Id = 3;
+			WheelDetails[3].Position = modelWheelNodes[CarModelName.wheel_rr.ToString()].Position;
 		} catch (Exception e) {
 			GD.Print(e);
 		} finally {
@@ -126,14 +126,14 @@ public class CarDetails : IHaveParts {
 		}
 
 		// validate that the wheels are in the correct quadrant for a car
-        if (WheelDetails[0].position.X < 0 || WheelDetails[0].position.Z < 0)
+        if (WheelDetails[0].Position.X < 0 || WheelDetails[0].Position.Z < 0)
             throw new Exception(CarModelName.wheel_fl + " should be in pos x and pos z");
-        if (WheelDetails[1].position.X > 0 || WheelDetails[1].position.Z < 0)
+        if (WheelDetails[1].Position.X > 0 || WheelDetails[1].Position.Z < 0)
             throw new Exception(CarModelName.wheel_fr + " should be in neg x and pos z");
 
-        if (WheelDetails[2].position.X < 0 || WheelDetails[2].position.Z > 0)
+        if (WheelDetails[2].Position.X < 0 || WheelDetails[2].Position.Z > 0)
             throw new Exception(CarModelName.wheel_rl + " should be in pos x and neg z");
-        if (WheelDetails[3].position.X > 0 || WheelDetails[3].position.Z > 0)
+        if (WheelDetails[3].Position.X > 0 || WheelDetails[3].Position.Z > 0)
             throw new Exception(CarModelName.wheel_rr + " should be in neg x and neg z");
 
 
@@ -234,12 +234,12 @@ public class CarDetails : IHaveParts {
 
 	public float RollingResistance(int w_id, float susForce) {
 		// linear drag component (https://en.wikipedia.org/wiki/Rolling_resistance)
-		return susForce * AreoLinearDrag / WheelDetails[w_id].radius;
+		return susForce * AreoLinearDrag / WheelDetails[w_id].Radius;
 	}
 
 	public float WheelInertiaNoEngine(int w_id) {
 		// this is a thin cylindrical shell
-		return WheelDetails[w_id].Mass * WheelDetails[w_id].radius * WheelDetails[w_id].radius;
+		return WheelDetails[w_id].Mass * WheelDetails[w_id].Radius * WheelDetails[w_id].Radius;
 	}
 
 	public float WheelInertiaPlusEngine() { //car internal engine + wheel inertia
@@ -255,11 +255,11 @@ public class CarDetails : IHaveParts {
 
 	public float DriveWheelRadius() {
 		if (DriveFront && DriveRear)
-			return (WheelDetails[0].radius + WheelDetails[1].radius + WheelDetails[2].radius + WheelDetails[3].radius) / 4f;
+			return (WheelDetails[0].Radius + WheelDetails[1].Radius + WheelDetails[2].Radius + WheelDetails[3].Radius) / 4f;
 		if (DriveFront)
-			return (WheelDetails[0].radius + WheelDetails[1].radius) / 2f;
+			return (WheelDetails[0].Radius + WheelDetails[1].Radius) / 2f;
 		if (DriveRear)
-			return (WheelDetails[2].radius + WheelDetails[3].radius) / 2f;
+			return (WheelDetails[2].Radius + WheelDetails[3].Radius) / 2f;
 
 		throw new ArgumentException("No drive wheels set, no wheel radius found.");
     }

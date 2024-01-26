@@ -58,7 +58,7 @@ public partial class WheelSkid(Wheel w) : Node3D {
 
     private static SkidPos GetWheelNow(Wheel w) {
         var dir = new Basis(w.ContactNormalGlobal, Mathf.DegToRad(180)) * w.Car.RigidBody.LinearVelocity.Normalized();
-        var width = w.Details.width;
+        var width = w.Details.Width;
 
         var pos = w.ContactPointGlobal;
         var left = w.ContactNormalGlobal.Cross(dir).Normalized();

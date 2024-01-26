@@ -42,18 +42,18 @@ public partial class Wheel : Node3D {
         Details = details;
         _skid = new WheelSkid(this);
 
-        var sus = car.Details.SusByWheelNum(details.id);
-        RayDir = new Vector3(0, -sus.TravelTotal() - details.radius, 0);
+        var sus = car.Details.SusByWheelNum(details.Id);
+        RayDir = new Vector3(0, -sus.TravelTotal() - details.Radius, 0);
     }
 
     public override void _Ready() {
-        var scene = GD.Load<PackedScene>("res://assets/" + Details.modelName);
+        var scene = GD.Load<PackedScene>("res://assets/" + Details.ModelName);
         WheelModel = scene.Instantiate<Node3D>();
-        WheelModel.Rotate(Vector3.Up, Details.id % 2 == 1 ? Mathf.Pi : 0);
+        WheelModel.Rotate(Vector3.Up, Details.Id % 2 == 1 ? Mathf.Pi : 0);
         AddChild(WheelModel);
 
-        var sus = Car.Details.SusByWheelNum(Details.id);
-        Position = Details.position + new Vector3(0, sus.maxTravel, 0);
+        var sus = Car.Details.SusByWheelNum(Details.Id);
+        Position = Details.Position + new Vector3(0, sus.maxTravel, 0);
     }
 
     public override void _EnterTree() {
@@ -61,7 +61,7 @@ public partial class Wheel : Node3D {
     }
 
     public override void _Process(double delta) {
-        WheelModel.Position = RayDirInGlobal - RayDirInGlobal.Normalized() * (Details.radius + SusTravelDistance);
+        WheelModel.Position = RayDirInGlobal - RayDirInGlobal.Normalized() * (Details.Radius + SusTravelDistance);
         WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);
     }
 

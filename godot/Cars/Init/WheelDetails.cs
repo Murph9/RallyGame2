@@ -3,13 +3,13 @@ using Godot;
 namespace murph9.RallyGame2.godot.Cars.Init;
 
 public record WheelDetails {
-	public string modelName;
+	public string ModelName;
 
-	public float radius;
+	public float Radius;
 	public float Mass;
-	public float width;
+	public float Width;
 
-	public int id;
-	public Vector3 position;
+	public int Id;
+	public Vector3 Position;
     // public WheelTraction traction;
 }

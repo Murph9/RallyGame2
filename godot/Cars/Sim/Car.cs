@@ -81,7 +81,7 @@ public partial class Car : Node3D
     public override void _Process(double delta) {
         foreach (var w in Wheels) {
             // rotate the front wheels (here because the wheels don't have their angle)
-            if (w.Details.id < 2) {
+            if (w.Details.Id < 2) {
                 w.Rotation = new Vector3(0, Steering, 0);
             }
         }
@@ -176,7 +176,7 @@ public partial class Car : Node3D
 
         // Suspension Dampening
         var relVel = w.ContactNormalGlobal.Dot(hitVelocity);
-        var susDetails = Details.SusByWheelNum(w.Details.id);
+        var susDetails = Details.SusByWheelNum(w.Details.Id);
         w.Damping = susDetails.Relax() * relVel;
         if (relVel > 0) {
             w.Damping = susDetails.Compression() * relVel;
@@ -215,10 +215,10 @@ public partial class Car : Node3D
         var objectRelVelocity = (w.ContactRigidBody?.LinearVelocity ?? new Vector3()) * RigidBody.GlobalBasis;
         var groundVelocity = localVel - objectRelVelocity;
 
-        var slipr = w.RadSec * w.Details.radius - groundVelocity.Z;
+        var slipr = w.RadSec * w.Details.Radius - groundVelocity.Z;
         w.SlipRatio = slipr / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
 
-        if (HandbrakeCur && w.Details.id >= 2) // rearwheels only
+        if (HandbrakeCur && w.Details.Id >= 2) // rearwheels only
             w.RadSec = 0;
 
         var steering = Steering;
@@ -226,13 +226,13 @@ public partial class Car : Node3D
             steering *= -1;
         }
 
-        if (w.Details.id < 2) {
+        if (w.Details.Id < 2) {
             // front wheels (player.car.length * player.car.yawrate (in rad/sec))
-            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.position.Z * RigidBody.AngularVelocity.Y;
+            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
             w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocity.Z)) - steering;
         } else {
             // rear wheels (player.car.length * player.car.yawrate (in rad/sec))
-            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.position.Z * RigidBody.AngularVelocity.Y;
+            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
             w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocity.Z));
             DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
         }
@@ -273,27 +273,27 @@ public partial class Car : Node3D
             // but only do it on the outer side
             if (w.TractionControlTimeOut > 0) {
                 w.TractionControlTimeOut -= delta;
-            } else if (w.Details.id == 0 || w.Details.id == 2 && w.SlipAngle > 0) {
+            } else if (w.Details.Id == 0 || w.Details.Id == 2 && w.SlipAngle > 0) {
                 brakeCurrent2 = 1f;
                 w.TractionControlTimeOut = 0.1f;
-            } else if (w.Details.id == 1 || w.Details.id == 3 && w.SlipAngle < 0) {
+            } else if (w.Details.Id == 1 || w.Details.Id == 3 && w.SlipAngle < 0) {
                 brakeCurrent2 = 1;
                 w.TractionControlTimeOut = 0.1f;
             }
         }
 
         // add the wheel force after merging the forces
-        var totalLongForce = Engine.WheelEngineTorque[w.Details.id] - wheel_force.Z
+        var totalLongForce = Engine.WheelEngineTorque[w.Details.Id] - wheel_force.Z
                 - (brakeCurrent2 * Details.BrakeMaxTorque * Mathf.Sign(w.RadSec));
         // drive wheels have the engine to pull along
-        float wheelInertia = Details.WheelInertiaNoEngine(w.Details.id);
-        if (Details.DriveFront && (w.Details.id == 0 || w.Details.id == 1)) {
+        float wheelInertia = Details.WheelInertiaNoEngine(w.Details.Id);
+        if (Details.DriveFront && (w.Details.Id == 0 || w.Details.Id == 1)) {
             wheelInertia = Details.WheelInertiaPlusEngine();
         }
-        if (Details.DriveRear && (w.Details.id == 2 || w.Details.id == 3)) {
+        if (Details.DriveRear && (w.Details.Id == 2 || w.Details.Id == 3)) {
             wheelInertia = Details.WheelInertiaPlusEngine();
         }
-        var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.radius;
+        var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.Radius;
 
         if (brakeCurrent2 != 0 && Mathf.Sign(w.RadSec) != Mathf.Sign(w.RadSec + totalLongForceTorque))
             w.RadSec = 0; // maxed out the forces with braking, so prevent wheels from moving
@@ -320,5 +320,5 @@ public partial class Car : Node3D
 		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
 
-    private Wheel GetOtherWheel(Wheel w) => Wheels[w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2];
+    private Wheel GetOtherWheel(Wheel w) => Wheels[w.Details.Id == 0 ? 1 : w.Details.Id == 1 ? 0 : w.Details.Id == 2 ? 3 : 2];
 }
