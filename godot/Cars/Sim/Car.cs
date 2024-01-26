@@ -286,7 +286,7 @@ public partial class Car : Node3D
         else
             w.RadSec += (float)delta * totalLongForceTorque; // so the radSec can be used next frame, to calculate slip ratio
 
-        w.GripDir = wheel_force;
+        w.GripDir = wheel_force / (float)w.Car.Details.TotalMass;
         if (wheel_force.LengthSquared() > 0)
             RigidBody.ApplyForce(RigidBody.Basis * wheel_force, w.ContactPointGlobal - RigidBody.GlobalPosition);
         if (w.ContactRigidBody != null)
