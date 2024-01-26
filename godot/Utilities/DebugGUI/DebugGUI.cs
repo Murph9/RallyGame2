@@ -77,6 +77,7 @@ public partial class DebugGUI : VBoxContainer {
 
             if (Attribute.GetCustomAttribute(objProp, typeof(DebugGUITextAttribute)) is DebugGUITextAttribute textAttribute) {
                 AddTextMapping(node, textAttribute, objProp, null);
+                Visible = true;
             }
         }
 
@@ -92,6 +93,7 @@ public partial class DebugGUI : VBoxContainer {
 
             if (Attribute.GetCustomAttribute(objField, typeof(DebugGUITextAttribute)) is DebugGUITextAttribute textAttribute) {
                 AddTextMapping(node, textAttribute, null, objField);
+                Visible = true;
             }
         }
     }
@@ -219,5 +221,8 @@ public partial class DebugGUI : VBoxContainer {
 
             LabelSets.Remove(label.Key);
         }
+
+        if (Datasets.Count == 0 && LabelSets.Count == 0)
+            Visible = false;
     }
 }
