@@ -1,7 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Component;
-using System;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot;
@@ -10,6 +9,8 @@ public partial class UpgradeMenu : CenterContainer
 {
 	private CarDetails _carDetailsPrevious;
 	private CarDetails _carDetails;
+
+	private ScrollContainer _scroll;
 
     public override void _Ready() {
 		_carDetailsPrevious = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
@@ -28,8 +29,13 @@ public partial class UpgradeMenu : CenterContainer
 		AddChild(root);
 
 		root.AddChild(new Label() { Text = "Upgrade Menu", HorizontalAlignment = HorizontalAlignment.Center });
+		_scroll = new ScrollContainer() {
+			LayoutMode = 3,
+			CustomMinimumSize = GetViewportRect().End
+		};
+		root.AddChild(_scroll);
 		var mainBox = new HBoxContainer();
-		root.AddChild(mainBox);
+		_scroll.AddChild(mainBox);
 
 		var optionsBox = new VBoxContainer();
 		mainBox.AddChild(optionsBox);
@@ -147,7 +153,9 @@ public partial class UpgradeMenu : CenterContainer
 		optionsBox.AddChild(b);
 	}
 
-    public override void _Process(double delta) {}
+    public override void _Process(double delta) {
+		_scroll.CustomMinimumSize = GetViewportRect().End - new Vector2(50, 50);
+	}
 
 	private static string ToStringWithRounding(object obj, int length) {
 		if (obj is float f)
