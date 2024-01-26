@@ -116,8 +116,9 @@ public partial class UpgradeMenu : CenterContainer
 		statsBox.AddChild(powerGraph);
 
 		// options to select
-		var parts = _carDetails.Engine.Parts.ToList();
-		parts.AddRange(_carDetails.Parts);
+		var parts = _carDetails.Parts.ToList();
+		parts.AddRange(_carDetails.Engine.Parts);
+		parts.AddRange(_carDetails.TractionDetails.Parts);
 		foreach (var part in parts) {
 			var option = new OptionButton();
 			var popup = option.GetPopup();

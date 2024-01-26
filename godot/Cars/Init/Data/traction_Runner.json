@@ -1,0 +1,31 @@
+{
+  "Parts": [
+    {
+      "color": "#4363d8",
+      "name": "Tyres",
+      "levelCost": [0,1000],
+      "levels": [
+        {
+          "LatMaxSlip": 0.2,
+          "LatGripMax": 1.5,
+          "LatPeakLength": 0.2,
+          "LatPeakDecay": 3,
+          "LongMaxSlip": 0.4,
+          "LongGripMax": 2,
+          "LongPeakLength": 0.4,
+          "LongPeakDecay": 2
+        },
+        {
+          "LatMaxSlip": 0.18,
+          "LatGripMax": 1.6,
+          "LatPeakLength": 0.2,
+          "LatPeakDecay": 3,
+          "LongMaxSlip": 0.35,
+          "LongGripMax": 2.2,
+          "LongPeakLength": 0.2,
+          "LongPeakDecay": 2
+        }
+      ]
+    }
+  ]
+}

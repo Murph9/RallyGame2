@@ -36,6 +36,7 @@
     "stiffness": 25
   },
   "tractionControl": true,
+  "tractionFileName": "traction_Runner",
   "wheelDetails": [
     {
       "mass": 10,
@@ -80,11 +81,19 @@
       "levelCost": [0],
       "levels": [
         {
-          "AutoChangeTime": 0.2,
           "TransFinaldrive": 3.64,
           "TransGearRatios": [-2.9, 3.76, 2.27, 1.6, 1.2, 1, 0.84],
           "TransPowerBalance": 0.5
         }
+      ]
+    },
+    {
+      "color": "#f032e6",
+      "name": "Flywheel and Clutch",
+      "levelCost": [0, 700],
+      "levels": [
+        {"AutoChangeTime": 0.25},
+        {"AutoChangeTime": 0.15}
       ]
     },
     {

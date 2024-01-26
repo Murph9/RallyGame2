@@ -24,12 +24,6 @@ public partial class Car : Node3D
 
     public float DriftAngle { get; private set; }
 
-    public const float TRACTION_MAXSLIP = 0.2f;
-    public const float TRACTION_MAX_LAT = 1.5f;
-    public const float TRACTION_MAX_LONG = 2f;
-    public const float TRACTION_MAXLENGTH = 0.2f;
-    public const float TRACTION_DECAY = 3f;
-
     public Vector3 DragForce;
 
     public double EngineTorque => Engine.CurrentTorque;
@@ -155,7 +149,7 @@ public partial class Car : Node3D
 
         // this is magic, but: minimum should be best slip angle, but it doesn't catch up to the turning angle required
         // so we just add some of the angular vel value to it
-        return TRACTION_MAXSLIP + RigidBody.AngularVelocity.Length()*0.125f;
+        return (float)Details.TractionDetails.LatMaxSlip + RigidBody.AngularVelocity.Length()*0.125f;
     }
 
     private void CalcSuspension(Wheel w) {
@@ -239,9 +233,9 @@ public partial class Car : Node3D
 
         // merging the forces into a traction circle
         // normalise based on their independant max values
-        float ratiofract = Mathf.Abs(w.SlipRatio / TRACTION_MAXSLIP);
-        float anglefract = Mathf.Abs(w.SlipAngle / TRACTION_MAXSLIP);
-        float p = Mathf.Sqrt(ratiofract * ratiofract + anglefract * anglefract);
+        var ratiofract = Mathf.Abs(w.SlipRatio / (float)Details.TractionDetails.LongMaxSlip);
+        var anglefract = Mathf.Abs(w.SlipAngle / (float)Details.TractionDetails.LatMaxSlip);
+        var p = Mathf.Sqrt(ratiofract * ratiofract + anglefract * anglefract);
         w.SkidFraction = p;
         if (p == 0) {
             // if p is zero then both anglefract and ratiofract are 0. So to prevent a 'div by 0' we just make the denominator 1
@@ -257,19 +251,21 @@ public partial class Car : Node3D
             anglefract = Mathf.Sign(anglefract);
         }
 
+        var td = Details.TractionDetails;
+
         var wheel_force = new Vector3() {
             // calc the longitudinal force from the slip ratio
-            Z = ratiofract * CalcWheelTraction.Calc(w.SlipRatio, TRACTION_MAXSLIP, TRACTION_MAX_LONG, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length(),
+            Z = ratiofract * (float)CalcWheelTraction.Calc(w.SlipRatio, td.LongMaxSlip, td.LongGripMax, td.LongPeakLength, td.LongPeakDecay) * w.SusForce.Length(),
             // calc the latitudinal force from the slip angle
-            X = -anglefract * CalcWheelTraction.Calc(w.SlipAngle, TRACTION_MAXSLIP, TRACTION_MAX_LAT, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length()
+            X = -anglefract * (float)CalcWheelTraction.Calc(w.SlipAngle, td.LatMaxSlip, td.LatGripMax, td.LatPeakLength, td.LongPeakDecay) * w.SusForce.Length()
         };
 
         // braking and abs
         var brakeCurrent2 = BrakingCur;
-        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > TRACTION_MAXSLIP && localVel.Length() > 4)
+        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > td.LongMaxSlip && localVel.Length() > 4)
             brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 4 frames and stop braking so hard)
 
-        if (Details.TractionControl && RigidBody.LinearVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > TRACTION_MAXSLIP * 1.5f) {
+        if (Details.TractionControl && RigidBody.LinearVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > td.LatMaxSlip * 1.5f) {
             // but only do it on the outer side
             if (w.TractionControlTimeOut > 0) {
                 w.TractionControlTimeOut -= delta;

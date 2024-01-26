@@ -46,6 +46,8 @@ public class CarDetails : IHaveParts {
 
 	public string EngineFileName;
     public EngineDetails Engine;
+	public string TractionFileName;
+	public TractionDetails TractionDetails;
 
 	[JsonIgnore]
     public float[] AutoGearUpSpeed; // m/s for triggering the next gear [calculated]
@@ -102,6 +104,7 @@ public class CarDetails : IHaveParts {
         }
 
 		Engine.LoadSelf();
+		TractionDetails.LoadSelf();
 
 		// calculate wheel positions based on the model
 		Node3D carScene = null;
@@ -278,6 +281,9 @@ public class CarDetails : IHaveParts {
 			details.Add(result);
 		}
 		foreach (var result in Engine.GetResults()) {
+			details.Add(result);
+		}
+		foreach (var result in TractionDetails.GetResults()) {
 			details.Add(result);
 		}
 		return details;

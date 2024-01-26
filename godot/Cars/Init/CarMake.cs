@@ -32,6 +32,7 @@ public static class CarMakeExtensions
 	public static CarDetails LoadFromFile(this CarMake type, Vector3 gravity) {
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
         carDetails.Engine = EngineDetails.LoadFromFile(carDetails.EngineFileName);
+		carDetails.TractionDetails = TractionDetails.LoadFromFile(carDetails.TractionFileName);
 
         carDetails.LoadSelf(gravity);
 		return carDetails;
