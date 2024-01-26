@@ -25,7 +25,8 @@ public partial class Car : Node3D
     public float DriftAngle { get; private set; }
 
     public const float TRACTION_MAXSLIP = 0.2f;
-    public const float TRACTION_MAX = 2f;
+    public const float TRACTION_MAX_LAT = 1.5f;
+    public const float TRACTION_MAX_LONG = 2f;
     public const float TRACTION_MAXLENGTH = 0.2f;
     public const float TRACTION_DECAY = 3f;
 
@@ -182,9 +183,9 @@ public partial class Car : Node3D
         }
 
         w.SwayForce = 0f;
-        int w_id_other = w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2; // fetch the index of the other side
-        if (Wheels[w_id_other].InContact) {
-            w.SwayForce = (Wheels[w_id_other].SusTravelDistance - w.SusTravelDistance) * susDetails.antiroll;
+        var otherSideWheel = GetOtherWheel(w); // fetch the index of the other side
+        if (otherSideWheel.InContact) {
+            w.SwayForce = (otherSideWheel.SusTravelDistance - w.SusTravelDistance) * susDetails.antiroll;
         } else if (w.InContact) {
             // in contact but other not in contact, then its basically max sway
             var otherLength = w.RayDir.Length();
@@ -258,15 +259,28 @@ public partial class Car : Node3D
 
         var wheel_force = new Vector3() {
             // calc the longitudinal force from the slip ratio
-            Z = ratiofract * CalcWheelTraction.Calc(w.SlipRatio, TRACTION_MAXSLIP, TRACTION_MAX, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length(),
+            Z = ratiofract * CalcWheelTraction.Calc(w.SlipRatio, TRACTION_MAXSLIP, TRACTION_MAX_LONG, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length(),
             // calc the latitudinal force from the slip angle
-            X = -anglefract * CalcWheelTraction.Calc(w.SlipAngle, TRACTION_MAXSLIP, TRACTION_MAX, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length()
+            X = -anglefract * CalcWheelTraction.Calc(w.SlipAngle, TRACTION_MAXSLIP, TRACTION_MAX_LAT, TRACTION_MAXLENGTH, TRACTION_DECAY) * w.SusForce.Length()
         };
 
         // braking and abs
         var brakeCurrent2 = BrakingCur;
-        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/2 > TRACTION_MAXSLIP && localVel.Length() > 4)
-            brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 2 frames and stop braking)
+        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > TRACTION_MAXSLIP && localVel.Length() > 4)
+            brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 4 frames and stop braking so hard)
+
+        if (Details.TractionControl && RigidBody.LinearVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > TRACTION_MAXSLIP * 1.5f) {
+            // but only do it on the outer side
+            if (w.TractionControlTimeOut > 0) {
+                w.TractionControlTimeOut -= delta;
+            } else if (w.Details.id == 0 || w.Details.id == 2 && w.SlipAngle > 0) {
+                brakeCurrent2 = 1f;
+                w.TractionControlTimeOut = 0.1f;
+            } else if (w.Details.id == 1 || w.Details.id == 3 && w.SlipAngle < 0) {
+                brakeCurrent2 = 1;
+                w.TractionControlTimeOut = 0.1f;
+            }
+        }
 
         // add the wheel force after merging the forces
         var totalLongForce = Engine.WheelEngineTorque[w.Details.id] - wheel_force.Z
@@ -305,4 +319,6 @@ public partial class Car : Node3D
 		float dragDown = -0.5f * Details.AeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
 		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
+
+    private Wheel GetOtherWheel(Wheel w) => Wheels[w.Details.id == 0 ? 1 : w.Details.id == 1 ? 0 : w.Details.id == 2 ? 3 : 2];
 }

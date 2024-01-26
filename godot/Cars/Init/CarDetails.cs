@@ -38,6 +38,8 @@ public class CarDetails : IHaveParts {
 	public CarSusDetails SusF;
 	public CarSusDetails SusR;
 
+	public bool TractionControl;
+
 	////////
 	//Drivetrain stuff
 	public bool DriveFront, DriveRear;
@@ -203,6 +205,14 @@ public class CarDetails : IHaveParts {
 	}
 
     public CarSusDetails SusByWheelNum(int i) => i < 2 ? SusF : SusR;
+	public bool IsIdADriveWheel(int i) {
+		if (DriveFront && i < 3)
+			return true;
+		if (DriveRear && i > 2)
+			return true;
+		return false;
+	}
+
     public float GetGearUpSpeed(int gear) => AutoGearUpSpeed[gear];
     public float GetGearDownSpeed(int gear) => AutoGearDownSpeed[gear];
     public float SpeedAtRpm(int gear, int rpm) {

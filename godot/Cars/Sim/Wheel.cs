@@ -35,6 +35,8 @@ public partial class Wheel : Node3D {
     public double SkidFraction;
     public Vector3 GripDir;
 
+    public double TractionControlTimeOut;
+
     public Wheel(Car car, WheelDetails details) {
         Car = car;
         Details = details;
