@@ -46,5 +46,6 @@ public class TractionDetails : IHaveParts {
         }
     }
 
-    public IEnumerable<PartResult> GetResults() => PartReader.GetResults();
+    public IEnumerable<PartResult> GetResultsInTree() => PartReader.GetResults();
+    public IEnumerable<Part> GetAllPartsInTree() => Parts;
 }

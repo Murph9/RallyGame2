@@ -58,8 +58,8 @@ public partial class UpgradeMenu : CenterContainer
 		stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
 		stats.PushColor(Colors.White);
 		stats.PushTable(4);
-		var prevDetails = _carDetailsPrevious.GetResults();
-		var details = _carDetails.GetResults();
+		var prevDetails = _carDetailsPrevious.GetResultsInTree();
+		var details = _carDetails.GetResultsInTree();
 		foreach (var entry in details) {
 			stats.PushCell();
 			stats.AppendText(entry.Name);
@@ -116,9 +116,7 @@ public partial class UpgradeMenu : CenterContainer
 		statsBox.AddChild(powerGraph);
 
 		// options to select
-		var parts = _carDetails.Parts.ToList();
-		parts.AddRange(_carDetails.Engine.Parts);
-		parts.AddRange(_carDetails.TractionDetails.Parts);
+		var parts = _carDetails.GetAllPartsInTree();
 		foreach (var part in parts) {
 			var option = new OptionButton();
 			var popup = option.GetPopup();

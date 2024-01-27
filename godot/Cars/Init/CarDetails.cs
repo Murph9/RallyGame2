@@ -84,9 +84,7 @@ public class CarDetails : IHaveParts {
 	private PartReader PartReader { get; init; }
     public List<Part> Parts { get; set; } = [];
 
-	////////
-	//Wheels
-	public float MaxSteerAngle; //in radians
+	public float MaxSteerAngle; // radians [0.2 - 0.5]
 
 	public WheelDetails[] WheelDetails;
 
@@ -105,6 +103,7 @@ public class CarDetails : IHaveParts {
 
 		Engine.LoadSelf();
 		TractionDetails.LoadSelf();
+		SuspensionDetails.LoadSelf();
 
 		// calculate wheel positions based on the model
 		Node3D carScene = null;
@@ -275,17 +274,37 @@ public class CarDetails : IHaveParts {
 		return cloned;
     }
 
-	public IEnumerable<PartResult> GetResults() {
+	public IEnumerable<PartResult> GetResultsInTree() {
 		var details = new List<PartResult>();
 		foreach (var result in PartReader.GetResults()) {
 			details.Add(result);
 		}
-		foreach (var result in Engine.GetResults()) {
+		foreach (var result in Engine.GetResultsInTree()) {
 			details.Add(result);
 		}
-		foreach (var result in TractionDetails.GetResults()) {
+		foreach (var result in TractionDetails.GetResultsInTree()) {
+			details.Add(result);
+		}
+		foreach (var result in SuspensionDetails.GetResultsInTree()) {
 			details.Add(result);
 		}
 		return details;
+	}
+
+	public IEnumerable<Part> GetAllPartsInTree() {
+		var parts = new List<Part>();
+		foreach (var result in Parts) {
+			parts.Add(result);
+		}
+		foreach (var result in Engine.GetAllPartsInTree()) {
+			parts.Add(result);
+		}
+		foreach (var result in TractionDetails.GetAllPartsInTree()) {
+			parts.Add(result);
+		}
+		foreach (var result in SuspensionDetails.GetAllPartsInTree()) {
+			parts.Add(result);
+		}
+		return parts;
 	}
 }

@@ -47,7 +47,8 @@ public class SuspensionDetails : IHaveParts {
         PartReader = new PartReader(this);
     }
 
-    public IEnumerable<PartResult> GetResults() => PartReader.GetResults();
+    public IEnumerable<PartResult> GetResultsInTree() => PartReader.GetResults();
+    public IEnumerable<Part> GetAllPartsInTree() => Parts;
 
     public CarSusDetails Front => new (FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
     public CarSusDetails Rear => new (RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);

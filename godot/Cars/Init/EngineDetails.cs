@@ -138,5 +138,6 @@ public class EngineDetails : IHaveParts {
         return torque * 2 * Mathf.Pi * rpm / (60 * 1000); //kW
     }
 
-    public IEnumerable<PartResult> GetResults() => PartReader.GetResults();
+    public IEnumerable<PartResult> GetResultsInTree() => PartReader.GetResults();
+    public IEnumerable<Part> GetAllPartsInTree() => Parts;
 }
