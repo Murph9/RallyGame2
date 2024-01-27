@@ -10,7 +10,7 @@ namespace murph9.RallyGame2.godot.Utilities.DebugGUI;
 public partial class DebugGUI : VBoxContainer {
 
     // from https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs
-    static DebugGUI Instance;
+    private static DebugGUI Instance;
 
     private record GraphMapping {
         public Graph.Dataset Dataset;
