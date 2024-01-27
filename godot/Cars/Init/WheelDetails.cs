@@ -11,5 +11,4 @@ public record WheelDetails {
 
 	public int Id;
 	public Vector3 Position;
-    // public WheelTraction traction;
 }

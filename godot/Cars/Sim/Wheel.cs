@@ -7,7 +7,6 @@ namespace murph9.RallyGame2.godot.Cars.Sim;
 public partial class Wheel : Node3D {
 
     public readonly WheelDetails Details;
-    private readonly WheelSkid _skid;
 
     public readonly Car Car;
     public readonly Vector3 RayDir;
@@ -40,7 +39,6 @@ public partial class Wheel : Node3D {
     public Wheel(Car car, WheelDetails details) {
         Car = car;
         Details = details;
-        _skid = new WheelSkid(this);
 
         var sus = car.Details.SusByWheelNum(details.Id);
         RayDir = new Vector3(0, -sus.TravelTotal() - details.Radius, 0);
@@ -54,8 +52,6 @@ public partial class Wheel : Node3D {
 
         var sus = Car.Details.SusByWheelNum(Details.Id);
         Position = Details.Position + new Vector3(0, sus.MaxTravel, 0);
-
-        Car.AddChild(_skid);
     }
 
     public override void _Process(double delta) {

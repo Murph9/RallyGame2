@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Sim;
@@ -12,6 +13,7 @@ public partial class Car : Node3D
     public CarEngine Engine { get; }
 
     public readonly Wheel[] Wheels;
+    private readonly List<WheelSkid> _skids = [];
     private readonly Transform3D _worldSpawn;
 
     public bool HandbrakeCur { get; private set; }
@@ -59,6 +61,10 @@ public partial class Car : Node3D
         // attach wheels to car
         foreach (var w in Wheels) {
             RigidBody.AddChild(w);
+
+            var skid = new WheelSkid(w);
+            _skids.Add(skid);
+            AddChild(skid);
         }
 
         // add audio
