@@ -32,6 +32,7 @@ public partial class StaticWorld : Node3D, IWorld {
     private void Load() {
         if (_scene != null) {
             RemoveChild(_scene);
+            _scene.QueueFree();
         }
         if (_worldName == null)
             return;

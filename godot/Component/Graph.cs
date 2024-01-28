@@ -67,6 +67,7 @@ public partial class Graph : HBoxContainer {
         var box = GetNode<VBoxContainer>("LabelContainer");
         var data = box.GetChildren().Where(x => x is Label).First(x => ((Label)x).Text == dataset.GraphName);
         box.RemoveChild(data);
+        data.QueueFree();
         _datasets.Remove(dataset);
     }
 

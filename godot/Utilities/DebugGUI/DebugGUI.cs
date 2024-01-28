@@ -204,6 +204,7 @@ public partial class DebugGUI : VBoxContainer {
                 graph.RemoveDataset(key.Dataset);
                 if (graph.DatasetCount() == 0) {
                     RemoveChild(graph);
+                    graph.QueueFree();
                 }
             }
 
@@ -217,6 +218,7 @@ public partial class DebugGUI : VBoxContainer {
             foreach (var key in label.Value) {
                 var realLabel = key.Label;
                 RemoveChild(realLabel);
+                realLabel.QueueFree();
             }
 
             LabelSets.Remove(label.Key);

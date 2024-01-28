@@ -55,8 +55,10 @@ public partial class WorldPieces : Node3D, IWorld {
                     Directions = directions.Select(x => x.Transform).ToArray(),
                     Node = c as Node3D
                 };
-                foreach (var dir in directions)
+                foreach (var dir in directions) {
                     c.RemoveChild(dir);
+                    dir.QueueFree();
+                }
 
                 _pieces.Add(p);
             }
