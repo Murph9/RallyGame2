@@ -8,7 +8,7 @@ public partial class ResultsScreen : CenterContainer, IScene {
 	[Signal]
     public delegate void ClosedEventHandler();
 	[Signal]
-    public delegate void QuitEventHandler();
+    public delegate void RestartEventHandler();
 
 	public override void _Ready() {
 		var state = GetNode<GlobalState>("/root/GlobalState");
@@ -24,7 +24,7 @@ public partial class ResultsScreen : CenterContainer, IScene {
 			var bExit = new Button() {
 				Text = "Restart"
 			};
-			bExit.Pressed += () => EmitSignal(SignalName.Closed);
+			bExit.Pressed += () => EmitSignal(SignalName.Restart);
 			main.AddChild(bExit);
 			return;
 		}
