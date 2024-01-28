@@ -68,7 +68,7 @@ public partial class RacingScreen : Node3D {
 
 		LapTimer += delta;
 
-		if (CurrentLap > 3) {
+		if (CurrentLap > 1) {
 			var state = GetNode<GlobalState>("/root/GlobalState");
 			state.AddResult(new RoundResult() {
 				Time = LapTimes.Min()

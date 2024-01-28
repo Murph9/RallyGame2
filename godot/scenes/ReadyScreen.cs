@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace murph9.RallyGame2.godot.scenes;
@@ -21,7 +22,7 @@ public partial class ReadyScreen : CenterContainer, IScene {
 		var state = GetNode<GlobalState>("/root/GlobalState");
 
 		main.AddChild(new Label() {
-			Text = "Goal: " + state.SecondsToWin() + " sec"
+			Text = $"Round {state.RoundResults.Count() + 1} Goal: {state.SecondsToWin()} sec"
 		});
 		main.AddChild(new Label() {
 			Text = "Rewards: $500 + random part lol"

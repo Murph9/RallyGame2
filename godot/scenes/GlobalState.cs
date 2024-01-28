@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,7 @@ namespace murph9.RallyGame2.godot.scenes;
 public partial class GlobalState : Node {
     public double Money;
     public CarDetails CarDetails;
+    public readonly List<Part> PartsUpgraded = [];
     // TODO some details about the track so it generates the same every time
 
     private readonly List<RoundResult> _roundResults = [];
@@ -16,7 +18,7 @@ public partial class GlobalState : Node {
         _roundResults.Add(result);
     }
 
-    public double SecondsToWin(int roundDiff = 0) => 60 - (_roundResults.Count + roundDiff);
+    public double SecondsToWin(int roundDiff = 0) => 30 - (_roundResults.Count + roundDiff);
 
     public void Reset() {
         Money = 0;

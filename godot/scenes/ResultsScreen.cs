@@ -30,7 +30,7 @@ public partial class ResultsScreen : CenterContainer, IScene {
 		}
 
 		main.AddChild(new Label() {
-			Text = "Well Done\nYou beat the target time of " + state.SecondsToWin(-1) + " sec, nice"
+			Text = $"Well Done, your time was {state.RoundResults.Last().Time}\nYou beat the target time of " + state.SecondsToWin(-1) + " sec, nice"
 		});
 
 		var b = new Button() {
