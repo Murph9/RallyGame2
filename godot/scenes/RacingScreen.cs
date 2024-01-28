@@ -11,6 +11,8 @@ namespace murph9.RallyGame2.godot.scenes;
 public partial class RacingScreen : Node3D {
 	[Signal]
     public delegate void ClosedEventHandler();
+	[Signal]
+	public delegate void ExitEventHandler();
 
 	private readonly RacingUI _racingUI;
 
@@ -67,6 +69,10 @@ public partial class RacingScreen : Node3D {
 		LapTimer += delta;
 
 		if (CurrentLap > 3) {
+			var state = GetNode<GlobalState>("/root/GlobalState");
+			state.AddResult(new RoundResult() {
+				Time = LapTimes.Min()
+			});
 			EmitSignal(SignalName.Closed);
 		}
 	}
@@ -76,6 +82,6 @@ public partial class RacingScreen : Node3D {
 	}
 
 	public void Exit() {
-		GetTree().ChangeSceneToFile("res://main.tscn");
+		EmitSignal(SignalName.Exit);
 	}
 }

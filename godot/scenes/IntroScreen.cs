@@ -9,6 +9,10 @@ public partial class IntroScreen : CenterContainer, IScene {
 
 	public override void _Ready() {
 		var state = GetNode<GlobalState>("/root/GlobalState");
+		if (state.CarDetails != null) {
+			state.Reset();
+		}
+
 		state.CarDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 
 		var main = new VBoxContainer();

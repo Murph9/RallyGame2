@@ -3,7 +3,7 @@ using System;
 
 namespace murph9.RallyGame2.godot.scenes;
 
-public partial class UpgradeScreen : Control, IScene {
+public partial class UpgradeScreen : CenterContainer, IScene {
 
 	[Signal]
     public delegate void ClosedEventHandler();
