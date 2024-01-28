@@ -9,9 +9,8 @@ public partial class WorldPieces : Node3D, IWorld {
 
     private readonly PackedScene SCENE;
     private readonly string pieceName;
-    private readonly List<Piece> _pieces = new();
-
-    private List<Node3D> _placedPieces = new();
+    private readonly List<Piece> _pieces = [];
+    private readonly List<Node3D> _placedPieces = [];
 
     public record Piece {
         public string Name;
@@ -69,7 +68,7 @@ public partial class WorldPieces : Node3D, IWorld {
 
         try {
             var w = new WorldPieceLayoutGenerator(_pieces);
-            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.VeryLongLine);
+            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.SimpleLoop);
 
             var curPos = new Vector3();
             var curRot = Quaternion.Identity;

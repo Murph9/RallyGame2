@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cs3brurlr6k8g"]
 
-[ext_resource type="Script" path="res://RacingUI.cs" id="1_104dn"]
+[ext_resource type="Script" path="res://Component/RacingUI.cs" id="1_104dn"]
 
 [node name="RacingUi" type="Control"]
 layout_mode = 3

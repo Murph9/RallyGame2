@@ -1,12 +1,13 @@
 using Godot;
+using murph9.RallyGame2.godot.scenes;
 using System;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot;
+namespace murph9.RallyGame2.godot.Component;
 
 public partial class RacingUI : Control
 {
-	public Racing Racing { get; set; }
+	public RacingScreen Racing { get; set; }
 
 	public override void _Ready() {}
 

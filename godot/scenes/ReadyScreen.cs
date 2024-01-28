@@ -1,5 +1,4 @@
 using Godot;
-using System;
 
 namespace murph9.RallyGame2.godot.scenes;
 
@@ -21,10 +20,10 @@ public partial class ReadyScreen : CenterContainer, IScene {
 
 		var state = GetNode<GlobalState>("/root/GlobalState");
 
-		AddChild(new Label() {
+		main.AddChild(new Label() {
 			Text = "Goal: " + state.SecondsToWin() + " sec"
 		});
-		AddChild(new Label() {
+		main.AddChild(new Label() {
 			Text = "Rewards: $500 + random part lol"
 		});
 
@@ -32,7 +31,7 @@ public partial class ReadyScreen : CenterContainer, IScene {
 			Text = "Start"
 		};
 		b.Pressed += () => EmitSignal(SignalName.Closed);
-		AddChild(b);
+		main.AddChild(b);
 	}
 
 	public override void _Process(double delta) { }
