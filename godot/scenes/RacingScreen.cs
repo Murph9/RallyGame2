@@ -12,7 +12,7 @@ public partial class RacingScreen : Node3D {
 	[Signal]
     public delegate void ClosedEventHandler();
 	[Signal]
-	public delegate void ExitEventHandler();
+	public delegate void QuitEventHandler();
 
 	private readonly RacingUI _racingUI;
 
@@ -82,6 +82,6 @@ public partial class RacingScreen : Node3D {
 	}
 
 	public void Exit() {
-		EmitSignal(SignalName.Exit);
+		EmitSignal(SignalName.Quit);
 	}
 }

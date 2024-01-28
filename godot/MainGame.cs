@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Godot;
 using murph9.RallyGame2.godot.scenes;
 using murph9.RallyGame2.godot.Utilities;
@@ -8,69 +5,50 @@ using murph9.RallyGame2.godot.Utilities;
 namespace murph9.RallyGame2.godot;
 
 public partial class MainGame : Node {
-	public record SceneDetail(Type Type, PackedScene Scene);
-
-	private readonly List<SceneDetail> _sceneCache = [
-		new SceneDetail(typeof(IntroScreen), GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(IntroScreen)))),
-		new SceneDetail(typeof(ReadyScreen), GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(ReadyScreen)))),
-		new SceneDetail(typeof(RacingScreen), GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingScreen)))),
-		new SceneDetail(typeof(ResultsScreen), GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(ResultsScreen)))),
-		new SceneDetail(typeof(UpgradeScreen), GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(UpgradeScreen))))
-	];
-
-	private T GetFromCache<T>() where T : Node => _sceneCache.Single(x => x.Type == typeof(T)).Scene.Instantiate<T>();
 
 	public override void _Ready() {
-		var intro = GetFromCache<IntroScreen>();
-		intro.Closed += () => IntroClosed(intro);
-		AddChild(intro);
+		LoadIntro();
 	}
 
 	public override void _Process(double delta) {
 	}
 
-	private void IntroClosed(IntroScreen intro) {
-		RemoveChild(intro);
-		intro.QueueFree();
+	private void Unload(Node node, System.Action load) {
+		RemoveChild(node);
+		node.QueueFree();
 
-		var ready = GetFromCache<ReadyScreen>();
-		ready.Closed += () => ReadyClosed(ready);
+		load();
+	}
+
+	private void LoadIntro() {
+		var intro = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(IntroScreen))).Instantiate<IntroScreen>();
+		intro.Closed += () => { Unload(intro, LoadReady); };
+		AddChild(intro);
+	}
+
+	private void LoadReady() {
+		var ready = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(ReadyScreen))).Instantiate<ReadyScreen>();
+		ready.Closed += () => { Unload(ready, LoadRacing); };
 		AddChild(ready);
 	}
 
-	private void ReadyClosed(ReadyScreen ready) {
-		RemoveChild(ready);
-		ready.QueueFree();
-
-		var racing = GetFromCache<RacingScreen>();
-		racing.Closed += () => RacingClosed(racing);
+	private void LoadRacing() {
+		var racing = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingScreen))).Instantiate<RacingScreen>();
+		racing.Closed += () => { Unload(racing, LoadResults); };
+		racing.Quit += () => { Unload(racing, LoadIntro); };
 		AddChild(racing);
 	}
 
-	private void RacingClosed(RacingScreen racing) {
-		RemoveChild(racing);
-		racing.QueueFree();
-
-		var results = GetFromCache<ResultsScreen>();
-		results.Closed += () => ResultsClosed(results);
+	private void LoadResults() {
+		var results = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(ResultsScreen))).Instantiate<ResultsScreen>();
+		results.Closed += () => { Unload(results, LoadUpgrade); };
+		results.Quit += () => { Unload(results, LoadIntro); };
 		AddChild(results);
 	}
 
-	private void ResultsClosed(ResultsScreen results) {
-		RemoveChild(results);
-		results.QueueFree();
-
-		var upgrade = GetFromCache<UpgradeScreen>();
-		upgrade.Closed += () => UpgradeClosed(upgrade);
+	private void LoadUpgrade() {
+		var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(UpgradeScreen))).Instantiate<UpgradeScreen>();
+		upgrade.Closed += () => { Unload(upgrade, LoadReady); };
 		AddChild(upgrade);
-	}
-
-	private void UpgradeClosed(UpgradeScreen upgrade) {
-		RemoveChild(upgrade);
-		upgrade.QueueFree();
-
-		var ready = GetFromCache<ReadyScreen>();
-		ready.Closed += () => ReadyClosed(ready);
-		AddChild(ready);
 	}
 }
