@@ -19,7 +19,7 @@ public partial class ResultsScreen : CenterContainer, IScene {
 		var lastResult = state.RoundResults.Last();
 		if (lastResult.Time > state.SecondsToWin(-1)) {
 			main.AddChild(new Label() {
-				Text = $"You Failed.\nWith a time of {lastResult.Time} sec you did not meet the goal of {state.SecondsToWin(-1)} sec"
+				Text = $"You Failed.\nWith a time of {Math.Round(lastResult.Time, 2)} sec. You did not meet the goal of {Math.Round(state.SecondsToWin(-1), 2)} sec"
 			});
 			var bExit = new Button() {
 				Text = "Restart"
@@ -30,7 +30,7 @@ public partial class ResultsScreen : CenterContainer, IScene {
 		}
 
 		main.AddChild(new Label() {
-			Text = $"Well Done, your time was {state.RoundResults.Last().Time}\nYou beat the target time of " + state.SecondsToWin(-1) + " sec, nice"
+			Text = $"Well Done, your time was {Math.Round(state.RoundResults.Last().Time, 2)}\nYou beat the target time of " + Math.Round(state.SecondsToWin(-1), 2) + " sec, nice"
 		});
 
 		var b = new Button() {

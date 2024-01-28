@@ -12,6 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_104dn")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
@@ -19,16 +20,30 @@ offset_bottom = 40.0
 layout_mode = 2
 text = "Back"
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="LapLabel" type="Label" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="TimeLabel" type="Label" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
 [node name="CheckpointLine2D" type="Line2D" parent="."]
 width = 3.0
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 2
+offset_top = 35.0
+offset_right = 45.0
+offset_bottom = 85.0
+columns = 2
+
+[node name="LapLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Lap Text"
+
+[node name="TimeLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Time Text"
+
+[node name="TargetLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Target Text"
+
+[node name="RemainingLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Remaining Text"
 
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
