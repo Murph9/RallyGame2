@@ -31,6 +31,10 @@ offset_top = 324.0
 offset_right = 71.0
 offset_bottom = 382.0
 
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Start"
+
 [node name="Button" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Add Ball"
@@ -52,3 +56,4 @@ text = "Upgrade Test"
 [connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/PlayGameButton" to="." method="_on_play_game_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]

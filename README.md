@@ -39,7 +39,7 @@ Current game idea:
 - Parts are shown on the model
   - I would apply all parts to the model and start the game with them all hidden
 
-and its TODO list:
+and its general TODO list:
 
 some simple circuit generation:
 - probably prod the dynamic world generation as i can't make a track to save my life
@@ -49,8 +49,13 @@ parts
 - no 3d models needed yet, but would be nice
 - using the engine.py on the desktop for now
 
-a UI for selecting parts
-- at least a text block for displaying car stats
+UI screens (in order):
+- intro screen (once)
+- level start screen + your goal is blah
+- racing screen
+- racing results screen
+- upgrade screen for selecting parts
+  - at least a text block for displaying new car stats
 
 Some way to calculate the starting time to beat
 - maybe get AI to drive it in the future

@@ -51,4 +51,8 @@ public partial class Main : Node
     public void _on_upgrade_button_pressed() {
         GetTree().ChangeSceneToFile("res://UpgradeMenu.tscn");
     }
+
+    public void _on_start_button_pressed() {
+        GetTree().ChangeSceneToFile("res://MainGame.tscn");
+    }
 }
