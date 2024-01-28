@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/ReadyScreen.cs" id="1_vds57"]
 
-[node name="ReadyScreen" type="Control"]
+[node name="ReadyScreen" type="CenterContainer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

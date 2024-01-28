@@ -30,13 +30,10 @@ public partial class IntroScreen : CenterContainer, IScene {
 		});
 
 		// button to start
-
 		var b = new Button() {
 			Text = "Start"
 		};
-		b.Pressed += () => {
-			EmitSignal(SignalName.Closed);
-		};
+		b.Pressed += () => EmitSignal(SignalName.Closed);
 		main.AddChild(b);
 	}
 
