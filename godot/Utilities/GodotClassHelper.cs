@@ -14,4 +14,12 @@ public class GodotClassHelper {
         var typeProjPath = type.FullName.TrimPrefix(OFFSET_TO_FIND_ROOT);
         return $"res://{typeProjPath.Trim('.').Replace('.', '/')}{suffix}";
     }
+
+    public static string ToStringWithRounding(object obj, int length) {
+		if (obj is float f)
+			return float.Round(f, length).ToString();
+		if (obj is double d)
+			return double.Round(d, length).ToString();
+		return obj.ToString();
+	}
 }
