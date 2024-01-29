@@ -63,11 +63,12 @@ public partial class CarUI : Control {
         var middle = speedoRect.Size / 2;
 
         // rpm arc
+        var showRPMTo = Mathf.Ceil((Car.Details.Engine.MaxRpm + 1000) / 1000) * 1000; // include the next 1000 and end on whole number
         var arcSize = speedoRect.Size.X / 2 - ARC_WIDTH / 2;
         var rotation = (1 + Car.Engine.CurRPM/10000f)*Math.PI;
         DrawArc(middle, arcSize, (float)Math.PI, (float)rotation, 32, Colors.White, ARC_WIDTH, true);
         // rpm max rpm arc
-        DrawArc(middle, arcSize, (float)((1 + Car.Details.Engine.MaxRpm/10000f)*Math.PI), (float)Math.PI*2, 32, Colors.Red, ARC_WIDTH, true);
+        DrawArc(middle, arcSize, (float)((1 + Car.Details.Engine.MaxRpm/10000f)*Math.PI), (float)((1 + showRPMTo/10000f)*Math.PI), 32, Colors.Red, ARC_WIDTH, true);
 
         // rpm line(s)
         var rotationQua = new Vector2(1, 0).Rotated((float)rotation);
@@ -76,7 +77,7 @@ public partial class CarUI : Control {
 
         // rpm numbers
         var numOffset = new Vector2(-defaultFontSize / 3, defaultFontSize / 2f);
-        for (int i = 0; i <= 10; i++) {
+        for (int i = 0; i <= showRPMTo/1000; i++) {
             rotation = (1 + i/10f) * Math.PI;
             rotationQua = new Vector2(1, 0).Rotated((float)rotation);
 
