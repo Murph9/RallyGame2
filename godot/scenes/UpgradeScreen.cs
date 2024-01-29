@@ -38,7 +38,7 @@ public partial class UpgradeScreen : CenterContainer, IScene {
             var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
             allParts.Remove(part);
             var optionButton = new Button() {
-                Text = part.Name + " for $" + part.LevelCost[part.CurrentLevel + 1]
+                Text = $"{part.Name} lvl {part.CurrentLevel+1} for ${part.LevelCost[part.CurrentLevel + 1]}"
             };
             optionButton.Pressed += () => {
                 if (_appliedPart == part)
