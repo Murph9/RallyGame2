@@ -1,0 +1,37 @@
+[gd_resource type="AudioBusLayout" load_steps=6 format=3 uid="uid://3pxdxk2rcp3n"]
+
+[sub_resource type="AudioEffectDelay" id="AudioEffectDelay_s4gaf"]
+resource_name = "Delay"
+
+[sub_resource type="AudioEffectPhaser" id="AudioEffectPhaser_woj2o"]
+resource_name = "Phaser"
+rate_hz = 0.2
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_mug4i"]
+resource_name = "LowPassFilter"
+
+[sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_rjboo"]
+resource_name = "Compressor"
+
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_e8kpf"]
+resource_name = "SpectrumAnalyzer"
+buffer_length = 1.0
+fft_size = 3
+
+[resource]
+bus/1/name = &"Music"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0694828
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectDelay_s4gaf")
+bus/1/effect/0/enabled = true
+bus/1/effect/1/effect = SubResource("AudioEffectPhaser_woj2o")
+bus/1/effect/1/enabled = true
+bus/1/effect/2/effect = SubResource("AudioEffectLowPassFilter_mug4i")
+bus/1/effect/2/enabled = true
+bus/1/effect/3/effect = SubResource("AudioEffectCompressor_rjboo")
+bus/1/effect/3/enabled = true
+bus/1/effect/4/effect = SubResource("AudioEffectSpectrumAnalyzer_e8kpf")
+bus/1/effect/4/enabled = true

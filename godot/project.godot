@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 DebugGui="*res://Utilities/DebugGUI/DebugGUI.cs"
 GlobalState="*res://scenes/GlobalState.cs"
+BackgroundAudio="*res://scenes/BackgroundAudio.cs"
 
 [dotnet]
 
