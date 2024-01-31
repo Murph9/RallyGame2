@@ -1,5 +1,4 @@
 using Godot;
-using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Audio;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,24 +10,22 @@ public partial class BackgroundAudio : Node {
     private const float BACKGROUND_CHORD_CHANGE_TIME = 3f;
     private static readonly float GLOBAL_VOLUME = 0;
 
-    class OscNote(Oscillator oscillator, double timer) {
-        public Oscillator Oscillator { get; private set; } = oscillator;
-        public double Timer { get; set; } = timer;
-    }
-
-    private readonly List<Oscillator> _oscillators = [];
+    private readonly List<ISynth> _synths = [];
     private readonly ChordChainer _chordPicker;
-    private readonly List<OscNote> _oscillatorEnd = [];
+    private readonly Envelope _noteEnvelope;
 
     private AudioStreamGeneratorPlayback _playback;
     private AudioStreamPlayer _player;
     private double _chordChangeTimer;
 
     public BackgroundAudio() {
-        _oscillators.Add(new Oscillator() { Wave = WaveType.Saw, Volume = GLOBAL_VOLUME * 0.4f });
-        _oscillators.Add(new Oscillator() { Wave = WaveType.Saw, Volume = GLOBAL_VOLUME * 0.4f });
-        _oscillators.Add(new Oscillator() { Wave = WaveType.Saw, Volume = GLOBAL_VOLUME * 0.4f });
-        _oscillators.Add(new Oscillator() { Wave = WaveType.Saw, Volume = GLOBAL_VOLUME * 0.4f });
+        _noteEnvelope = new Envelope(0.02, 0.125, 0.3, 0.5, 0.2);
+
+        var chordEnvelope = new Envelope(0.02, 0.125, BACKGROUND_CHORD_CHANGE_TIME - .2, .7, 0.2);
+        _synths.Add(new Synth1() { Volume = GLOBAL_VOLUME * 0.4f, Envelope = chordEnvelope.Copy() });
+        _synths.Add(new Synth1() { Volume = GLOBAL_VOLUME * 0.4f, Envelope = chordEnvelope.Copy() });
+        _synths.Add(new Synth1() { Volume = GLOBAL_VOLUME * 0.4f, Envelope = chordEnvelope.Copy() });
+        _synths.Add(new Synth1() { Volume = GLOBAL_VOLUME * 0.4f, Envelope = chordEnvelope.Copy() });
 
         _chordPicker = new ChordChainer();
         _chordPicker.SetRandomChord();
@@ -55,8 +52,6 @@ public partial class BackgroundAudio : Node {
     public override void _Process(double delta) {
         if (GLOBAL_VOLUME <= 0) return; // perf
 
-        FillBuffers();
-
         if (_chordChangeTimer < 0) {
             _chordPicker.SetRandomRelatedChord();
             SetBackgroundChord(_chordPicker.CurrentChord);
@@ -64,48 +59,56 @@ public partial class BackgroundAudio : Node {
         }
         _chordChangeTimer -= delta;
 
-        foreach (var osTimer in _oscillatorEnd.ToList()) {
-            osTimer.Timer -= delta;
-            if (osTimer.Timer < 0) {
-                _oscillators.Remove(osTimer.Oscillator);
-                _oscillatorEnd.Remove(osTimer);
-            }
+        foreach (var synth in _synths.ToArray()) {
+            synth._Process(delta);
+
+            // if (synth.EnvelopeEnded) {
+                // _synths.Remove(synth);
+            // } // TODO figure out how to remove only note synths
         }
+
+        FillBuffers();
     }
 
     private void SetBackgroundChord(Chord chord) {
-        _oscillators[0].Freq = Note.MidiNoteToFrequency(chord.Notes[0].Midi);
-        _oscillators[1].Freq = Note.MidiNoteToFrequency(chord.Notes[1].Midi);
-        _oscillators[2].Freq = Note.MidiNoteToFrequency(chord.Notes[2].Midi);
+        _synths[0].Freq = Note.MidiNoteToFrequency(chord.Notes[0].Midi);
+        _synths[0].ResetEnvelope();
+        _synths[1].Freq = Note.MidiNoteToFrequency(chord.Notes[1].Midi);
+        _synths[0].ResetEnvelope();
+        _synths[2].Freq = Note.MidiNoteToFrequency(chord.Notes[2].Midi);
+        _synths[0].ResetEnvelope();
         if (chord.Notes.Length > 3) {
-            _oscillators[3].Freq = Note.MidiNoteToFrequency(chord.Notes[3].Midi);
-            _oscillators[3].Playing = true;
+            _synths[3].Freq = Note.MidiNoteToFrequency(chord.Notes[3].Midi);
+            _synths[3].Playing = true;
+            _synths[0].ResetEnvelope();
         } else {
-            _oscillators[3].Playing = false;
+            _synths[3].Playing = false;
         }
     }
 
     private void PlayNote(Note note, double end) {
-        var o = new Oscillator() {
+        var o = new Synth1() {
             Freq = Note.MidiNoteToFrequency(note.Midi),
-            Wave = WaveType.Saw,
-            Volume = GLOBAL_VOLUME
+            Volume = GLOBAL_VOLUME,
+            Envelope = _noteEnvelope.Copy()
         };
-        _oscillators.Add(o);
-        _oscillatorEnd.Add(new OscNote(o, end));
+        _synths.Add(o);
     }
 
     private void FillBuffers() {
         int framesAvailable = _playback.GetFramesAvailable();
-        var buffers = new Vector2[_oscillators.Count][];
-        foreach (var (osc, index) in _oscillators.WithIndex()) {
-            buffers[index] = osc.GenFrames(framesAvailable, SAMPLE_RATE);
+
+        var oscs = _synths.SelectMany(x => x.Oscillators).ToArray();
+        var buffers = new Vector2[oscs.Length][];
+
+        for (int i = 0; i < oscs.Length; i++) {
+            buffers[i] = oscs[i].GenFrames(framesAvailable, SAMPLE_RATE);
         }
         for (var i = 0; i < framesAvailable; i++) {
             var sum = new Vector2();
-            for (var j = 0; j < _oscillators.Count; j++)
+            for (var j = 0; j < oscs.Length; j++)
                 sum += buffers[j][i];
-            _playback.PushFrame(sum / _oscillators.Count);
+            _playback.PushFrame(sum / buffers.Length);
         }
     }
 }

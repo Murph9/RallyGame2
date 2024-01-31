@@ -6,11 +6,11 @@ public partial class Oscillator {
 
     public WaveType Wave { get; set; } = WaveType.Sine;
     public double Freq { get; set; }
-    public double Volume { get; set; } = 1; // NOT decibels because this is dumb
+    public float MasterVolume { get; set; } = 1; // NOT decibels because this is dumb
+    public float EnvelopeVolume { get; set; } = 1; // also not decibels
     public bool Playing { get; set; } = true;
 
     private double _phase = 0;
-
 
     public Vector2[] GenFrames(int frames, double sampleRate) {
         var increment = Freq / sampleRate;
@@ -41,7 +41,7 @@ public partial class Oscillator {
                 default:
                     break;
             }
-            output[i] *= (float)Volume;
+            output[i] *= MasterVolume * EnvelopeVolume;
             _phase = Mathf.PosMod(_phase + increment, 1.0);
         }
         return output;

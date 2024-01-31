@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" load_steps=6 format=3 uid="uid://3pxdxk2rcp3n"]
+[gd_resource type="AudioBusLayout" load_steps=7 format=3 uid="uid://3pxdxk2rcp3n"]
 
 [sub_resource type="AudioEffectDelay" id="AudioEffectDelay_s4gaf"]
 resource_name = "Delay"
@@ -9,6 +9,9 @@ rate_hz = 0.2
 
 [sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_mug4i"]
 resource_name = "LowPassFilter"
+
+[sub_resource type="AudioEffectHighPassFilter" id="AudioEffectHighPassFilter_l1mud"]
+resource_name = "HighPassFilter"
 
 [sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_rjboo"]
 resource_name = "Compressor"
@@ -31,7 +34,9 @@ bus/1/effect/1/effect = SubResource("AudioEffectPhaser_woj2o")
 bus/1/effect/1/enabled = true
 bus/1/effect/2/effect = SubResource("AudioEffectLowPassFilter_mug4i")
 bus/1/effect/2/enabled = true
-bus/1/effect/3/effect = SubResource("AudioEffectCompressor_rjboo")
+bus/1/effect/3/effect = SubResource("AudioEffectHighPassFilter_l1mud")
 bus/1/effect/3/enabled = true
-bus/1/effect/4/effect = SubResource("AudioEffectSpectrumAnalyzer_e8kpf")
+bus/1/effect/4/effect = SubResource("AudioEffectCompressor_rjboo")
 bus/1/effect/4/enabled = true
+bus/1/effect/5/effect = SubResource("AudioEffectSpectrumAnalyzer_e8kpf")
+bus/1/effect/5/enabled = true
