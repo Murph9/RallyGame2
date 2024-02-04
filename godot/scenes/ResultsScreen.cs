@@ -13,8 +13,10 @@ public partial class ResultsScreen : CenterContainer, IScene {
 	public override void _Ready() {
 		var state = GetNode<GlobalState>("/root/GlobalState");
 
+		var root = GetNode<PanelContainer>("PanelContainer");
+
 		var main = new VBoxContainer();
-		AddChild(main);
+		root.AddChild(main);
 
 		var lastResult = state.RoundResults.Last();
 		if (lastResult.Time > state.SecondsToWin(-1)) {

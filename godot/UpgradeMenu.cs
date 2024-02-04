@@ -25,8 +25,11 @@ public partial class UpgradeMenu : CenterContainer
 		}
 		_carDetails.LoadSelf(Main.DEFAULT_GRAVITY);
 
+		var panel = new PanelContainer();
+		AddChild(panel);
+
 		var root = new VBoxContainer();
-		AddChild(root);
+		panel.AddChild(root);
 
 		root.AddChild(new Label() { Text = "Upgrade Menu", HorizontalAlignment = HorizontalAlignment.Center });
 		_scroll = new ScrollContainer() {

@@ -16,8 +16,10 @@ public partial class ReadyScreen : CenterContainer, IScene {
 		// maybe or later:
 		// - the last goal and difference from it
 
+		var root = GetNode<PanelContainer>("PanelContainer");
+
 		var main = new VBoxContainer();
-		AddChild(main);
+		root.AddChild(main);
 
 		var state = GetNode<GlobalState>("/root/GlobalState");
 

@@ -18,7 +18,7 @@ public partial class Main : Node
         _world = new StaticWorld() { };
         AddChild(_world);
 
-        var optionButton = GetNode<OptionButton>("VBoxContainer/HBoxContainer/WorldOptionButton");
+        var optionButton = GetNode<OptionButton>("PanelContainer/VBoxContainer/HBoxContainer/WorldOptionButton");
         var popup = optionButton.GetPopup();
 
         foreach (var w in _worlds) {

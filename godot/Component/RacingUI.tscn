@@ -12,38 +12,41 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_104dn")
 
+[node name="CheckpointLine2D" type="Line2D" parent="."]
+width = 3.0
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
+layout_mode = 2
+offset_right = 45.0
 offset_bottom = 40.0
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Back"
 
-[node name="CheckpointLine2D" type="Line2D" parent="."]
-width = 3.0
-
-[node name="GridContainer" type="GridContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
 offset_top = 35.0
 offset_right = 45.0
 offset_bottom = 85.0
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer"]
+layout_mode = 2
 columns = 2
 
-[node name="LapLabel" type="Label" parent="GridContainer"]
+[node name="LapLabel" type="Label" parent="PanelContainer/GridContainer"]
 layout_mode = 2
 text = "Lap Text"
 
-[node name="TimeLabel" type="Label" parent="GridContainer"]
+[node name="TimeLabel" type="Label" parent="PanelContainer/GridContainer"]
 layout_mode = 2
 text = "Time Text"
 
-[node name="TargetLabel" type="Label" parent="GridContainer"]
+[node name="TargetLabel" type="Label" parent="PanelContainer/GridContainer"]
 layout_mode = 2
 text = "Target Text"
 
-[node name="RemainingLabel" type="Label" parent="GridContainer"]
+[node name="RemainingLabel" type="Label" parent="PanelContainer/GridContainer"]
 layout_mode = 2
 text = "Remaining Text"
 

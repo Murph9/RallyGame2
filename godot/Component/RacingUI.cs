@@ -15,11 +15,11 @@ public partial class RacingUI : Control
 		var state = GetNode<GlobalState>("/root/GlobalState");
 		var secToWin = state.SecondsToWin();
 
-		GetNode<Label>("GridContainer/LapLabel").Text = $"Lap: {Racing.CurrentLap} ({Racing.CurrentCheckpoint})";
-		GetNode<Label>("GridContainer/TimeLabel").Text = double.Round(Racing.LapTimer, 3) + "\n"
+		GetNode<Label>("PanelContainer/GridContainer/LapLabel").Text = $"Lap: {Racing.CurrentLap} ({Racing.CurrentCheckpoint})";
+		GetNode<Label>("PanelContainer/GridContainer/TimeLabel").Text = double.Round(Racing.LapTimer, 3) + "\n"
 				+ string.Join('\n', Racing.LapTimes.Select(x => double.Round(x, 1)));
-		GetNode<Label>("GridContainer/TargetLabel").Text = "Target: " + Math.Round(secToWin, 2) + " sec";
-		GetNode<Label>("GridContainer/RemainingLabel").Text = "Remaining: " + Math.Round(Math.Max(0, secToWin - Racing.LapTimer), 2);
+		GetNode<Label>("PanelContainer/GridContainer/TargetLabel").Text = "Target: " + Math.Round(secToWin, 2) + " sec";
+		GetNode<Label>("PanelContainer/GridContainer/RemainingLabel").Text = "Remaining: " + Math.Round(Math.Max(0, secToWin - Racing.LapTimer), 2);
 
 		var cam = GetViewport().GetCamera3D();
 		var positions = Racing.GetCarAndCheckpointPos();
@@ -29,7 +29,7 @@ public partial class RacingUI : Control
 		];
 
 		// center top middle
-		var uiBox = GetNode<GridContainer>("GridContainer");
+		var uiBox = GetNode<PanelContainer>("PanelContainer");
 		uiBox.Position = new Vector2(GetViewportRect().End.X/2 - uiBox.Size.X/2, 0);
 	}
 

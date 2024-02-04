@@ -15,8 +15,10 @@ public partial class IntroScreen : CenterContainer, IScene {
 
 		state.CarDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 
+		var root = GetNode<PanelContainer>("PanelContainer");
+
 		var main = new VBoxContainer();
-		AddChild(main);
+		root.AddChild(main);
 
 		main.AddChild(new Label() {
 			Text = "Driver for cut throat team"
