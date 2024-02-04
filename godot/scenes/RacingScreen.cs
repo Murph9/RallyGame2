@@ -1,8 +1,10 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +18,7 @@ public partial class RacingScreen : Node3D {
 
 	private readonly RacingUI _racingUI;
 	private readonly List<Checkpoint> _checkpoints = [];
+	private readonly SimpleWorldPieces _world;
 
 	private Car Car;
 
@@ -26,6 +29,8 @@ public partial class RacingScreen : Node3D {
 	public double LapTimer { get; private set; }
 
 	public RacingScreen() {
+		_world = new SimpleWorldPieces();
+
 		var uiScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingUI)));
 		_racingUI = uiScene.Instantiate<RacingUI>();
 		_racingUI.Racing = this;
@@ -33,15 +38,14 @@ public partial class RacingScreen : Node3D {
 	}
 
 	public override void _Ready() {
-		var worldPieces = new SimpleWorldPieces();
-        AddChild(worldPieces);
+        AddChild(_world);
 
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, worldPieces.GetSpawn());
+        Car = new Car(state.CarDetails, _world.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		foreach (var (checkpoint, index) in worldPieces.GetCheckpoints().WithIndex()) {
+		foreach (var (checkpoint, index) in _world.GetCheckpoints().WithIndex()) {
 			AddChild(DebugHelper.GenerateWorldText("Checkpoint: " + index.ToString(), checkpoint + new Vector3(0, 1, 0)));
 
 			var size = new Vector3(12, 12, 12);
@@ -79,6 +83,7 @@ public partial class RacingScreen : Node3D {
 				Time = LapTimes.Min()
 			});
 			EmitSignal(SignalName.Finished);
+			CurrentLap = 0;
 		}
 	}
 
@@ -88,5 +93,31 @@ public partial class RacingScreen : Node3D {
 
 	public void Exit() {
 		EmitSignal(SignalName.Restart);
+	}
+
+    public void StopDriving() {
+        Car.IgnoreInputs();
+    }
+
+    public void StartDriving() {
+		ReplaceCarWithState();
+        Car.AcceptInputs();
+
+		LapTimes.Clear();
+		LapTimer = 0;
+		CurrentCheckpoint = 0;
+		CurrentLap = 0;
+
+    }
+
+	public void ReplaceCarWithState() {
+		RemoveChild(Car);
+		Car.QueueFree();
+
+		// clone into new car
+		var state = GetNode<GlobalState>("/root/GlobalState");
+        Car = new Car(state.CarDetails, _world.GetSpawn());
+		Car.RigidBody.Position += new Vector3(-15, 0, 0);
+		AddChild(Car);
 	}
 }

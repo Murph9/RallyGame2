@@ -6,8 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Sim;
 
-public partial class Car : Node3D
-{
+public partial class Car : Node3D {
     public RigidBody3D RigidBody { get; }
     public CarDetails Details { get; }
     public CarEngine Engine { get; }
@@ -30,6 +29,8 @@ public partial class Car : Node3D
 
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
+
+    private bool _listeningToInputs = true;
 
     public Car(CarDetails details, Transform3D? worldSpawn = null) {
         Details = details;
@@ -113,8 +114,26 @@ public partial class Car : Node3D
         ApplyCentralDrag();
     }
 
-    private void ReadInputs()
-    {
+    public void AcceptInputs() {
+        _listeningToInputs = true;
+    }
+
+    public void IgnoreInputs() {
+        _listeningToInputs = false;
+
+        // and reset everything
+        _steeringLeftRaw = 0;
+        _steeringRightRaw = 0;
+        Steering = 0;
+
+        HandbrakeCur = false;
+        BrakingCur = 0.2f; // slow braking
+        AccelCur = 0;
+    }
+
+    private void ReadInputs() {
+        if (!_listeningToInputs) return;
+
         // TODO speed factor
         _steeringLeftRaw = Input.GetActionStrength("car_left") * Details.MaxSteerAngle;
         _steeringRightRaw = Input.GetActionStrength("car_right") * Details.MaxSteerAngle;
@@ -132,12 +151,16 @@ public partial class Car : Node3D
         AccelCur = Input.GetActionStrength("car_accel");
 
         if (Input.IsActionPressed("car_reset")) {
-            RigidBody.Transform = _worldSpawn;
-            RigidBody.LinearVelocity = new Vector3();
-            RigidBody.AngularVelocity = new Vector3();
-            foreach (var w in Wheels) {
-                w.RadSec = 0;
-            }
+            Reset();
+        }
+    }
+
+    public void Reset() {
+        RigidBody.Transform = _worldSpawn;
+        RigidBody.LinearVelocity = new Vector3();
+        RigidBody.AngularVelocity = new Vector3();
+        foreach (var w in Wheels) {
+            w.RadSec = 0;
         }
     }
 

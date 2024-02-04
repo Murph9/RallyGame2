@@ -22,13 +22,8 @@ public partial class UpgradeScreen : CenterContainer, IScene {
         LoadStats();
     }
 
-    public override void _Process(double delta) {
-        var scroll = GetNode<ScrollContainer>("VBoxContainer/ScrollContainer");
-        scroll.CustomMinimumSize = GetViewportRect().End - new Vector2(50, 50);
-    }
-
     private void LoadOptions() {
-        var optionsBox = GetNode<VBoxContainer>("VBoxContainer/ScrollContainer/HBoxContainer/VBoxContainerOptions");
+        var optionsBox = GetNode<VBoxContainer>("VBoxContainer/HBoxContainer/VBoxContainerOptions");
 
         var state = GetNode<GlobalState>("/root/GlobalState");
         _oldCarDetails = state.CarDetails.Clone();
@@ -74,7 +69,7 @@ public partial class UpgradeScreen : CenterContainer, IScene {
     }
 
     private void LoadStats() {
-        var statsBox = GetNode<VBoxContainer>("VBoxContainer/ScrollContainer/HBoxContainer/VBoxContainerStats");
+        var statsBox = GetNode<VBoxContainer>("VBoxContainer/HBoxContainer/VBoxContainerStats");
 
         // remove any existing things because this is a dumb view for now
         foreach (var n in statsBox.GetChildren().ToArray()) {
