@@ -10,7 +10,7 @@ namespace murph9.RallyGame2.godot.scenes;
 
 public partial class RacingScreen : Node3D {
 	[Signal]
-    public delegate void ClosedEventHandler();
+    public delegate void FinishedEventHandler();
 	[Signal]
 	public delegate void RestartEventHandler();
 
@@ -78,7 +78,7 @@ public partial class RacingScreen : Node3D {
 			state.AddResult(new RoundResult() {
 				Time = LapTimes.Min()
 			});
-			EmitSignal(SignalName.Closed);
+			EmitSignal(SignalName.Finished);
 		}
 	}
 

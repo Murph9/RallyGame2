@@ -34,7 +34,7 @@ public partial class MainGame : Node {
 
 	private void LoadRacing() {
 		var racing = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingScreen))).Instantiate<RacingScreen>();
-		racing.Closed += () => { Unload(racing, LoadResults); };
+		racing.Finished += () => { Unload(racing, LoadResults); };
 		racing.Restart += () => { Unload(racing, LoadIntro); };
 		AddChild(racing);
 	}
