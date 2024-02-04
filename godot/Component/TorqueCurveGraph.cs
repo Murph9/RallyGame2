@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Component;
 
@@ -9,28 +10,39 @@ public partial class TorqueCurveGraph(CarDetails details, CarDetails compareTo =
     private readonly CarDetails _compareTo = compareTo;
 
     public override void _Ready() {
-        var datasetNew = new Graph.Dataset("Torque", 200, max: 500) {
+        var peakRPM = _details.Engine.MaxRpm;
+        if (_compareTo != null) {
+            peakRPM = Mathf.Max(_compareTo.Engine.MaxRpm, peakRPM);
+        }
+
+        var datasetTorque = new Graph.Dataset("Torque", 200, max: 500) {
             Color = Colors.Green
         };
-		var datasetKwNew = new Graph.Dataset("kW", 200, max: 500) {
+		var datasetKw = new Graph.Dataset("kW", 200, max: 500) {
             Color = Colors.Green * 0.8f
         };
-		var datasetOld = new Graph.Dataset("TorqueOld", 200, max: 500) {
+		var datasetTorqueCompare = new Graph.Dataset("Torque 2", 200, max: 500) {
             Color = Colors.Blue
         };
-		var datasetKwOld = new Graph.Dataset("kWOld", 200, max: 500) {
+		var datasetKwCompare = new Graph.Dataset("kW 2", 200, max: 500) {
             Color = Colors.Blue * 0.8f
         };
-		var maxRpm = Mathf.Max(_compareTo?.Engine?.MaxRpm ?? 0, _details.Engine.MaxRpm);
         for (int i = 0; i < 200; i++) {
-			if (i*50 < maxRpm) {
-            	datasetNew.Push((float)_details.Engine.CalcTorqueFor(i*50));
-            	datasetKwNew.Push((float)_details.Engine.CalcKwFor(i*50));
+			if (i*50 <= peakRPM) {
+            	datasetTorque.Push((float)_details.Engine.CalcTorqueFor(i*50));
+            	datasetKw.Push((float)_details.Engine.CalcKwFor(i*50));
 
-            	datasetOld.Push((float)(_compareTo?.Engine?.CalcTorqueFor(i*50) ?? 0));
-            	datasetKwOld.Push((float)(_compareTo?.Engine?.CalcKwFor(i*50) ?? 0));
+            	datasetTorqueCompare.Push((float)(_compareTo?.Engine?.CalcTorqueFor(i*50) ?? 0));
+            	datasetKwCompare.Push((float)(_compareTo?.Engine?.CalcKwFor(i*50) ?? 0));
 			}
         }
-		AddChild(new Graph(new Vector2(300, 250), [datasetNew, datasetOld, datasetKwNew, datasetKwOld]));
+
+        List<Graph.Dataset> datasets = [datasetTorque, datasetKw];
+        if (_compareTo != null) {
+            datasets.Add(datasetTorqueCompare);
+            datasets.Add(datasetKwCompare);
+        }
+
+		AddChild(new Graph(new Vector2(300, 250), datasets));
     }
 }

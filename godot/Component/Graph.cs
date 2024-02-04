@@ -50,7 +50,7 @@ public partial class Graph : HBoxContainer {
 
     public Graph(Vector2 size, IEnumerable<Dataset> datasets = null) {
         GraphSize = size;
-        _datasets = (datasets ?? Array.Empty<Dataset>()).ToList();
+        _datasets = (datasets ?? []).ToList();
     }
 
     public int DatasetCount() => _datasets.Count;
