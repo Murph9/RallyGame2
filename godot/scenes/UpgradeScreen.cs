@@ -131,28 +131,7 @@ public partial class UpgradeScreen : CenterContainer, IScene {
 		stats.Pop();
 		stats.Pop();
 
-        var datasetNew = new Graph.Dataset("Torque", 200, max: 500) {
-            Color = Colors.Green
-        };
-		var datasetKwNew = new Graph.Dataset("kW", 200, max: 500) {
-            Color = Colors.Green * 0.8f
-        };
-		var datasetOld = new Graph.Dataset("TorqueOld", 200, max: 500) {
-            Color = Colors.Blue
-        };
-		var datasetKwOld = new Graph.Dataset("kWOld", 200, max: 500) {
-            Color = Colors.Blue * 0.8f
-        };
-		var maxRpm = Mathf.Max(_oldCarDetails.Engine.MaxRpm, state.CarDetails.Engine.MaxRpm);
-        for (int i = 0; i < 200; i++) {
-			if (i*50 < maxRpm) {
-            	datasetNew.Push((float)state.CarDetails.Engine.CalcTorqueFor(i*50));
-            	datasetKwNew.Push((float)state.CarDetails.Engine.CalcKwFor(i*50));
-            	datasetOld.Push((float)_oldCarDetails.Engine.CalcTorqueFor(i*50));
-            	datasetKwOld.Push((float)_oldCarDetails.Engine.CalcKwFor(i*50));
-			}
-        }
-		var powerGraph = new Graph(new Vector2(300, 250), [datasetNew, datasetOld, datasetKwNew, datasetKwOld]);
-		statsBox.AddChild(powerGraph);
+        var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, _oldCarDetails);
+		statsBox.AddChild(torqueCurveGraph);
     }
 }

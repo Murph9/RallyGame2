@@ -26,25 +26,10 @@ public partial class CarUI : Control {
         GetTree().Root.SizeChanged += WindowSizeChanged;
         WindowSizeChanged();
 
-        var graph = new Graph(new Vector2(200, 200)) {
-            Name = "TorqueGraph"
+        var torqueCurveGraph = new TorqueCurveGraph(Car.Details) {
+            Name = "TorqueCurveGraph"
         };
-        AddChild(graph);
-        var dataset = new Graph.Dataset("Torque", 200, autoScale: true) {
-            Color = Colors.Green
-        };
-        for (int i = 0; i < 200; i++) {
-            dataset.Push((float)Car.Details.Engine.CalcTorqueFor(i*50));
-        }
-        graph.AddDataset(dataset);
-
-        dataset = new Graph.Dataset("kW", 200, autoScale: true) {
-            Color = Colors.Aqua
-        };
-        for (int i = 0; i < 200; i++) {
-            dataset.Push((float)Car.Details.Engine.CalcKwFor(i*50));
-        }
-        graph.AddDataset(dataset);
+        AddChild(torqueCurveGraph);
     }
 
     private void WindowSizeChanged() {
@@ -126,8 +111,8 @@ public partial class CarUI : Control {
         var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
         speedoRect.Position = GetViewportRect().End - speedoRect.Size;
 
-        // force the wheel outputs to the bottom left
-        var torqueGraph = GetNode<Graph>("TorqueGraph");
+        // force the torque outputs to the bottom left
+        var torqueGraph = GetNode<TorqueCurveGraph>("TorqueCurveGraph");
         torqueGraph.Position = new Vector2(0, GetViewportRect().End.Y - torqueGraph.Size.Y);
     }
 
