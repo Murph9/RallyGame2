@@ -9,8 +9,6 @@ namespace murph9.RallyGame2.godot.scenes;
 
 public partial class UpgradeScreen : CenterContainer, IScene {
 
-    private const int UPGRADE_COUNT = 3;
-
     [Signal]
     public delegate void ClosedEventHandler();
 
@@ -29,13 +27,14 @@ public partial class UpgradeScreen : CenterContainer, IScene {
         _oldCarDetails = state.CarDetails.Clone();
         var allParts = state.CarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
 
-        for (int i = 0; i < UPGRADE_COUNT; i++) {
+        for (int i = 0; i < state.RoundReward.PartChoiceCount; i++) {
             var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
             allParts.Remove(part);
             var optionButton = new Button() {
                 Text = $"{part.Name} lvl {part.CurrentLevel+1} for ${part.LevelCost[part.CurrentLevel + 1]}"
             };
             optionButton.Pressed += () => {
+                // TODO do part reward count here
                 if (_appliedPart == part)
                     return;
                 if (_appliedPart != null) {

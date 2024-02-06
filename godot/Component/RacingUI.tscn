@@ -50,4 +50,8 @@ text = "Target Text"
 layout_mode = 2
 text = "Remaining Text"
 
+[node name="RewardLabel" type="Label" parent="PanelContainer/GridContainer"]
+layout_mode = 2
+text = "Reward Text"
+
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

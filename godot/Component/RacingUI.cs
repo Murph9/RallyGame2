@@ -13,13 +13,13 @@ public partial class RacingUI : Control
 
 	public override void _Process(double delta) {
 		var state = GetNode<GlobalState>("/root/GlobalState");
-		var secToWin = state.SecondsToWin();
 
 		GetNode<Label>("PanelContainer/GridContainer/LapLabel").Text = $"Lap: {Racing.CurrentLap} ({Racing.CurrentCheckpoint})";
 		GetNode<Label>("PanelContainer/GridContainer/TimeLabel").Text = double.Round(Racing.LapTimer, 3) + "\n"
 				+ string.Join('\n', Racing.LapTimes.Select(x => double.Round(x, 1)));
-		GetNode<Label>("PanelContainer/GridContainer/TargetLabel").Text = "Target: " + Math.Round(secToWin, 2) + " sec";
-		GetNode<Label>("PanelContainer/GridContainer/RemainingLabel").Text = "Remaining: " + Math.Round(Math.Max(0, secToWin - Racing.LapTimer), 2);
+		GetNode<Label>("PanelContainer/GridContainer/TargetLabel").Text = "Target: " + Math.Round(state.RoundGoal?.Time ?? 0, 2) + " sec";
+		GetNode<Label>("PanelContainer/GridContainer/RemainingLabel").Text = "Remaining: " + Math.Round(Math.Max(0, (state.RoundGoal?.Time ?? 0) - Racing.LapTimer), 2);
+		GetNode<Label>("PanelContainer/GridContainer/RewardLabel").Text = "Reward: " + state.RoundReward?.Money + " + part count: " + state.RoundReward?.PartCount;
 
 		var cam = GetViewport().GetCamera3D();
 		var positions = Racing.GetCarAndCheckpointPos();
