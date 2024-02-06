@@ -56,7 +56,7 @@ public partial class StaticWorld : Node3D, IWorld {
         return Transform3D.Identity;
     }
 
-    public IEnumerable<Vector3> GetCheckpoints() {
-        return Array.Empty<Vector3>();
+    public IEnumerable<Transform3D> GetCheckpoints() {
+        return Array.Empty<Transform3D>();
     }
 }

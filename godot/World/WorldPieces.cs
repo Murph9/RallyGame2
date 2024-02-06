@@ -97,7 +97,7 @@ public partial class WorldPieces : Node3D, IWorld {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     }
 
-    public IEnumerable<Vector3> GetCheckpoints() {
-        return _placedPieces.Select(x => x.Position);
+    public IEnumerable<Transform3D> GetCheckpoints() {
+        return _placedPieces.Select(x => x.Transform);
     }
 }

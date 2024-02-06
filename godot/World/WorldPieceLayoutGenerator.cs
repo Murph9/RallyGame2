@@ -5,20 +5,16 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
 
-public class WorldPieceLayoutGenerator {
+public class WorldPieceLayoutGenerator(ICollection<WorldPieces.Piece> pieces) {
 
     private readonly RandomNumberGenerator _rand = new ();
-    private readonly WorldPieces.Piece[] _pieces;
+    private readonly WorldPieces.Piece[] _pieces = [.. pieces];
 
     public enum CircuitLayout {
         SimpleLoop,
         LargeCircle,
         VeryLongLine,
         Random
-    }
-
-    public WorldPieceLayoutGenerator(ICollection<WorldPieces.Piece> pieces) {
-        _pieces = pieces.ToArray();
     }
 
     public IEnumerable<WorldPieces.Piece> GenerateFixed(CircuitLayout layout) {

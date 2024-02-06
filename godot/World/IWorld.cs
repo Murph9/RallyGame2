@@ -5,5 +5,5 @@ namespace murph9.RallyGame2.godot.World;
 
 public interface IWorld {
     Transform3D GetSpawn();
-    IEnumerable<Vector3> GetCheckpoints();
+    IEnumerable<Transform3D> GetCheckpoints();
 }

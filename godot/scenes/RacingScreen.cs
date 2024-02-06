@@ -16,8 +16,10 @@ public partial class RacingScreen : Node3D {
 	[Signal]
 	public delegate void RestartEventHandler();
 
+	private const float bezier_OFFSET = 10;//10;
+
 	private readonly RacingUI _racingUI;
-	private readonly List<Checkpoint> _checkpoints = [];
+	private readonly List<Checkpoint> _checkpointNodes = [];
 	private readonly SimpleWorldPieces _world;
 
 	private Car Car;
@@ -45,17 +47,47 @@ public partial class RacingScreen : Node3D {
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		foreach (var (checkpoint, index) in _world.GetCheckpoints().WithIndex()) {
-			AddChild(DebugHelper.GenerateWorldText("Checkpoint: " + index.ToString(), checkpoint + new Vector3(0, 1, 0)));
+		var trackCurve = new Curve3D();
+		var checkpoints = _world.GetCheckpoints().ToArray();
+		for (var i = 0; i < checkpoints.Length; i++) {
+			var curCheckpoint = checkpoints[i];
+
+			AddChild(DebugHelper.GenerateWorldText("Checkpoint: " + i.ToString(), curCheckpoint.Origin + new Vector3(0, 1, 0)));
 
 			var size = new Vector3(12, 12, 12);
-			if (index == 0) {
+			if (i == 0) {
 				size = new Vector3(1, 12, 12);
 			}
-			var checkArea = Checkpoint.AsBox(checkpoint, size, new Color(1, 1, 1, 0.3f));
+			var index = i; // this is to protect the lambda below from losing the index
+
+			var checkArea = Checkpoint.AsBox(curCheckpoint.Origin, size, new Color(1, 1, 1, 0.3f));
 			checkArea.ThingEntered += (Node3D node) => { CheckpointDetection(index, node); };
-			_checkpoints.Add(checkArea);
+			_checkpointNodes.Add(checkArea);
 			AddChild(checkArea);
+
+			// calc direction of control points
+			// TODO get the final and start pos of each piece and use the circule bezier formula: d = r*4*(sqrt(2)-1)/3
+			var before = curCheckpoint.Basis * new Vector3(-bezier_OFFSET, 0, 0);
+			var after = curCheckpoint.Basis * new Vector3(bezier_OFFSET, 0, 0);
+			trackCurve.AddPoint(curCheckpoint.Origin + new Vector3(0, 1, 0), before, after);
+		}
+		var startAgain = _world.GetCheckpoints().First();
+		trackCurve.AddPoint(startAgain.Origin + new Vector3(0, 1, 0), startAgain.Basis * new Vector3(-bezier_OFFSET, 0, 0));
+
+		// draw it
+		var last = trackCurve.GetPointPosition(0);
+		var points = trackCurve.GetBakedPoints();
+		for (int i = 1; i < points.Length - 1; i++) {
+			var colour = 1;
+
+			var l = BoxLine(new Color() {
+				R = (float)colour,
+				G = (float)colour,
+				B = (float)colour
+			}, last, cur);
+			l.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+			AddChild(l);
+			last = cur;
 		}
 	}
 
@@ -68,7 +100,7 @@ public partial class RacingScreen : Node3D {
 				LapTimer = 0;
 			}
 			CurrentCheckpoint++;
-			if (CurrentCheckpoint + 1 > _checkpoints.Count) {
+			if (CurrentCheckpoint + 1 > _checkpointNodes.Count) {
 				CurrentCheckpoint = 0;
 			}
 		}
@@ -88,7 +120,7 @@ public partial class RacingScreen : Node3D {
 	}
 
 	public (Vector3, Vector3) GetCarAndCheckpointPos() {
-		return (Car.RigidBody.Position, _checkpoints[CurrentCheckpoint].Position);
+		return (Car.RigidBody.Position, _checkpointNodes[CurrentCheckpoint].Position);
 	}
 
 	public void Exit() {
@@ -120,4 +152,22 @@ public partial class RacingScreen : Node3D {
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 	}
+
+	private static MeshInstance3D BoxLine(Color c, Vector3 start, Vector3 end) {
+        var mat = new StandardMaterial3D() {
+            AlbedoColor = c
+        };
+        var length = (end - start).Length();
+
+        var mesh = new BoxMesh() {
+            Size = new Vector3(length, 0.1f, 0.1f),
+            Material = mat
+        };
+        var meshObj = new MeshInstance3D() {
+            Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1,0,0), (end-start).Normalized())), start.Lerp(end, 0.5f)),
+            Mesh = mesh
+        };
+
+        return meshObj;
+    }
 }

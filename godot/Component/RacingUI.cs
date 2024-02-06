@@ -19,7 +19,7 @@ public partial class RacingUI : Control
 				+ string.Join('\n', Racing.LapTimes.Select(x => double.Round(x, 1)));
 		GetNode<Label>("PanelContainer/GridContainer/TargetLabel").Text = "Target: " + Math.Round(state.RoundGoal?.Time ?? 0, 2) + " sec";
 		GetNode<Label>("PanelContainer/GridContainer/RemainingLabel").Text = "Remaining: " + Math.Round(Math.Max(0, (state.RoundGoal?.Time ?? 0) - Racing.LapTimer), 2);
-		GetNode<Label>("PanelContainer/GridContainer/RewardLabel").Text = "Reward: " + state.RoundReward?.Money + " + part count: " + state.RoundReward?.PartCount;
+		GetNode<Label>("PanelContainer/GridContainer/RewardLabel").Text = "Reward: $" + state.RoundReward?.Money + " + part count: " + state.RoundReward?.PartCount;
 
 		var cam = GetViewport().GetCamera3D();
 		var positions = Racing.GetCarAndCheckpointPos();
