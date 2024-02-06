@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=23 format=3 uid="uid://c47eqspkwrf44"]
 
-[ext_resource type="FontFile" uid="uid://pxrpfoc3ial3" path="res://assets/neuropolitical rg.otf" id="1_mrs7x"]
+[ext_resource type="FontFile" uid="uid://c7po1cayvl3us" path="res://assets/zekton rg.otf" id="2_bc0al"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5xc5"]
 bg_color = Color(0.176471, 0.152941, 0.141176, 1)
@@ -138,7 +138,7 @@ bg_color = Color(0.270588, 0.0392157, 0.0588235, 1)
 bg_color = Color(0.6, 0.105882, 0.145098, 1)
 
 [resource]
-Button/fonts/font = ExtResource("1_mrs7x")
+Button/fonts/font = ExtResource("2_bc0al")
 Button/styles/disabled = SubResource("StyleBoxFlat_t5xc5")
 Button/styles/focus = SubResource("StyleBoxFlat_ieoen")
 Button/styles/hover = SubResource("StyleBoxFlat_sw418")
@@ -149,20 +149,20 @@ HScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_yksas")
 HScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_bda3y")
 HSlider/styles/grabber_area = SubResource("StyleBoxFlat_833gs")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_ncbi7")
-Label/fonts/font = ExtResource("1_mrs7x")
-LineEdit/fonts/font = ExtResource("1_mrs7x")
+Label/fonts/font = ExtResource("2_bc0al")
+LineEdit/fonts/font = ExtResource("2_bc0al")
 LineEdit/styles/normal = SubResource("StyleBoxFlat_go36b")
 LineEdit/styles/read_only = SubResource("StyleBoxFlat_hs2bh")
 Panel/styles/panel = SubResource("StyleBoxFlat_a4vuq")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_30x0s")
-ProgressBar/fonts/font = ExtResource("1_mrs7x")
+ProgressBar/fonts/font = ExtResource("2_bc0al")
 ProgressBar/styles/fill = SubResource("StyleBoxFlat_fpyut")
-TabBar/fonts/font = ExtResource("1_mrs7x")
-TabContainer/fonts/font = ExtResource("1_mrs7x")
-TextEdit/fonts/font = ExtResource("1_mrs7x")
+TabBar/fonts/font = ExtResource("2_bc0al")
+TabContainer/fonts/font = ExtResource("2_bc0al")
+TextEdit/fonts/font = ExtResource("2_bc0al")
 TextEdit/styles/normal = SubResource("StyleBoxFlat_uww1x")
-Tree/fonts/font = ExtResource("1_mrs7x")
-Tree/fonts/title_button_font = ExtResource("1_mrs7x")
+Tree/fonts/font = ExtResource("2_bc0al")
+Tree/fonts/title_button_font = ExtResource("2_bc0al")
 VScrollBar/styles/grabber = SubResource("StyleBoxFlat_04af2")
 VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_4v3pg")
 VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_mcl5b")

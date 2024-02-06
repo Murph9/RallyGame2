@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://pxrpfoc3ial3"
-path="res://.godot/imported/neuropolitical rg.otf-7dc8dce2745d07535a86f1346261945e.fontdata"
+uid="uid://c7po1cayvl3us"
+path="res://.godot/imported/zekton rg.otf-6e62ccc3e339ea049fca87b6a6900dcc.fontdata"
 
 [deps]
 
-source_file="res://assets/neuropolitical rg.otf"
-dest_files=["res://.godot/imported/neuropolitical rg.otf-7dc8dce2745d07535a86f1346261945e.fontdata"]
+source_file="res://assets/zekton rg.otf"
+dest_files=["res://.godot/imported/zekton rg.otf-6e62ccc3e339ea049fca87b6a6900dcc.fontdata"]
 
 [params]
 
@@ -27,13 +27,7 @@ Fallbacks=null
 fallbacks=[]
 Compress=null
 compress=true
-preload=[{
-"chars": [],
-"glyphs": [],
-"name": "New Configuration",
-"size": Vector2i(16, 0),
-"variation_embolden": 0.0
-}]
+preload=[]
 language_support={}
 script_support={}
 opentype_features={}
