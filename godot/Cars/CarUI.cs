@@ -11,11 +11,17 @@ public partial class CarUI : Control {
     public Car Car { get; set; }
 
     [DebugGUIText(g:0)]
-    [DebugGUIGraph(g:0, group: 2)]
+    [DebugGUIGraph(g:0, group: 2, min: -10, max: 150)]
     private float RadSec0 => Car.Wheels[0].RadSec;
     [DebugGUIText(g:0.5f)]
-    [DebugGUIGraph(g:0.5f, group: 2)]
+    [DebugGUIGraph(g:0.5f, group: 2, min: -10, max: 150)]
     private float RadSec1 => Car.Wheels[1].RadSec;
+    [DebugGUIText(r:0f)]
+    [DebugGUIGraph(r:0f, group: 2, min: -10, max: 150)]
+    private float RadSec2 => Car.Wheels[2].RadSec;
+    [DebugGUIText(b:0f)]
+    [DebugGUIGraph(b:0f, group: 2, min: -10, max: 150)]
+    private float RadSec3 => Car.Wheels[3].RadSec;
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
