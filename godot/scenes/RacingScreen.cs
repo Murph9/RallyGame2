@@ -1,10 +1,8 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -47,7 +45,9 @@ public partial class RacingScreen : Node3D {
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		var trackCurve = new Curve3D();
+		var trackCurve = new Curve3D() {
+			BakeInterval = 5
+		};
 		var checkpoints = _world.GetCheckpoints().ToArray();
 		for (var i = 0; i < checkpoints.Length; i++) {
 			var curCheckpoint = checkpoints[i];
@@ -78,7 +78,13 @@ public partial class RacingScreen : Node3D {
 		var last = trackCurve.GetPointPosition(0);
 		var points = trackCurve.GetBakedPoints();
 		for (int i = 1; i < points.Length - 1; i++) {
-			var colour = 1;
+			// calc radius from points around this one
+			var before = points[i-1];
+			var cur = points[i];
+			var after = points[i+1];
+
+			var radius = MyMath.GetCircleCenterFrom(before, cur, after);
+			var colour = Mathf.InverseLerp(100, 10, radius);
 
 			var l = BoxLine(new Color() {
 				R = (float)colour,
