@@ -9,11 +9,14 @@ namespace murph9.RallyGame2.godot.Utilities;
 public record BasicEl(string Name, Transform3D AddedOffset, Vector3 ExtentMin, Vector3 ExtentMax);
 
 public record SearchPiece {
+    private const float AABB_BUFFER_DIFF = 0.05f;
+
     public BasicEl Piece { get; init; }
     public Vector3 Position { get; init; }
     public Quaternion Rotation { get; init; }
     public Aabb Aabb { get; init; }
-    public double G { get; set; } = double.MaxValue;
+    public Vector3 FinalPosition { get; init; }
+    public Quaternion FinalRotation { get; init; }
     public double H { get; set; }
 
     public SearchPiece Parent { get; init; }
@@ -26,18 +29,22 @@ public record SearchPiece {
             Position = new Vector3();
             Rotation = Quaternion.Identity;
         } else {
-            // current position is parent pos + parent's rotation * parent's offset
-            Position = parent.Position + parent.Rotation * parent.Piece.AddedOffset.Origin;
-            Rotation = parent.Rotation * parent.Piece.AddedOffset.Basis.GetRotationQuaternion();
+            Position = parent.FinalPosition;
+            Rotation = parent.FinalRotation;
         }
 
         var newExtentMin = Position + Rotation * piece.ExtentMin;
         var newExtentMax = Position + Rotation * piece.ExtentMax;
         var size = newExtentMax - newExtentMin;
-        Aabb = new Aabb(newExtentMin + size * 0.025f, size * 0.95f).Abs(); // prevent neighbours colliding too early
+        Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
-        G = (Position + Rotation * piece.AddedOffset.Origin).Length();
+        // next position is pos + our rotation * our offset
+        FinalPosition = Position + Rotation * piece.AddedOffset.Origin;
+        FinalRotation = Rotation * piece.AddedOffset.Basis.GetRotationQuaternion();
+        H = G + (FinalRotation.AngleTo(Quaternion.Identity) * 60);
     }
+
+    public double G => FinalPosition.Length();
 
     public double F => G + H;
 
@@ -57,7 +64,6 @@ public class CircuitGenerator(BasicEl[] pieces) {
 
         // generate a few to seed the generation (at least 1)
         var last = new SearchPiece(null, _pieces.First(x => x.Name == "straight")) {
-            G = 0,
             H = 0
         };
         closed.Add(last);
@@ -75,7 +81,7 @@ public class CircuitGenerator(BasicEl[] pieces) {
             open.Enqueue(c, c.G);
         }
         if (open.Count < 1) {
-            // the last piece blocked the track, so reset it and start at the last one
+            // the last piece blocked the track, so reset it and start at the one before it
             closed.Remove(closed.Last());
             last = closed.Last();
         }

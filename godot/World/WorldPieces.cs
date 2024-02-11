@@ -70,7 +70,7 @@ public partial class WorldPieces : Node3D, IWorld {
                 var aabb = p.Model.GlobalTransform * ((MeshInstance3D)p.Model).GetAabb();
                 c2s.Add(new BasicEl(p.Name, p.Directions[0], aabb.Position, aabb.End));
             }
-            var pieceNames = new CircuitGenerator(c2s.ToArray()).GenerateRandomLoop(3, 6).ToArray();
+            var pieceNames = new CircuitGenerator(c2s.ToArray()).GenerateRandomLoop(3, 7).ToArray();
             var pieces = pieceNames.Select(x => _pieces.Single(y => y.Name == x.Name));
 
             var curPos = new Vector3();
