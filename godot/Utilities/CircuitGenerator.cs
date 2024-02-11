@@ -41,7 +41,6 @@ public record SearchPiece {
         // next position is pos + our rotation * our offset
         FinalPosition = Position + Rotation * piece.AddedOffset.Origin;
         FinalRotation = Rotation * piece.AddedOffset.Basis.GetRotationQuaternion();
-        H = G + (FinalRotation.AngleTo(Quaternion.Identity) * 60);
     }
 
     public double G => FinalPosition.Length();
@@ -58,28 +57,44 @@ public class CircuitGenerator(BasicEl[] pieces) {
     private readonly RandomNumberGenerator _rand = new ();
     private readonly BasicEl[] _pieces = pieces;
 
-    public IEnumerable<BasicEl> GenerateRandomLoop(int startAmount, int minCount = 8) {
-        var closed = new List<SearchPiece>();
-        var open = new PriorityQueue<SearchPiece, double>();
-
+    public IEnumerable<BasicEl> GenerateRandomLoop(int startAmount, int minCount = 8, int maxCount = 20) {
         // generate a few to seed the generation (at least 1)
         var last = new SearchPiece(null, _pieces.First(x => x.Name == "straight")) {
             H = 0
         };
-        closed.Add(last);
 
-        for (int i = 0; i < Math.Max(0, startAmount - 1); i++) {
-            var nexts = GeneratePieces(last);
-            if (nexts.Length == 0)
+        while (true) {
+            var nexts = GeneratePieces(last).OrderBy(x => x.F).ToArray();
+
+            if (nexts.Length < 1) {
+                last = last.Parent;
                 continue;
-            last = nexts[_rand.RandiRange(0, nexts.Length - 1)];
-            closed.Add(last);
+            }
+
+            if (last.LengthToRoot >= startAmount) {
+                // break here so we know there are continuations
+                break;
+            }
+
+            var index = 0; // weight pieces to the closest
+            while (_rand.Randf() > 0.3f)
+                index++;
+
+            last = nexts[Mathf.Min(nexts.Length - 1, index)];
         }
+
+        return CompleteLoop(last, minCount, maxCount);
+    }
+
+    private IEnumerable<BasicEl> CompleteLoop(SearchPiece last, int minCount, int maxCount) {
+        var closed = new List<SearchPiece>();
+        var open = new PriorityQueue<SearchPiece, double>();
 
         // add the first neighbours for the last enqueued item
         foreach (var c in GeneratePieces(last)) {
             open.Enqueue(c, c.G);
         }
+
         if (open.Count < 1) {
             // the last piece blocked the track, so reset it and start at the one before it
             closed.Remove(closed.Last());
@@ -93,13 +108,14 @@ public class CircuitGenerator(BasicEl[] pieces) {
 
             foreach (var o in options) {
                 if (o.F < 1 && o.LengthToRoot >= minCount) {
-                    var currentPath = new List<SearchPiece>();
-                    o.GetParentPath(currentPath);
+                    var outputPath = new List<SearchPiece>();
+                    o.GetParentPath(outputPath);
 
-                    return currentPath.Select(x => x.Piece);
+                    return outputPath.Select(x => x.Piece);
                 }
 
-                open.Enqueue(o, o.F);
+                if (o.LengthToRoot <= maxCount)
+                    open.Enqueue(o, o.F);
             }
 
             closed.Add(q);
