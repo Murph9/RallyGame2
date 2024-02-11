@@ -1,7 +1,8 @@
+using Godot;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Godot;
 
 namespace murph9.RallyGame2.godot.World;
 
@@ -12,11 +13,9 @@ public partial class WorldPieces : Node3D, IWorld {
     private readonly List<Piece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
 
-    public record Piece {
-        public string Name;
-        public Transform3D[] Directions;
-        public Node3D Node;
-    }
+    public List<Piece> Pieces => [.. _pieces];
+
+    public record Piece(string Name, Transform3D[] Directions, Node3D Model);
 
     public WorldPieces(string name) {
         pieceName = name;
@@ -50,11 +49,8 @@ public partial class WorldPieces : Node3D, IWorld {
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
 
-                var p = new Piece() {
-                    Name = c.Name,
-                    Directions = directions.Select(x => x.Transform).ToArray(),
-                    Node = c as Node3D
-                };
+                var p = new Piece(c.Name, directions.Select(x => x.Transform).ToArray(), c as Node3D);
+
                 foreach (var dir in directions) {
                     c.RemoveChild(dir);
                     dir.QueueFree();
@@ -69,13 +65,18 @@ public partial class WorldPieces : Node3D, IWorld {
         }
 
         try {
-            var w = new WorldPieceLayoutGenerator(_pieces);
-            var pieces = w.GenerateFixed(WorldPieceLayoutGenerator.CircuitLayout.SimpleLoop);
+            var c2s = new List<BasicEl>();
+            foreach (var p in _pieces) {
+                var aabb = p.Model.GlobalTransform * ((MeshInstance3D)p.Model).GetAabb();
+                c2s.Add(new BasicEl(p.Name, p.Directions[0], aabb.Position, aabb.End));
+            }
+            var pieceNames = new CircuitGenerator(c2s.ToArray()).GenerateRandomLoop(3, 6).ToArray();
+            var pieces = pieceNames.Select(x => _pieces.Single(y => y.Name == x.Name));
 
             var curPos = new Vector3();
             var curRot = Quaternion.Identity;
             foreach (var p in pieces) {
-                var toAdd = p.Node.Duplicate() as Node3D;
+                var toAdd = p.Model.Duplicate() as Node3D;
                 toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
 
                 // soz can only select the first one for now
