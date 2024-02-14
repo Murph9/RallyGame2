@@ -6,16 +6,16 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
 
+public record WorldPiece(string Name, Transform3D[] Directions, Node3D Model);
+
 public partial class WorldPieces : Node3D, IWorld {
 
     private readonly PackedScene SCENE;
     private readonly string pieceName;
-    private readonly List<Piece> _pieces = [];
+    private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
 
-    public List<Piece> Pieces => [.. _pieces];
-
-    public record Piece(string Name, Transform3D[] Directions, Node3D Model);
+    public List<WorldPiece> Pieces => [.. _pieces];
 
     public WorldPieces(string name) {
         pieceName = name;
@@ -49,7 +49,7 @@ public partial class WorldPieces : Node3D, IWorld {
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
 
-                var p = new Piece(c.Name, directions.Select(x => x.Transform).ToArray(), c as Node3D);
+                var p = new WorldPiece(c.Name, directions.Select(x => x.Transform).ToArray(), c as Node3D);
 
                 foreach (var dir in directions) {
                     c.RemoveChild(dir);

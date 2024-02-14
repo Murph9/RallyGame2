@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
 
-public class FixedPieceLayoutGenerator(ICollection<WorldPieces.Piece> pieces) {
+public class FixedPieceLayoutGenerator(ICollection<WorldPiece> pieces) {
 
-    private readonly WorldPieces.Piece[] _pieces = [.. pieces];
+    private readonly WorldPiece[] _pieces = [.. pieces];
 
     public enum CircuitLayout {
         SimpleLoop,
@@ -13,7 +13,7 @@ public class FixedPieceLayoutGenerator(ICollection<WorldPieces.Piece> pieces) {
         VeryLongLine
     }
 
-    public IEnumerable<WorldPieces.Piece> Generate(CircuitLayout layout) {
+    public IEnumerable<WorldPiece> Generate(CircuitLayout layout) {
         if (layout == CircuitLayout.SimpleLoop) {
             yield return GetPieceByName("straight");
             yield return GetPieceByName("left");
@@ -48,7 +48,7 @@ public class FixedPieceLayoutGenerator(ICollection<WorldPieces.Piece> pieces) {
         }
     }
 
-    private WorldPieces.Piece GetPieceByName(string name) {
+    private WorldPiece GetPieceByName(string name) {
         return _pieces.First(x => x.Name == name);
     }
 }
