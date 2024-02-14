@@ -13,21 +13,25 @@ public record WorldPieceDir(Transform3D Offset, WorldPieceDirType Type) {
     private static Basis RIGHT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-90));
 
     public static WorldPieceDir FromTransform3D(Transform3D transform) {
-        // TODO allow multiple choices
+        // TODO normalize the rotation a little (to like closest 15' or something)
+        // normalize the transform
+        var t = new Transform3D(transform.Basis, transform.Origin.Round());
+
+        // TODO allow multiple choices of type, incase the part does 2 things
         var type = WorldPieceDirType.Straight;
 
-        if (Math.Abs(transform.Origin.X) > 0 && Math.Abs(transform.Origin.Z) > 0) // going in both flat directions
-            type = transform.Origin.Z > 0 ? WorldPieceDirType.OffsetRight : WorldPieceDirType.OffsetLeft; // TODO amounts
+        if (Math.Abs(t.Origin.X) > 0 && Math.Abs(t.Origin.Z) > 0) // going in both flat directions
+            type = t.Origin.Z > 0 ? WorldPieceDirType.OffsetRight : WorldPieceDirType.OffsetLeft; // TODO amounts
 
-        if (Math.Abs(transform.Origin.Y) > 0) // a change in elevation
-            type = transform.Origin.Y > 0 ? WorldPieceDirType.Up : WorldPieceDirType.Down;
+        if (Math.Abs(t.Origin.Y) > 0) // a change in elevation
+            type = t.Origin.Y > 0 ? WorldPieceDirType.Up : WorldPieceDirType.Down;
 
-        if (transform.Basis.IsEqualApprox(LEFT90))
+        if (t.Basis.IsEqualApprox(LEFT90))
             type = WorldPieceDirType.Left90;
-        else if (transform.Basis.IsEqualApprox(RIGHT90))
+        else if (t.Basis.IsEqualApprox(RIGHT90))
             type = WorldPieceDirType.Right90;
 
-        return new WorldPieceDir(transform, type);
+        return new WorldPieceDir(t, type);
     }
 
     public static WorldPieceDirType GetOppositeDir(WorldPieceDirType dir) => dir switch {

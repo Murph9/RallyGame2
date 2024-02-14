@@ -7,7 +7,7 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.Utilities;
 
 // TODO allow more than one offset
-public record BasicEl(string Name, WorldPieceDir AddedOffset, Vector3 ExtentMin, Vector3 ExtentMax);
+public record BasicEl(string Name, WorldPieceDir Dir, Vector3 ExtentMin, Vector3 ExtentMax);
 
 public record SearchPiece {
     private const float AABB_BUFFER_DIFF = 0.05f;
@@ -40,11 +40,11 @@ public record SearchPiece {
         Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
         // next position is pos + our rotation * our offset
-        FinalPosition = Position + Rotation * piece.AddedOffset.Offset.Origin;
-        FinalRotation = Rotation * piece.AddedOffset.Offset.Basis.GetRotationQuaternion();
+        FinalPosition = Position + Rotation * piece.Dir.Offset.Origin;
+        FinalRotation = Rotation * piece.Dir.Offset.Basis.GetRotationQuaternion();
     }
 
-    public double G => FinalPosition.Length();
+    public double G => FinalPosition.Length() + Piece.Dir.Offset.Origin.Length() * Mathf.Abs(FinalRotation.GetEuler().X  - Math.PI);
 
     public double F => G + H;
 
@@ -58,79 +58,98 @@ public class CircuitGenerator(BasicEl[] pieces) {
     private readonly RandomNumberGenerator _rand = new ();
     private readonly BasicEl[] _pieces = pieces;
 
-    public IEnumerable<BasicEl> GenerateRandomLoop(int startAmount = 3, int minCount = 8, int maxCount = 20) {
-        // generate a few to seed the generation (at least 1)
+    public IEnumerable<BasicEl> GenerateRandomLoop(int randAmount = 3, int startAmount = 8, int maxCount = 20) {
+        // always start with a straight piece
         var last = new SearchPiece(null, _pieces.First(x => x.Name == "straight")) {
             H = 0
         };
 
-        while (true) {
-            var nexts = GeneratePieces(last).OrderBy(x => x.F).ToArray();
+        const string JUSTPLACE = "justplace";
+        const string MOVEHOME = "movehome";
+        const string CLOSELOOP = "closeloop";
 
-            if (nexts.Length < 1) {
+        var state = JUSTPLACE;
+
+        while (true) {
+            var nextNeighbours = GeneratePieces(last);
+            if (nextNeighbours.Length < 1) {
                 last = last.Parent;
                 continue;
+                // reset to the last piece if there is no solution
+                // needs to stop getting in loops or picking a piece
             }
 
-            if (last.LengthToRoot >= startAmount) {
-                // break here so we know there are continuations
-                break;
+            if (state == JUSTPLACE) {
+                last = nextNeighbours[_rand.RandiRange(0, nextNeighbours.Length - 1)];
+                if (last.LengthToRoot > randAmount) {
+                    Console.WriteLine(GetNamesOfPath(last) + " @" + last.FinalPosition);
+                    state = MOVEHOME;
+                }
+            } else if (state == MOVEHOME) {
+                // generally move home with a weighting to pieces that move closer to home
+                var nexts = nextNeighbours.OrderBy(x => x.F).ToArray();
+                var index = 0; // weight pieces to the closest
+                while (_rand.Randf() > 0.5f)
+                    index++;
+
+                last = nexts[Mathf.Min(nexts.Length - 1, index)];
+                if (last.LengthToRoot >= startAmount) {
+                    Console.WriteLine(GetNamesOfPath(last) + " @" + last.FinalPosition);
+                    state = CLOSELOOP;
+                }
+            } else if (state == CLOSELOOP) {
+                // GetFinalPieces(last, maxCount);
+
+                // move home as fast as possible
+                var result = CompleteLoop(last, maxCount);
+                Console.WriteLine(string.Join(",", result.Select(x => x.Name)) + " @: " + result.Count());
+                return result;
+            } else {
+                throw new Exception("Unknown state " + state);
             }
-
-            var index = 0; // weight pieces to the closest
-            while (_rand.Randf() > 0.3f)
-                index++;
-
-            last = nexts[Mathf.Min(nexts.Length - 1, index)];
         }
 
-        return CompleteLoop(last, minCount, maxCount);
+        // TODO change heuristic to piece count?
+        // non-uniform sizes don't help
     }
 
-    private IEnumerable<BasicEl> CompleteLoop(SearchPiece last, int minCount, int maxCount) {
-        var closed = new List<SearchPiece>();
-        var open = new PriorityQueue<SearchPiece, double>();
+    private IEnumerable<BasicEl> CompleteLoop(SearchPiece last, int maxCount) {
+        // TODO this breadth first search is good unless its like >= 3 away :(
+        // we probably need to have a better heuristic in A* (not sure about the 'angle' requirement though)
+        var queue = new Queue<SearchPiece>();
 
         // add the first neighbours for the last enqueued item
         foreach (var c in GeneratePieces(last)) {
-            open.Enqueue(c, c.G);
+            queue.Enqueue(c);
         }
 
-        if (open.Count < 1) {
-            // the last piece blocked the track, so reset it and start at the one before it
-            closed.Remove(closed.Last());
-            last = closed.Last();
-        }
+        while (queue.Count > 0) {
+            var q = queue.Dequeue();
+            if (q.F < 1 && q.FinalRotation.IsEqualApprox(Quaternion.Identity)) {
+                var outputPath = new List<SearchPiece>();
+                q.GetParentPath(outputPath);
 
-        while (open.Count > 0) {
-            var q = open.Dequeue();
-
-            var options = GeneratePieces(q);
-
-            foreach (var o in options) {
-                if (o.F < 1 && o.LengthToRoot >= minCount) {
-                    var outputPath = new List<SearchPiece>();
-                    o.GetParentPath(outputPath);
-
-                    return outputPath.Select(x => x.Piece);
-                }
-
-                if (o.LengthToRoot <= maxCount)
-                    open.Enqueue(o, o.F);
+                return outputPath.Select(x => x.Piece);
             }
 
-            closed.Add(q);
+            foreach (var o in GeneratePieces(q)) {
+                if (q.LengthToRoot < maxCount) {
+                    if (q.F < 1 && !q.FinalRotation.IsEqualApprox(Quaternion.Identity))
+                        continue; // please ignore anything that touches the goal but doesn't face the right way
+                    queue.Enqueue(o);
+                }
+            }
         }
 
-        throw new Exception("No circuit found for " + open.Count);
+        throw new Exception("No circuit found for " + queue.Count);
     }
 
-    private SearchPiece[] GeneratePieces(SearchPiece top) {
+    private SearchPiece[] GeneratePieces(SearchPiece top, BasicEl[] pieces = null) {
         var currentPath = new List<SearchPiece>();
         top.GetParentPath(currentPath);
 
         var list = new List<SearchPiece>();
-        foreach (var p in _pieces) {
+        foreach (var p in pieces ?? _pieces) {
             var newP = new SearchPiece(top, p);
 
             // any collisions don't allow them
@@ -141,5 +160,11 @@ public class CircuitGenerator(BasicEl[] pieces) {
         }
 
         return list.ToArray();
+    }
+
+    private static string GetNamesOfPath(SearchPiece end) {
+        if (end.Parent == null)
+            return end.Piece.Name;
+        return GetNamesOfPath(end.Parent) +  " " + end.Piece.Name;
     }
 }
