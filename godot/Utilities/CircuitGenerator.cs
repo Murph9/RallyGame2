@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.Utilities;
 
 // TODO allow more than one offset
-public record BasicEl(string Name, Transform3D AddedOffset, Vector3 ExtentMin, Vector3 ExtentMax);
+public record BasicEl(string Name, WorldPieceDir AddedOffset, Vector3 ExtentMin, Vector3 ExtentMax);
 
 public record SearchPiece {
     private const float AABB_BUFFER_DIFF = 0.05f;
@@ -39,8 +40,8 @@ public record SearchPiece {
         Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
         // next position is pos + our rotation * our offset
-        FinalPosition = Position + Rotation * piece.AddedOffset.Origin;
-        FinalRotation = Rotation * piece.AddedOffset.Basis.GetRotationQuaternion();
+        FinalPosition = Position + Rotation * piece.AddedOffset.Offset.Origin;
+        FinalRotation = Rotation * piece.AddedOffset.Offset.Basis.GetRotationQuaternion();
     }
 
     public double G => FinalPosition.Length();
@@ -57,7 +58,7 @@ public class CircuitGenerator(BasicEl[] pieces) {
     private readonly RandomNumberGenerator _rand = new ();
     private readonly BasicEl[] _pieces = pieces;
 
-    public IEnumerable<BasicEl> GenerateRandomLoop(int startAmount, int minCount = 8, int maxCount = 20) {
+    public IEnumerable<BasicEl> GenerateRandomLoop(int startAmount = 3, int minCount = 8, int maxCount = 20) {
         // generate a few to seed the generation (at least 1)
         var last = new SearchPiece(null, _pieces.First(x => x.Name == "straight")) {
             H = 0
