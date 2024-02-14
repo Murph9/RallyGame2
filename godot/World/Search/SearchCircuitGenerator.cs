@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.Search;
 
-public class CircuitGenerator(BasicEl[] pieces) {
+public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
     private readonly RandomNumberGenerator _rand = new ();
     private readonly BasicEl[] _pieces = pieces;
 
@@ -47,12 +47,69 @@ public class CircuitGenerator(BasicEl[] pieces) {
                     state = CLOSELOOP;
                 }
             } else if (state == CLOSELOOP) {
+                // var finish = GetFinalPieces_ManuallyChoose(last, maxCount);
                 var finish = GetFinalPieces(last, maxCount);
                 return finish.GetParentPath().Select(x => x.Piece);
             } else {
                 throw new Exception("Unknown state " + state);
             }
         }
+    }
+
+    private SearchPiece GetFinalPieces_ManuallyChoose(SearchPiece last, int maxCount) {
+        // TODO This doesn't figure out how to get to the end, just keeps adding pieces forever
+
+        while (true) {
+            var neighbours = GeneratePieces(last);
+            if (neighbours.Length < 1) {
+                last = last.Parent;
+                continue;
+            }
+
+            // lets try and solve each problem as we get each part
+            var partTypes = last.GetTypesOfPath();
+
+            SearchPiece chosenPiece = null;
+
+            // solve the height issue
+            var ups = partTypes.GetValueOrDefault(WorldPieceDirType.Up);
+            var downs = partTypes.GetValueOrDefault(WorldPieceDirType.Down);
+            if (ups > downs) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Down);
+            } else if (ups < downs) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Up);
+            }
+
+            // the chicane issue
+            var offsetLefts = partTypes.GetValueOrDefault(WorldPieceDirType.OffsetLeft);
+            var offsetRights = partTypes.GetValueOrDefault(WorldPieceDirType.OffsetRight);
+            if (offsetLefts > offsetRights) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.OffsetRight);
+            } else if (offsetLefts < offsetRights) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.OffsetLeft);
+            }
+
+            // the corner issue
+            // TODO move around with corners so that it uses straights to get home
+            var lefts = partTypes.GetValueOrDefault(WorldPieceDirType.Left90);
+            var rights = partTypes.GetValueOrDefault(WorldPieceDirType.Right90);
+            if (lefts > rights) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Right90);
+            } else if (lefts < rights) {
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Left90);
+            }
+
+            chosenPiece ??= neighbours[_rand.RandiRange(0, neighbours.Length - 1)];
+
+            last = chosenPiece;
+
+            if (last.FinalPosition.Length() < 1 && last.FinalRotation.IsEqualApprox(Quaternion.Identity)) {
+                Console.WriteLine(last);
+                break;
+            }
+        }
+
+        return last;
     }
 
 
