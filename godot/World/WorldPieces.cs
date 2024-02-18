@@ -8,7 +8,7 @@ namespace murph9.RallyGame2.godot.World;
 
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
 
-public record WorldPieceDir(Transform3D Offset, WorldPieceDirType Type) {
+public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
     private static Basis LEFT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(90));
     private static Basis RIGHT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-90));
 
@@ -17,38 +17,35 @@ public record WorldPieceDir(Transform3D Offset, WorldPieceDirType Type) {
         // normalize the transform
         var t = new Transform3D(transform.Basis, transform.Origin.Round());
 
-        // TODO allow multiple choices of type, incase the part does 2 things
-        var type = WorldPieceDirType.Straight;
+        var turn = TurnType.Straight;
+        var offset = OffsetType.None;
+        var vert = VertType.Level;
 
         if (Math.Abs(t.Origin.X) > 0 && Math.Abs(t.Origin.Z) > 0) // going in both flat directions
-            type = t.Origin.Z > 0 ? WorldPieceDirType.OffsetRight : WorldPieceDirType.OffsetLeft; // TODO amounts
+            offset = t.Origin.Z > 0 ? OffsetType.OffsetRight : OffsetType.OffsetLeft; // TODO amounts
 
         if (Math.Abs(t.Origin.Y) > 0) // a change in elevation
-            type = t.Origin.Y > 0 ? WorldPieceDirType.Up : WorldPieceDirType.Down;
+            vert = t.Origin.Y > 0 ? VertType.Up : VertType.Down;
 
         if (t.Basis.IsEqualApprox(LEFT90))
-            type = WorldPieceDirType.Left90;
+            turn = TurnType.Left90;
         else if (t.Basis.IsEqualApprox(RIGHT90))
-            type = WorldPieceDirType.Right90;
+            turn = TurnType.Right90;
 
-        return new WorldPieceDir(t, type);
+        return new WorldPieceDir(t, turn, offset, vert);
     }
 
-    public static WorldPieceDirType GetOppositeDir(WorldPieceDirType dir) => dir switch {
-        WorldPieceDirType.Up => WorldPieceDirType.Down,
-        WorldPieceDirType.Down => WorldPieceDirType.Up,
-        WorldPieceDirType.Left90 => WorldPieceDirType.Right90,
-        WorldPieceDirType.Right90 => WorldPieceDirType.Left90,
-        WorldPieceDirType.OffsetLeft => WorldPieceDirType.OffsetRight,
-        WorldPieceDirType.OffsetRight => WorldPieceDirType.OffsetLeft,
-        WorldPieceDirType.Straight => WorldPieceDirType.Straight,
-        _ => WorldPieceDirType.Straight,
-    };
+    public enum TurnType {
+        Straight, Left90, Right90
+    }
+    public enum VertType {
+        Level, Down, Up
+    }
+    public enum OffsetType {
+        None, OffsetLeft, OffsetRight
+    }
 }
 
-public enum WorldPieceDirType {
-    Straight, Left90, Right90, OffsetLeft, OffsetRight, Down, Up
-}
 
 public partial class WorldPieces : Node3D, IWorld {
 
@@ -122,7 +119,7 @@ public partial class WorldPieces : Node3D, IWorld {
                 toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
 
                 // soz can only select the first one for now
-                var dir = p.Directions.First().Offset;
+                var dir = p.Directions.First().Transform;
                 curPos += curRot * dir.Origin;
                 curRot *= dir.Basis.GetRotationQuaternion();
                 AddChild(toAdd);

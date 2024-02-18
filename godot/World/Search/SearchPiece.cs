@@ -39,8 +39,8 @@ public class SearchPiece {
         Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
         // next position is pos + our rotation * our offset
-        FinalPosition = Position + Rotation * piece.Dir.Offset.Origin;
-        FinalRotation = Rotation * piece.Dir.Offset.Basis.GetRotationQuaternion();
+        FinalPosition = Position + Rotation * piece.Dir.Transform.Origin;
+        FinalRotation = Rotation * piece.Dir.Transform.Basis.GetRotationQuaternion();
     }
 
     public double G => Math.Abs(FinalPosition.X) + Math.Abs(FinalPosition.Y) + Math.Abs(FinalPosition.Z); // manhattan distance
@@ -54,8 +54,14 @@ public class SearchPiece {
         yield return this;
     }
 
-    public Dictionary<WorldPieceDirType, int> GetTypesOfPath() {
-        return GetParentPath().GroupBy(x => x.Piece.Dir.Type).ToDictionary(x => x.Key, x => x.Count());
+    public Dictionary<WorldPieceDir.TurnType, int> GetTurnsOfPath() {
+        return GetParentPath().GroupBy(x => x.Piece.Dir.Turn).ToDictionary(x => x.Key, x => x.Count());
+    }
+    public Dictionary<WorldPieceDir.OffsetType, int> GetOffsetsOfPath() {
+        return GetParentPath().GroupBy(x => x.Piece.Dir.Offset).ToDictionary(x => x.Key, x => x.Count());
+    }
+    public Dictionary<WorldPieceDir.VertType, int> GetVertsOfPath() {
+        return GetParentPath().GroupBy(x => x.Piece.Dir.Vert).ToDictionary(x => x.Key, x => x.Count());
     }
 
     public override int GetHashCode() {

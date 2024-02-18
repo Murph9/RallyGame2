@@ -67,36 +67,38 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
             }
 
             // lets try and solve each problem as we get each part
-            var partTypes = last.GetTypesOfPath();
+            var turnTypes = last.GetTurnsOfPath();
+            var offsetTypes = last.GetOffsetsOfPath();
+            var vertTypes = last.GetVertsOfPath();
 
             SearchPiece chosenPiece = null;
 
             // solve the height issue
-            var ups = partTypes.GetValueOrDefault(WorldPieceDirType.Up);
-            var downs = partTypes.GetValueOrDefault(WorldPieceDirType.Down);
+            var ups = vertTypes.GetValueOrDefault(WorldPieceDir.VertType.Up);
+            var downs = vertTypes.GetValueOrDefault(WorldPieceDir.VertType.Down);
             if (ups > downs) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Down);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Vert == WorldPieceDir.VertType.Down);
             } else if (ups < downs) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Up);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Vert == WorldPieceDir.VertType.Up);
             }
 
             // the chicane issue
-            var offsetLefts = partTypes.GetValueOrDefault(WorldPieceDirType.OffsetLeft);
-            var offsetRights = partTypes.GetValueOrDefault(WorldPieceDirType.OffsetRight);
+            var offsetLefts = offsetTypes.GetValueOrDefault(WorldPieceDir.OffsetType.OffsetLeft);
+            var offsetRights = offsetTypes.GetValueOrDefault(WorldPieceDir.OffsetType.OffsetRight);
             if (offsetLefts > offsetRights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.OffsetRight);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Offset == WorldPieceDir.OffsetType.OffsetRight);
             } else if (offsetLefts < offsetRights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.OffsetLeft);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Offset == WorldPieceDir.OffsetType.OffsetLeft);
             }
 
             // the corner issue
             // TODO move around with corners so that it uses straights to get home
-            var lefts = partTypes.GetValueOrDefault(WorldPieceDirType.Left90);
-            var rights = partTypes.GetValueOrDefault(WorldPieceDirType.Right90);
+            var lefts = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Left90);
+            var rights = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Right90);
             if (lefts > rights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Right90);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Right90);
             } else if (lefts < rights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Type == WorldPieceDirType.Left90);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Left90);
             }
 
             chosenPiece ??= neighbours[_rand.RandiRange(0, neighbours.Length - 1)];
@@ -119,12 +121,12 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
             last
         };
 
-        foreach (var c in GeneratePieces(last, true)) {
+        foreach (var c in GeneratePieces(last)) {
             queue.Enqueue(c, c.F);
         }
         while (queue.Count < 1) {
             last = last.Parent;
-            foreach (var c in GeneratePieces(last, true)) {
+            foreach (var c in GeneratePieces(last)) {
                 queue.Enqueue(c, c.F);
             }
         }
@@ -139,7 +141,7 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
                 Console.WriteLine(GetNamesOfPath(q));
             }
 
-            foreach (var o in GeneratePieces(q, true)) {
+            foreach (var o in GeneratePieces(q)) {
                 if (q.LengthToRoot > maxCount) continue;
                 if (q.F < 1 && !q.FinalRotation.IsEqualApprox(Quaternion.Identity))
                     continue; // please ignore anything that touches the goal but doesn't face the right way
@@ -154,46 +156,16 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
         return null;
     }
 
-    private BasicEl[] GetValidPiecesForPath(Dictionary<WorldPieceDirType, int> partTypes) {
-        // add pieces that can help get back to 0
-        var piecesList = _pieces.Where(x => x.Dir.Type == WorldPieceDirType.Straight).ToList();
-
-        var lefts = partTypes.GetValueOrDefault(WorldPieceDirType.Left90);
-        var rights = partTypes.GetValueOrDefault(WorldPieceDirType.Right90);
-        if (lefts >= rights) {
-            // then we probably want to only add lefts
-            // = left is favoured incase they are the same
-            piecesList.AddRange(_pieces.Where(x => x.Dir.Type == WorldPieceDirType.Left90));
-        } else {
-            // then we probably want to only add rights only
-            piecesList.AddRange(_pieces.Where(x => x.Dir.Type == WorldPieceDirType.Right90));
-        }
-
-        // TODO chicanes need to be swapped back so they align again
-
-        var ups = partTypes.GetValueOrDefault(WorldPieceDirType.Up);
-        var downs = partTypes.GetValueOrDefault(WorldPieceDirType.Down);
-        if (ups > downs) {
-            piecesList.AddRange(_pieces.Where(x => x.Dir.Type == WorldPieceDirType.Down));
-        } else if (ups < downs) {
-            piecesList.AddRange(_pieces.Where(x => x.Dir.Type == WorldPieceDirType.Up));
-        }
-
-        return piecesList.ToArray();
-    }
 
 
-    private SearchPiece[] GeneratePieces(SearchPiece top, bool filterPieces = false) {
-        var pieces = filterPieces ? GetValidPiecesForPath(top.GetTypesOfPath()) : _pieces;
-
+    private SearchPiece[] GeneratePieces(SearchPiece top) {
         var currentPath = top.GetParentPath();
 
         var list = new List<SearchPiece>();
-        foreach (var p in pieces) {
-            var newP = new SearchPiece(top, p);
-            var types = newP.GetTypesOfPath();
-            var offsets = types.GetValueOrDefault(WorldPieceDirType.OffsetLeft) + types.GetValueOrDefault(WorldPieceDirType.OffsetRight);
-            newP.H = offsets * 100 + Math.Abs(top.FinalPosition.Y) + top.FinalRotation.AngleTo(Quaternion.Identity) * 10;
+        foreach (var p in _pieces) {
+            var newP = new SearchPiece(top, p) {
+                H = Math.Abs(top.FinalPosition.Y) + top.FinalRotation.AngleTo(Quaternion.Identity) * 10
+            };
 
             // any collisions don't allow them
             var any = currentPath.Any(x => x.Aabb.Intersects(newP.Aabb));
