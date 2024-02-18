@@ -5,111 +5,108 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.Search;
 
-// TODO just use a linkedlist management class instead of dealing with nodes only
+public class El(BasicEl piece) {
+    public BasicEl Piece { get; } = piece;
+    public Vector3 FinalPosition { get; set; } = Vector3.Zero;
+    public Quaternion FinalRotation { get; set; } = Quaternion.Identity;
+    public Aabb Aabb { get; set; }
 
-public record ExpandPiece {
+    public override string ToString() {
+        return "el@"+Piece.Name;
+    }
+
+    public El Clone() {
+        return new El(Piece);
+    }
+};
+
+public class PieceElList {
     private const float AABB_BUFFER_DIFF = 0.05f;
-    public BasicEl Piece { get; init; }
+    private readonly List<El> _elements = [];
 
-    public ExpandPiece Parent { get; private set; }
-    public List<ExpandPiece> Children { get; init; } = [];
-
-    public Vector3 Position { get; private set; }
-    public Quaternion Rotation { get; private set; }
-    public Aabb Aabb { get; private set; }
-    public Vector3 FinalPosition { get; private set; }
-    public Quaternion FinalRotation { get; private set; }
-
-    public ExpandPiece(BasicEl piece, ExpandPiece parent) {
-        Piece = piece;
-        SetParent(parent);
+    public PieceElList() {}
+    public PieceElList(params El[] els) {
+        _elements = els.ToList();
+        UpdateChainFrom(0);
     }
 
-    public int LengthToRoot => (Parent?.LengthToRoot ?? 0) + 1;
-    public ExpandPiece LastChild() {
-        if (Children.Count != 0) return Children.Single();
-        return this;
-    }
-    
-    public ExpandPiece FirstParent() => Parent is null ? this : Parent.FirstParent();
-    public IEnumerable<ExpandPiece> GetParents() {
-        if (Parent != null)
-            foreach (var p in Parent.GetParents())
-                yield return p;
-        yield return this;
+    public long Count => _elements.Count;
+
+    public void AddLast(El el) {
+        _elements.Add(el);
+
+        UpdateChainFrom(0); // TODO perf
     }
 
-    public void SetParent(ExpandPiece parent) {
-        // remove self from Parent
-        Parent?.Children.Remove(this);
-        // update parent with self
-        Parent = parent;
-        Parent?.Children.Add(this);
+    public override string ToString() {
+        return "[pieces@" + string.Join(", ", _elements.Select(x => x.Piece.Name)) + "]";
+    }
 
-        if (Parent == null) {
-            Position = new Vector3();
-            Rotation = Quaternion.Identity;
-        } else {
-            Position = Parent.FinalPosition;
-            Rotation = Parent.FinalRotation;
+    private void UpdateChainFrom(int index) {
+        for (var i = index; i < _elements.Count; i++) {
+            var parent = i-1 < 0 ? null : _elements[i-1];
+            UpdateEl(parent, _elements[i]);
         }
+    }
 
-        // update Aabb with the extents of the current piece
-        var newExtentMin = Position + Rotation * Piece.ExtentMin;
-        var newExtentMax = Position + Rotation * Piece.ExtentMax;
-        var size = newExtentMax - newExtentMin;
-        Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
+    private static void UpdateEl(El parent, El el) {
+        parent ??= new El(null);
 
         // next position is pos + our rotation * our offset
-        FinalPosition = Position + Rotation * Piece.Dir.Transform.Origin;
-        FinalRotation = Rotation * Piece.Dir.Transform.Basis.GetRotationQuaternion();
+        el.FinalPosition = parent.FinalPosition + parent.FinalRotation * el.Piece.Dir.Transform.Origin;
+        el.FinalRotation = parent.FinalRotation * el.Piece.Dir.Transform.Basis.GetRotationQuaternion();
 
-        // then update the chain
-        foreach (var child in Children.ToArray()) {
-            child.SetParent(this);
+        // update Aabb with the extents of the current piece
+        var newExtentMin = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMin;
+        var newExtentMax = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMax;
+        var size = newExtentMax - newExtentMin;
+        el.Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
+    }
+
+    public IEnumerable<BasicEl> AsBasicEl() {
+        return _elements.Select(x => x.Piece);
+    }
+
+    public PieceElList Clone() {
+        return new PieceElList(_elements.Select(x => x.Clone()).ToArray());
+    }
+
+    public PieceElList GetRange(int start, int end) {
+        return new PieceElList(_elements[start..end].Select(x => x.Clone()).ToArray());
+    }
+
+    public PieceElList ReplaceRange(int startIndex, int endIndex, PieceElList addIn) {
+        var endingList = new List<El>();
+        if (startIndex == 0) {
+            // we don't need to splice the start
+        } else {
+            // we need to splice the first bit first
+            endingList.AddRange(GetRange(0, startIndex)._elements);
         }
-    }
 
-    public IEnumerable<BasicEl> GetTreeList() {
-        if (Parent != null)
-            foreach (var p in Parent.GetTreeList())
-                yield return p;
-        yield return Piece;
-    }
+        endingList.AddRange(addIn._elements);
 
-    public ExpandPiece CloneTreeList() {
-        var treeList = GetTreeList();
-        ExpandPiece last = null;
-        foreach (var b in treeList) {
-            var cur = new ExpandPiece(b, last);
-            last = cur;
+        if (endIndex == _elements.Count) {
+            // we don't splice the end
+        } else {
+            endingList.AddRange(GetRange(endIndex, _elements.Count)._elements);
         }
-        return last;
-    }
 
-    public Dictionary<WorldPieceDir.TurnType, int> GetTurnsOfPath() {
-        return GetTreeList().GroupBy(x => x.Dir.Turn).ToDictionary(x => x.Key, x => x.Count());
-    }
-    public Dictionary<WorldPieceDir.OffsetType, int> GetOffsetsOfPath() {
-        return GetTreeList().GroupBy(x => x.Dir.Offset).ToDictionary(x => x.Key, x => x.Count());
-    }
-    public Dictionary<WorldPieceDir.VertType, int> GetVertsOfPath() {
-        return GetTreeList().GroupBy(x => x.Dir.Vert).ToDictionary(x => x.Key, x => x.Count());
+        return new PieceElList(endingList.Select(x => x.Clone()).ToArray());
     }
 }
-
 
 public class ExpandingCircuitGenerator : ICircuitGenerator {
 
     private readonly RandomNumberGenerator _rand;
     private readonly BasicEl[] _basicPieces;
 
-    private readonly ExpandPiece _startingLayout;
+    private readonly PieceElList _startingLayout;
 
     private readonly Dictionary<string, Vector3> _normalizedOffsets;
     private readonly Dictionary<string, Quaternion> _transforms;
 
-    private readonly List<ExpandPiece> _replacements;
+    private readonly List<PieceElList> _replacements;
 
     public ExpandingCircuitGenerator(BasicEl[] pieces, ulong seed = ulong.MinValue) {
         _basicPieces = pieces;
@@ -138,22 +135,21 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
             normalStraight, normalStraight, longestLeftTurn,
             normalStraight, normalStraight, longestLeftTurn,
         };
-        
-        _startingLayout = null;
+
+        _startingLayout = new PieceElList();
         foreach (var b in startingLoop) {
-            var cur = new ExpandPiece(b, _startingLayout);
-            _startingLayout = cur;
+            _startingLayout.AddLast(new El(b));
         }
 
         // create some replacements which are <TODO valid TODO> from the smaller pieces
         _replacements = [];
 
         // lets just start with some hard coded ones
-        _replacements.Add(FromList("straight"));
         _replacements.Add(FromList("left_long", "left_long", "right_long"));
         _replacements.Add(FromList("straight", "straight", "cross", "left", "left", "right_long"));
         _replacements.Add(FromList("straight", "left", "straight", "left", "straight"));
         _replacements.Add(FromList("hill_down", "hill_up"));
+        _replacements.Add(FromList("hill_up", "hill_down"));
         _replacements.Add(FromList("hill_down", "left", "hill_up"));
         _replacements.Add(FromList("hill_up", "left", "hill_down"));
 
@@ -162,86 +158,51 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
         }
 
         foreach (var r in _replacements) {
-            Console.WriteLine(string.Join(", ", r.GetTreeList().Select(x => x.Name)));
-            Console.WriteLine(GetNormalizedTransform3DFor(r.GetTreeList()));
+            Console.WriteLine(r);
+            Console.WriteLine(GetNormalizedTransform3DFor(r));
         }
     }
 
     public IEnumerable<BasicEl> GenerateRandomLoop(int randAmount = 3, int startAmount = 8, int maxCount = 20) {
         const int iterations = 20;
         int added = 0;
-        var layout = _startingLayout.CloneTreeList();
+        var layout = _startingLayout.Clone();
 
         // pick a random modification and try to fit it anywhere
         // do this until we have successfully placed N
         for (var i = 0; i < iterations; i++) {
             var current = _replacements[_rand.RandiRange(0, _replacements.Count - 1)];
-            var curTransform = GetNormalizedTransform3DFor(current.GetTreeList());
+            var curTransform = GetNormalizedTransform3DFor(current);
 
-            var layoutPieces = layout.GetParents().ToArray();
             // search the current circuit for where to put it
-            for (int j = 0; j < layoutPieces.Length - 1; j++) {
-                for (int k = j + 1; k < layoutPieces.Length; k++) {
-                    var layoutNodes = layoutPieces.Skip(k).Take(k).Select(x => x.Piece);
+            for (int j = 0; j < layout.Count - 1; j++) {
+                for (int k = j + 1; k < layout.Count; k++) {
+                    var layoutNodes = layout.GetRange(j, k);
                     var transform = GetNormalizedTransform3DFor(layoutNodes);
                     if (transform.IsEqualApprox(curTransform)) {
-                        Console.WriteLine("yay, placed: " + string.Join(", ", current.GetTreeList().Select(x => x.Name)) + "@" + GetNormalizedTransform3DFor(current.GetTreeList()));
                         added++;
-                        layout = MixTogether(layoutPieces[j], layoutPieces[k], current);
+                        layout = layout.ReplaceRange(j, k, current);
                         goto SearchDone;
                     }
                 }
             }
 
-            SearchDone: Console.WriteLine("Done");
+            SearchDone: {}
         }
 
         Console.WriteLine("Added " + added + " pieces");
-        return layout.GetTreeList();
+        return layout.AsBasicEl();
     }
-
-    private static ExpandPiece MixTogether(ExpandPiece baseStart, ExpandPiece baseEnd, ExpandPiece segmentEnd) {
-        // clone segment first
-        segmentEnd = segmentEnd.CloneTreeList();
-
-        var segmentStart = segmentEnd.FirstParent();
-
-        // if the base start is the first element ignore, else merge
-        var newStart = segmentStart;
-        if (baseStart.Parent is not null) {
-            var p = baseStart.Parent;
-            baseStart.SetParent(null);
-            segmentStart.SetParent(p);
-            newStart = baseStart.FirstParent();
-        }
-
-        // if the base end is the last element ignore, else merge the remaining pieces
-        foreach (var c in baseEnd.Children.ToArray()) {
-            c.SetParent(segmentEnd);
-        }
-
-        return newStart.LastChild();
-    }
-
 
     private BasicEl FromName(string name) => _basicPieces.Single(x => x.Name == name);
-    private ExpandPiece FromList(params string[] names) {
-        return FromList(names.Select(FromName).ToArray());
+    private PieceElList FromList(params string[] names) {
+        return new PieceElList(names.Select(FromName).Select(x => new El(x)).ToArray());
     }
 
-    private ExpandPiece FromList(params BasicEl[] list) {
-        ExpandPiece last = null;
-        foreach (var b in list) {
-            var cur = new ExpandPiece(b, last);
-            last = cur;
-        }
-        return last;
-    }
-
-    private Transform3D GetNormalizedTransform3DFor(IEnumerable<BasicEl> pieces) {
+    private Transform3D GetNormalizedTransform3DFor(PieceElList pieces) {
         var curPos = new Vector3();
         var curRot = Quaternion.Identity;
-        foreach (var p in pieces) {
+        foreach (var p in pieces.AsBasicEl()) {
             var origin = _normalizedOffsets[p.Name];
             var basis = _transforms[p.Name];
             curPos += curRot * origin;
