@@ -8,6 +8,7 @@ namespace murph9.RallyGame2.godot.World;
 
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
 
+// TODO move Transform out of here
 public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
     private static Basis LEFT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(90));
     private static Basis RIGHT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-90));
@@ -46,6 +47,7 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
     }
 }
 
+record PlacedPiece(string Name, Transform3D FinalTransform, WorldPieceDir Dir);
 
 public partial class WorldPieces : Node3D, IWorld {
 
@@ -53,6 +55,7 @@ public partial class WorldPieces : Node3D, IWorld {
     private readonly string pieceName;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
+    private List<PlacedPiece> _pieceOrder;
 
     public List<WorldPiece> Pieces => [.. _pieces];
 
@@ -109,12 +112,14 @@ public partial class WorldPieces : Node3D, IWorld {
                 var aabb = p.Model.GlobalTransform * ((MeshInstance3D)p.Model).GetAabb();
                 c2s.Add(new BasicEl(p.Name, p.Directions[0], aabb.Position, aabb.End));
             }
-            var pieceNames = new ExpandingCircuitGenerator(c2s.ToArray()).GenerateRandomLoop().ToArray();
-            var pieces = pieceNames.Select(x => _pieces.Single(y => y.Name == x.Name));
+            var pieces = new ExpandingCircuitGenerator(c2s.ToArray()).GenerateRandomLoop().ToList();
+            _pieceOrder = [];
 
             var curPos = new Vector3();
             var curRot = Quaternion.Identity;
-            foreach (var p in pieces) {
+            foreach (var piece in pieces) {
+                var p = _pieces.Single(x => x.Name == piece.Name);
+
                 var toAdd = p.Model.Duplicate() as Node3D;
                 toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
 
@@ -125,6 +130,7 @@ public partial class WorldPieces : Node3D, IWorld {
                 AddChild(toAdd);
 
                 _placedPieces.Add(toAdd);
+                _pieceOrder.Add(new PlacedPiece(p.Name, new Transform3D(new Basis(curRot), curPos), piece.Dir));
             }
 
         } catch (Exception e) {
@@ -139,5 +145,48 @@ public partial class WorldPieces : Node3D, IWorld {
 
     public IEnumerable<Transform3D> GetCheckpoints() {
         return _placedPieces.Select(x => x.Transform);
+    }
+
+    public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
+        // we assume every piece that has a rotation has a perfect circle path
+        // and use the circle bezier formula: d = r*4*(Mathf.Sqrt(2)-1)/3
+        var radiusCalc = 4 * (Math.Sqrt(2) - 1) / 3f;
+
+        var pointList = new List<Vector3?>();
+
+        var lastOffset = Vector3.Zero;
+        var lastBasis = Basis.Identity;
+        for (var i = 0; i < _pieceOrder.Count; i ++) {
+            var cur = _pieceOrder[i];
+
+            // get the point
+            pointList.Add(lastOffset);
+            var localOffset = cur.Dir.Transform.Origin;
+
+            if (cur.Dir.Turn == WorldPieceDir.TurnType.Straight) {
+                pointList.Add(null);
+                pointList.Add(null);
+            } else {
+                var curveOffset = localOffset.X * (float)radiusCalc; // offset is radius with everything being a circle
+
+                // get the next point a 'bit' of 'curve' away
+                pointList.Add(lastBasis * new Vector3(curveOffset, 0, 0));
+
+                // get the next point a 'bit' of 'curve' from the end
+                pointList.Add(cur.FinalTransform.Basis * new Vector3(-curveOffset, 0, 0));
+            }
+
+            // next loop
+            lastOffset = cur.FinalTransform.Origin;
+            lastBasis = cur.FinalTransform.Basis;
+		}
+
+        yield return new Curve3DPoint(pointList[0].Value, null, pointList[1]);
+
+        for (var i = 3; i < pointList.Count - 1; i += 3) {
+            yield return new Curve3DPoint(pointList[i].Value, pointList[i - 1], pointList[i + 1]);
+        }
+
+        yield return new Curve3DPoint(pointList[0].Value, pointList[^1], null);
     }
 }

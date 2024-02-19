@@ -14,8 +14,6 @@ public partial class RacingScreen : Node3D {
 	[Signal]
 	public delegate void RestartEventHandler();
 
-	private const float bezier_OFFSET = 10;//10;
-
 	private readonly RacingUI _racingUI;
 	private readonly List<Checkpoint> _checkpointNodes = [];
 	private readonly SimpleWorldPieces _world;
@@ -45,9 +43,6 @@ public partial class RacingScreen : Node3D {
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		var trackCurve = new Curve3D() {
-			BakeInterval = 5
-		};
 		var checkpoints = _world.GetCheckpoints().ToArray();
 		for (var i = 0; i < checkpoints.Length; i++) {
 			var curCheckpoint = checkpoints[i];
@@ -64,15 +59,16 @@ public partial class RacingScreen : Node3D {
 			checkArea.ThingEntered += (Node3D node) => { CheckpointDetection(index, node); };
 			_checkpointNodes.Add(checkArea);
 			AddChild(checkArea);
-
-			// calc direction of control points
-			// TODO get the final and start pos of each piece and use the circule bezier formula: d = r*4*(sqrt(2)-1)/3
-			var before = curCheckpoint.Basis * new Vector3(-bezier_OFFSET, 0, 0);
-			var after = curCheckpoint.Basis * new Vector3(bezier_OFFSET, 0, 0);
-			trackCurve.AddPoint(curCheckpoint.Origin + new Vector3(0, 1, 0), before, after);
 		}
-		var startAgain = _world.GetCheckpoints().First();
-		trackCurve.AddPoint(startAgain.Origin + new Vector3(0, 1, 0), startAgain.Basis * new Vector3(-bezier_OFFSET, 0, 0));
+
+		var trackCurve = new Curve3D() {
+			BakeInterval = 5,
+		};
+		foreach (var curvePoint in _world.GetCurve3DPoints()) {
+			if (curvePoint.PIn.HasValue) AddChild(DebugHelper.GenerateWorldText("PIn", curvePoint.Point + curvePoint.PIn.Value));
+			if (curvePoint.POut.HasValue) AddChild(DebugHelper.GenerateWorldText("POut", curvePoint.Point + curvePoint.POut.Value));
+			trackCurve.AddPoint(curvePoint.Point + new Vector3(0, 1, 0), curvePoint.PIn, curvePoint.POut);
+		}
 
 		// draw it
 		var last = trackCurve.GetPointPosition(0);

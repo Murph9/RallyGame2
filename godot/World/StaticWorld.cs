@@ -59,4 +59,8 @@ public partial class StaticWorld : Node3D, IWorld {
     public IEnumerable<Transform3D> GetCheckpoints() {
         return Array.Empty<Transform3D>();
     }
+
+    public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
+        return Array.Empty<Curve3DPoint>();
+    }
 }
