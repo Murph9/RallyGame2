@@ -8,7 +8,6 @@ namespace murph9.RallyGame2.godot.World;
 
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
 
-// TODO move Transform out of here
 public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
     private static Basis LEFT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(90));
     private static Basis RIGHT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-90));
@@ -49,7 +48,7 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
 
 record PlacedPiece(string Name, Transform3D FinalTransform, WorldPieceDir Dir);
 
-public partial class WorldPieces : Node3D, IWorld {
+public partial class DynamicWorldPieces : Node3D, IWorld {
 
     private readonly PackedScene BlenderScene;
     private readonly string pieceName;
@@ -59,7 +58,7 @@ public partial class WorldPieces : Node3D, IWorld {
 
     public List<WorldPiece> Pieces => [.. _pieces];
 
-    public WorldPieces(string name) {
+    public DynamicWorldPieces(string name) {
         pieceName = name;
         BlenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + name + ".blend");
 
