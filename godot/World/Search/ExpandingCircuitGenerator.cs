@@ -20,14 +20,14 @@ public class El(BasicEl piece) {
     }
 };
 
-public class PieceElList {
+public class ElList {
     private const float AABB_BUFFER_DIFF = 0.05f;
     private readonly List<El> _elements = [];
 
-    public PieceElList() {}
-    public PieceElList(params El[] els) {
+    public ElList() {}
+    public ElList(params El[] els) {
         _elements = els.ToList();
-        UpdateChainFrom(0);
+        UpdateChainFrom();
     }
 
     public long Count => _elements.Count;
@@ -35,64 +35,55 @@ public class PieceElList {
     public void AddLast(El el) {
         _elements.Add(el);
 
-        UpdateChainFrom(0); // TODO perf
+        UpdateChainFrom(); // TODO perf
     }
 
     public override string ToString() {
         return "[pieces@" + string.Join(", ", _elements.Select(x => x.Piece.Name)) + "]";
     }
 
-    private void UpdateChainFrom(int index) {
+    private void UpdateChainFrom(int index = 0) {
         for (var i = index; i < _elements.Count; i++) {
-            var parent = i-1 < 0 ? null : _elements[i-1];
-            UpdateEl(parent, _elements[i]);
+            var parent = i-1 < 0 ? new El(null) : _elements[i-1];
+            var el = _elements[i];
+
+            // next position is pos + our rotation * our offset
+            el.FinalPosition = parent.FinalPosition + parent.FinalRotation * el.Piece.Dir.Transform.Origin;
+            el.FinalRotation = parent.FinalRotation * el.Piece.Dir.Transform.Basis.GetRotationQuaternion();
+
+            // update Aabb with the extents of the current piece
+            var newExtentMin = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMin;
+            var newExtentMax = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMax;
+            var size = newExtentMax - newExtentMin;
+            el.Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
         }
     }
 
-    private static void UpdateEl(El parent, El el) {
-        parent ??= new El(null);
+    public IEnumerable<BasicEl> AsBasicEl() => _elements.Select(x => x.Piece);
 
-        // next position is pos + our rotation * our offset
-        el.FinalPosition = parent.FinalPosition + parent.FinalRotation * el.Piece.Dir.Transform.Origin;
-        el.FinalRotation = parent.FinalRotation * el.Piece.Dir.Transform.Basis.GetRotationQuaternion();
-
-        // update Aabb with the extents of the current piece
-        var newExtentMin = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMin;
-        var newExtentMax = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMax;
-        var size = newExtentMax - newExtentMin;
-        el.Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
+    public ElList Clone() {
+        return new ElList(_elements.Select(x => x.Clone()).ToArray());
     }
 
-    public IEnumerable<BasicEl> AsBasicEl() {
-        return _elements.Select(x => x.Piece);
+    public ElList GetRange(int start, int end) {
+        return new ElList(_elements[start..end].Select(x => x.Clone()).ToArray());
     }
 
-    public PieceElList Clone() {
-        return new PieceElList(_elements.Select(x => x.Clone()).ToArray());
-    }
-
-    public PieceElList GetRange(int start, int end) {
-        return new PieceElList(_elements[start..end].Select(x => x.Clone()).ToArray());
-    }
-
-    public PieceElList ReplaceRange(int startIndex, int endIndex, PieceElList addIn) {
+    public ElList ReplaceRange(int startIndex, int endIndex, ElList addIn) {
         var endingList = new List<El>();
-        if (startIndex == 0) {
-            // we don't need to splice the start
-        } else {
-            // we need to splice the first bit first
+        if (startIndex != 0) {
+            // we need to splice before the new bit
             endingList.AddRange(GetRange(0, startIndex)._elements);
         }
 
         endingList.AddRange(addIn._elements);
 
-        if (endIndex == _elements.Count) {
-            // we don't splice the end
-        } else {
+        if (endIndex < _elements.Count) {
+            // we need a splice after the new bit
             endingList.AddRange(GetRange(endIndex, _elements.Count)._elements);
         }
 
-        return new PieceElList(endingList.Select(x => x.Clone()).ToArray());
+        return new ElList(endingList.Select(x => x.Clone()).ToArray());
     }
 }
 
@@ -101,12 +92,12 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
     private readonly RandomNumberGenerator _rand;
     private readonly BasicEl[] _basicPieces;
 
-    private readonly PieceElList _startingLayout;
+    private readonly ElList _startingLayout;
 
     private readonly Dictionary<string, Vector3> _normalizedOffsets;
     private readonly Dictionary<string, Quaternion> _transforms;
 
-    private readonly List<PieceElList> _replacements;
+    private readonly List<ElList> _replacements;
 
     public ExpandingCircuitGenerator(BasicEl[] pieces, ulong seed = ulong.MinValue) {
         _basicPieces = pieces;
@@ -136,7 +127,7 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
             normalStraight, normalStraight, longestLeftTurn,
         };
 
-        _startingLayout = new PieceElList();
+        _startingLayout = new ElList();
         foreach (var b in startingLoop) {
             _startingLayout.AddLast(new El(b));
         }
@@ -195,11 +186,11 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
     }
 
     private BasicEl FromName(string name) => _basicPieces.Single(x => x.Name == name);
-    private PieceElList FromList(params string[] names) {
-        return new PieceElList(names.Select(FromName).Select(x => new El(x)).ToArray());
+    private ElList FromList(params string[] names) {
+        return new ElList(names.Select(FromName).Select(x => new El(x)).ToArray());
     }
 
-    private Transform3D GetNormalizedTransform3DFor(PieceElList pieces) {
+    private Transform3D GetNormalizedTransform3DFor(ElList pieces) {
         var curPos = new Vector3();
         var curRot = Quaternion.Identity;
         foreach (var p in pieces.AsBasicEl()) {
