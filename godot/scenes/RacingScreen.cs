@@ -1,8 +1,10 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -70,6 +72,10 @@ public partial class RacingScreen : Node3D {
 			trackCurve.AddPoint(curvePoint.Point + new Vector3(0, 1, 0), curvePoint.PIn, curvePoint.POut);
 		}
 
+		// car sim props
+		var totalTime = 0f;
+		var curSpeed = 1f;
+
 		// draw it
 		var last = trackCurve.GetPointPosition(0);
 		var points = trackCurve.GetBakedPoints();
@@ -90,7 +96,17 @@ public partial class RacingScreen : Node3D {
 			l.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
 			AddChild(l);
 			last = cur;
+
+			// simulate the car going along the road (on the line)
+			var distanceOfStep = cur.DistanceTo(after);
+			if (CarRoughCalc.BestRadiusAtSpeed(Car.Details, curSpeed) < radius) {
+				curSpeed += 3 * (curSpeed * distanceOfStep);
+			} else {
+				curSpeed -= 3 * (curSpeed * distanceOfStep);
+			}
+			totalTime += curSpeed * distanceOfStep;
 		}
+		Console.WriteLine(totalTime);
 	}
 
 	private void CheckpointDetection(int checkId, Node3D node) {

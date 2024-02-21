@@ -5,12 +5,12 @@ using murph9.RallyGame2.godot.Cars.Sim;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public class CarCalc {
-    public static double BestRadiusAtSpeed(CarDetails carDetails, Vector3 carVelocity) {
+public class CarRoughCalc {
+    public static double BestRadiusAtSpeed(CarDetails carDetails, float carVelocity) {
         // r = (m*v*v)/f
         // but m cancels out of f as f is (LatGripMax * m)
         // so r = v*v / LatGripmax
-        return carVelocity.LengthSquared() / carDetails.TractionDetails.LatGripMax;
+        return carVelocity * carVelocity / carDetails.TractionDetails.LatGripMax;
     }
 
     public static double BestSpeedAtRadius(CarDetails carDetails, double radius) {
@@ -30,7 +30,7 @@ public class CarCalc {
         var posV2 = V2FromXZ(carPosition);
         var targetV2 = V2FromXZ(target);
 
-        var bestRadius = BestRadiusAtSpeed(carDetails, carVelocity);
+        var bestRadius = BestRadiusAtSpeed(carDetails, carVelocity.Length());
 
         // generate a curved cone that the car can reach using 2 large circles on either side
         // using the speed as the tangent of the circles
