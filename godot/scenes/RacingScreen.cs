@@ -75,6 +75,7 @@ public partial class RacingScreen : Node3D {
 		// car sim props
 		var totalTime = 0f;
 		var curSpeed = 1f;
+		var totalDistance = 0f;
 
 		// draw it
 		var last = trackCurve.GetPointPosition(0);
@@ -99,14 +100,20 @@ public partial class RacingScreen : Node3D {
 
 			// simulate the car going along the road (on the line)
 			var distanceOfStep = cur.DistanceTo(after);
+			// Console.WriteLine("r guess " + CarRoughCalc.BestRadiusAtSpeed(Car.Details, curSpeed) + " road " + radius);
 			if (CarRoughCalc.BestRadiusAtSpeed(Car.Details, curSpeed) < radius) {
-				curSpeed += 3 * (curSpeed * distanceOfStep);
+				curSpeed += (float)(CarRoughCalc.CalcBestAccel(Car.Details, curSpeed) * distanceOfStep) / (float)Car.Details.TotalMass;
 			} else {
-				curSpeed -= 3 * (curSpeed * distanceOfStep);
+				curSpeed -= Car.Details.BrakeMaxTorque * Car.Details.WheelDetails[0].Radius * distanceOfStep / (float)Car.Details.TotalMass;
 			}
-			totalTime += curSpeed * distanceOfStep;
+			curSpeed = Math.Max(0, curSpeed); // the math isn't amazing so make sure it doesn't go negative
+
+			totalTime += distanceOfStep / curSpeed;
+			totalDistance += distanceOfStep;
+			// Console.WriteLine("t: " + totalTime + " s: " + curSpeed + " d: " + totalDistance);
 		}
-		Console.WriteLine(totalTime);
+
+		Console.WriteLine("Guess for time to complete: " + totalTime);
 	}
 
 	private void CheckpointDetection(int checkId, Node3D node) {

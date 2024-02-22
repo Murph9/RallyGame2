@@ -223,6 +223,14 @@ public class CarDetails : IHaveParts {
     public int RpmAtSpeed(int gear, float speed) {
         return (int)(speed * (TransGearRatios[gear] * TransFinaldrive * (60 / (Mathf.Pi*2))) / DriveWheelRadius());
     }
+	public int GearForSpeed(float speed) {
+		if (speed < 0) return 0; // reverse
+		for (var i = 1; i < TransGearRatios.Length; i++) {
+			if (speed < GetGearUpSpeed(i) && speed > GetGearDownSpeed(i))
+				return i;
+		}
+		return TransGearRatios.Length - 1; // last gear
+	}
 
 	public Vector3 QuadraticDrag(Vector3 velocity) {
 		// https://en.wikipedia.org/wiki/Automobile_drag_coefficient#Drag_area
