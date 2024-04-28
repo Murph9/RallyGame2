@@ -1,32 +1,30 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
-using System;
+using murph9.RallyGame2.godot.Component;
 using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.scenes;
 
 public partial class GlobalState : Node {
-    public double Money;
-    public CarDetails CarDetails;
     public readonly List<Part> PartsUpgraded = [];
-    // TODO some details about the track so it generates the same every time
 
     private readonly List<RoundResult> _roundResults = [];
     public IEnumerable<RoundResult> RoundResults => _roundResults;
 
+    public double Money;
+    public CarDetails CarDetails;
     public RoundReward RoundReward { get; private set; }
     public RoundGoal RoundGoal { get; private set; }
+    // TODO some details about the track so it generates the same every time
+    public WorldDetails WorldDetails { get; private set; }
 
     public void AddResult(RoundResult result) {
         _roundResults.Add(result);
     }
 
     public double SecondsToWin(int roundDiff = 0) {
-        // calc best possible time on the map
-        // TODO hard coded here until the track is fixed
-        const float BEST_POSSIBLE_TIME = 10;
-        return 15 * Mathf.Exp(-(_roundResults.Count + roundDiff)/40f) + BEST_POSSIBLE_TIME;
+        return 15 * Mathf.Exp(-(_roundResults.Count + roundDiff)/40f) + WorldDetails.ExpectedFinishTime;
     }
 
     public void Reset() {
@@ -36,23 +34,31 @@ public partial class GlobalState : Node {
 
         RoundReward = null;
         RoundGoal = null;
+        WorldDetails = null;
     }
 
     public void SetReward(RoundReward roundReward) => RoundReward = roundReward;
 
     public void SetGoal(RoundGoal roundGoal) => RoundGoal = roundGoal;
+
+    public void SetWorldDetails(WorldDetails worldDetails) => WorldDetails = worldDetails;
 }
 
-public class RoundResult {
+public record RoundResult {
     public double Time;
 }
 
-public class RoundReward {
+public record RoundReward {
     public double Money;
     public int PartCount;
     public int PartChoiceCount = 3;
 }
 
-public class RoundGoal {
+public record RoundGoal {
     public double Time;
+}
+
+public record WorldDetails {
+    public double ExpectedFinishTime => RoadManager.ExpectedFinishTime;
+    public RoadManager RoadManager;
 }

@@ -8,7 +8,7 @@ public partial class ReadyScreen : CenterContainer, IScene {
 	[Signal]
     public delegate void ClosedEventHandler();
 
-	private string[] DIFFICULTIES = [ "Easy", "Medium", "Hard" ];
+	private readonly string[] DIFFICULTIES = [ "Easy", "Medium", "Hard" ];
 
 	public override void _Ready() {
 		// show:

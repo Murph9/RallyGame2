@@ -3,7 +3,6 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +16,7 @@ public partial class RacingScreen : Node3D {
 	public delegate void RestartEventHandler();
 
 	private readonly RacingUI _racingUI;
-	private readonly List<Checkpoint> _checkpointNodes = [];
-	private readonly SimpleWorldPieces _world;
+    private readonly List<Checkpoint> _checkpointNodes = [];
 
 	private Car Car;
 
@@ -29,8 +27,6 @@ public partial class RacingScreen : Node3D {
 	public double LapTimer { get; private set; }
 
 	public RacingScreen() {
-		_world = new SimpleWorldPieces();
-
 		var uiScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingUI)));
 		_racingUI = uiScene.Instantiate<RacingUI>();
 		_racingUI.Racing = this;
@@ -38,14 +34,14 @@ public partial class RacingScreen : Node3D {
 	}
 
 	public override void _Ready() {
-        AddChild(_world);
-
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, _world.GetSpawn());
+        Car = new Car(state.CarDetails, state.WorldDetails.RoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		var checkpoints = _world.GetCheckpoints().ToArray();
+		var roadManager = state.WorldDetails.RoadManager;
+
+		var checkpoints = roadManager.World.GetCheckpoints().ToArray();
 		for (var i = 0; i < checkpoints.Length; i++) {
 			var curCheckpoint = checkpoints[i];
 
@@ -66,16 +62,11 @@ public partial class RacingScreen : Node3D {
 		var trackCurve = new Curve3D() {
 			BakeInterval = 5,
 		};
-		foreach (var curvePoint in _world.GetCurve3DPoints()) {
+		foreach (var curvePoint in roadManager.World.GetCurve3DPoints()) {
 			if (curvePoint.PIn.HasValue) AddChild(DebugHelper.GenerateWorldText("PIn", curvePoint.Point + curvePoint.PIn.Value));
 			if (curvePoint.POut.HasValue) AddChild(DebugHelper.GenerateWorldText("POut", curvePoint.Point + curvePoint.POut.Value));
 			trackCurve.AddPoint(curvePoint.Point + new Vector3(0, 1, 0), curvePoint.PIn, curvePoint.POut);
 		}
-
-		// car sim props
-		var totalTime = 0f;
-		var curSpeed = 1f;
-		var totalDistance = 0f;
 
 		// draw it
 		var last = trackCurve.GetPointPosition(0);
@@ -97,27 +88,11 @@ public partial class RacingScreen : Node3D {
 			l.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
 			AddChild(l);
 			last = cur;
-
-			// simulate the car going along the road (on the line)
-			var distanceOfStep = cur.DistanceTo(after);
-			// Console.WriteLine("r guess " + CarRoughCalc.BestRadiusAtSpeed(Car.Details, curSpeed) + " road " + radius);
-			if (CarRoughCalc.BestRadiusAtSpeed(Car.Details, curSpeed) < radius) {
-				curSpeed += (float)(CarRoughCalc.CalcBestAccel(Car.Details, curSpeed) * distanceOfStep) / (float)Car.Details.TotalMass;
-			} else {
-				curSpeed -= Car.Details.BrakeMaxTorque * Car.Details.WheelDetails[0].Radius * distanceOfStep / (float)Car.Details.TotalMass;
-			}
-			curSpeed = Math.Max(0, curSpeed); // the math isn't amazing so make sure it doesn't go negative
-
-			totalTime += distanceOfStep / curSpeed;
-			totalDistance += distanceOfStep;
-			// Console.WriteLine("t: " + totalTime + " s: " + curSpeed + " d: " + totalDistance);
 		}
-
-		Console.WriteLine("Guess for time to complete: " + totalTime);
 	}
 
 	private void CheckpointDetection(int checkId, Node3D node) {
-		if (checkId == CurrentCheckpoint && node == Car.RigidBody) {
+		if (checkId == CurrentCheckpoint && node.GetParent() is Car) { // TODO hope there is one car
 			if (CurrentCheckpoint == 0) {
 				CurrentLap++;
 				if (CurrentLap > 1)
@@ -173,7 +148,7 @@ public partial class RacingScreen : Node3D {
 
 		// clone into new car
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, _world.GetSpawn());
+        Car = new Car(state.CarDetails, state.WorldDetails.RoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 	}

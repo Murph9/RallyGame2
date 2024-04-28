@@ -12,3 +12,5 @@ script = ExtResource("1_cn23i")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
+
+[node name="Camera3D" type="Camera3D" parent="."]
