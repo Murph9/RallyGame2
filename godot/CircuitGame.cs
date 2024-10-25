@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot;
 
-public partial class MainGame : Node {
+public partial class CircuitGame : Node {
 
 	// intro -> ready
 	// ready -> racing
