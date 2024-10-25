@@ -6,6 +6,10 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
 
+public enum WorldType {
+    Simple
+}
+
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
 
 public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
@@ -46,21 +50,21 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
     }
 }
 
-record PlacedPiece(string Name, Transform3D FinalTransform, WorldPieceDir Dir);
+public record PlacedPiece(string Name, Transform3D FinalTransform, WorldPieceDir Dir);
 
 public partial class DynamicWorldPieces : Node3D, IWorld {
 
     private readonly PackedScene BlenderScene;
-    private readonly string pieceName;
+    private readonly WorldType pieceType;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
     private List<PlacedPiece> _pieceOrder;
 
     public List<WorldPiece> Pieces => [.. _pieces];
 
-    public DynamicWorldPieces(string name) {
-        pieceName = name;
-        BlenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + name + ".blend");
+    public DynamicWorldPieces(WorldType type) {
+        pieceType = type;
+        BlenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + pieceType.ToString().ToLower() + ".blend");
 
         // generate a starting box so we don't spawn in the void
         var boxBody = new StaticBody3D();
@@ -100,7 +104,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
                 _pieces.Add(p);
             }
         } catch (Exception e) {
-            GD.Print("Failed to parse pieces for " + pieceName);
+            GD.Print("Failed to parse pieces for " + pieceType);
             GD.Print(e);
             return;
         }

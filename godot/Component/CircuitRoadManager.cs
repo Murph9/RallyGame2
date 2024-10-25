@@ -11,7 +11,7 @@ public partial class CircuitRoadManager : Node3D {
 	[Signal]
     public delegate void LoadedEventHandler();
 
-    private readonly SimpleWorldPieces _world;
+    private readonly DynamicWorldPieces _world;
 
     public IWorld World => _world;
 
@@ -20,7 +20,7 @@ public partial class CircuitRoadManager : Node3D {
 	public float ExpectedFinishTime { get; private set; }
 
     public CircuitRoadManager() {
-        _world = new SimpleWorldPieces();
+        _world = new DynamicWorldPieces(WorldType.Simple);
     }
 
     public override void _Ready() {
