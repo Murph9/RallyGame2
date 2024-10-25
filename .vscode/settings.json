@@ -3,5 +3,6 @@
         "**/bin/**": true,
         "**/obj/**": true
     },
-    "dotnet.defaultSolution": "RallyGame2.sln"
+    "dotnet.defaultSolution": "RallyGame2.sln",
+    "godotTools.editorPath.godot4": "c:\\Program Files\\Godot\\Godot_v4.3-beta1_mono_win64\\Godot_v4.3-beta1_mono_win64.exe"
 }
