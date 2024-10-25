@@ -59,6 +59,6 @@ public record RoundGoal {
 }
 
 public record WorldDetails {
-    public double ExpectedFinishTime => RoadManager.ExpectedFinishTime;
-    public RoadManager RoadManager;
+    public double ExpectedFinishTime => CircuitRoadManager.ExpectedFinishTime;
+    public CircuitRoadManager CircuitRoadManager;
 }

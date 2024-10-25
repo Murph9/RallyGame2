@@ -35,11 +35,11 @@ public partial class RacingScreen : Node3D {
 
 	public override void _Ready() {
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, state.WorldDetails.RoadManager.World.GetSpawn());
+        Car = new Car(state.CarDetails, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
-		var roadManager = state.WorldDetails.RoadManager;
+		var roadManager = state.WorldDetails.CircuitRoadManager;
 
 		var checkpoints = roadManager.World.GetCheckpoints().ToArray();
 		for (var i = 0; i < checkpoints.Length; i++) {
@@ -148,7 +148,7 @@ public partial class RacingScreen : Node3D {
 
 		// clone into new car
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, state.WorldDetails.RoadManager.World.GetSpawn());
+        Car = new Car(state.CarDetails, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 	}

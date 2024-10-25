@@ -17,7 +17,7 @@ public partial class CircuitGame : Node {
 
 	private readonly List<Node> _screensAdded = [];
 	private RacingScreen _currentRacing;
-	private RoadManager _roadManager;
+	private CircuitRoadManager _curcuitRoadManager;
 
 	public override void _Ready() {
 		LoadIntro();
@@ -51,10 +51,10 @@ public partial class CircuitGame : Node {
 			_currentRacing = null;
 		}
 
-		if (_roadManager != null) {
-			RemoveChild(_roadManager);
-			_roadManager.QueueFree();
-			_roadManager = null;
+		if (_curcuitRoadManager != null) {
+			RemoveChild(_curcuitRoadManager);
+			_curcuitRoadManager.QueueFree();
+			_curcuitRoadManager = null;
 			Console.WriteLine("uninit");
 		}
 		Console.WriteLine("init");
@@ -77,9 +77,9 @@ public partial class CircuitGame : Node {
 		};
 		Load(intro);
 
-		_roadManager = new RoadManager();
-		_roadManager.Loaded += () => { intro.RoadLoaded(_roadManager); };
-		AddChild(_roadManager);
+		_curcuitRoadManager = new CircuitRoadManager();
+		_curcuitRoadManager.Loaded += () => { intro.RoadLoaded(_curcuitRoadManager); };
+		AddChild(_curcuitRoadManager);
 	}
 
 	private void LoadReady() {

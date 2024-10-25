@@ -60,12 +60,12 @@ public partial class IntroScreen : CenterContainer, IScene {
 		}
 	}
 
-    public void RoadLoaded(RoadManager roadManager) {
+    public void RoadLoaded(CircuitRoadManager roadManager) {
 		Console.WriteLine("road loaded");
 
 		var state = GetNode<GlobalState>("/root/GlobalState");
 		state.SetWorldDetails(new WorldDetails() {
-			RoadManager = roadManager
+			CircuitRoadManager = roadManager
 		});
 
 		_roadLoaded = true;

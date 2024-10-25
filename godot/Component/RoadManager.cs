@@ -7,7 +7,7 @@ using murph9.RallyGame2.godot.World;
 
 namespace murph9.RallyGame2.godot.Component;
 
-public partial class RoadManager : Node3D {
+public partial class CircuitRoadManager : Node3D {
 	[Signal]
     public delegate void LoadedEventHandler();
 
@@ -19,7 +19,7 @@ public partial class RoadManager : Node3D {
 
 	public float ExpectedFinishTime { get; private set; }
 
-    public RoadManager() {
+    public CircuitRoadManager() {
         _world = new SimpleWorldPieces();
     }
 
