@@ -97,22 +97,21 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     private bool PieceValid(WorldPiece piece) {
-        var cloneP = piece.Model.Duplicate() as Node3D;
-        cloneP.Transform = new Transform3D(_lastPlacedDetails.FinalTransform.Basis, _lastPlacedDetails.FinalTransform.Origin);
+        var collisions = (piece.Model.Duplicate() as Node3D).GetAllChildrenOfType<CollisionShape3D>();
 
-        if (cloneP.GetChildren().First() is not StaticBody3D s) {
+        if (!collisions.Any() || collisions.Count() > 1) {
             GD.PushError("My world piece was wrong");
             return false;
         }
         
-        var area3d = new Area3D();
-        
-        var collisionObjects = _placedPieces.SelectMany(x => x.GetAllChildrenOfType<CollisionObject3D>());
-        foreach (var colls in collisionObjects) {
-            area3d.AddChild(colls.Duplicate());
-        }
+        var space = GetWorld3D().DirectSpaceState;
+        var physicsParams = new PhysicsShapeQueryParameters3D {
+            Shape = collisions.First().Shape,
+            Transform = new Transform3D(_lastPlacedDetails.FinalTransform.Basis, _lastPlacedDetails.FinalTransform.Origin)
+        };
+        var result = space.IntersectShape(physicsParams);
 
-        return !area3d.OverlapsArea(cloneP);
+        return result.Count < 1;
     }
 
     private void PlacePiece(WorldPiece piece, int outIndex = 0) {
