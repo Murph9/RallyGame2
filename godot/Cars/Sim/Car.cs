@@ -245,17 +245,17 @@ public partial class Car : Node3D {
             w.RadSec = 0;
 
         var steering = Steering;
-        if (localVel.Z < 0) { // to flip the steering on moving in reverse
+        if (groundVelocity.Z < 0) { // to flip the steering on moving in reverse
             steering *= -1;
         }
 
         if (w.Details.Id < 2) {
             // front wheels (player.car.length * player.car.yawrate (in rad/sec))
-            var slipa_front = localVel.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
+            var slipa_front = groundVelocity.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
             w.SlipAngle = Mathf.Atan2(slipa_front, Mathf.Abs(groundVelocity.Z)) - steering;
         } else {
             // rear wheels (player.car.length * player.car.yawrate (in rad/sec))
-            var slipa_rear = localVel.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
+            var slipa_rear = groundVelocity.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
             w.SlipAngle = Mathf.Atan2(slipa_rear, Mathf.Abs(groundVelocity.Z));
             DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear amount
         }
@@ -291,10 +291,11 @@ public partial class Car : Node3D {
 
         // braking and abs
         var brakeCurrent2 = BrakingCur;
-        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > td.LongMaxSlip && localVel.Length() > 4)
+        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > td.LongMaxSlip && groundVelocity.Length() > 4)
             brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 4 frames and stop braking so hard)
 
-        if (Details.TractionControl && RigidBody.LinearVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > td.LatMaxSlip * 1.5f) {
+        // calcluate traction control
+        if (Details.TractionControl && groundVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > td.LatMaxSlip * 1.5f) {
             // but only do it on the outer side
             if (w.TractionControlTimeOut > 0) {
                 w.TractionControlTimeOut -= delta;
