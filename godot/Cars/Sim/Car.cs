@@ -32,6 +32,9 @@ public partial class Car : Node3D {
 
     private bool _listeningToInputs = true;
 
+    public float DistanceTravelled { get; private set; }
+    private Vector3? _lastPos;
+
     public Car(CarDetails details, Transform3D? worldSpawn = null) {
         Details = details;
         _worldSpawn = worldSpawn ?? Transform3D.Identity;
@@ -97,6 +100,11 @@ public partial class Car : Node3D {
         ReadInputs();
 
         Engine._PhysicsProcess(delta);
+
+        if (_lastPos.HasValue) {
+            DistanceTravelled += RigidBody.GlobalPosition.DistanceTo(_lastPos.Value);
+        }
+        _lastPos = RigidBody.GlobalPosition;
 
         var physicsState = GetWorld3D().DirectSpaceState;
         foreach (var w in Wheels) {
