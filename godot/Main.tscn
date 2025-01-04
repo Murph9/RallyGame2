@@ -1,0 +1,62 @@
+[gd_scene load_steps=4 format=3 uid="uid://iurxxw5eajhl"]
+
+[ext_resource type="Script" path="res://Main.cs" id="1_rty62"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_0kera"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_vavfl"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_rty62")
+
+[node name="RigidBody3D4" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.99636, 8.70018, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D4"]
+shape = SubResource("SphereShape3D_0kera")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D4"]
+mesh = SubResource("SphereMesh_vavfl")
+skeleton = NodePath("../../RigidBody3D4")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 5.99109, 9.99093)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+offset_left = 2.0
+offset_top = 423.0
+offset_right = 92.0
+offset_bottom = 423.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="StartButtonHundred" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Start 100km Mode"
+
+[node name="StartButton" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Start Circuit Mode"
+
+[node name="Button" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Add Ball"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="WorldOptionButton" type="OptionButton" parent="PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="UpgradeButton" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Upgrade Test"
+
+[connection signal="pressed" from="PanelContainer/VBoxContainer/StartButtonHundred" to="." method="_on_hundredstart_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/StartButton" to="." method="_on_circuitstart_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
