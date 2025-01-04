@@ -89,10 +89,12 @@ public partial class InfiniteWorldPieces : Node3D {
                 piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
                 attempts++;
             }
-            GD.Print($"Found piece {piece?.Name} in {attempts} tries");
+            GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + transform);
             
             var current = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
             PlacePiece(current, transform, _rand.RandiRange(0, current.Directions.Length - 1));
+
+            transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
     }
 
