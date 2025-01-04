@@ -140,20 +140,22 @@ public partial class InfiniteWorldPieces : Node3D {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     }
 
-    public Vector3 GetClosestPointTo(Vector3 pos) {
-        if (_placedPieces.Count < 1) return pos;
+    public Transform3D GetClosestPointTo(Vector3 pos) {
+        if (_placedPieces.Count < 1) {
+            return new Transform3D(GetSpawn().Basis, pos);
+        }
 
-        var closestOrigin = _placedPieces.FirstOrDefault().GlobalTransform.Origin;
-        var distance = closestOrigin.DistanceSquaredTo(pos);
+        var closestTransform = _placedPieces.FirstOrDefault().GlobalTransform;
+        var distance = closestTransform.Origin.DistanceSquaredTo(pos);
         
         foreach (var point in _placedPieces) {
             var currentDistance = point.GlobalTransform.Origin.DistanceSquaredTo(pos);
             if (currentDistance < distance) {
-                closestOrigin = point.GlobalTransform.Origin;
+                closestTransform = point.GlobalTransform;
                 distance = currentDistance;
             }
         }
 
-        return closestOrigin;
+        return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
     }
 }

@@ -42,9 +42,12 @@ public partial class HundredRacingScene : Node3D {
         EmitSignal(SignalName.Restart);
     }
 
-    public void ResetCarTo(Vector3 pos) {
-        _car.RigidBody.Position = pos;
+    public void ResetCarTo(Transform3D transform) {
+        _car.RigidBody.Position = transform.Origin + new Vector3(0, 0.5f, 0);
+        _car.RigidBody.Basis = transform.Basis;
+
         _car.RigidBody.LinearVelocity *= 0;
+        _car.RigidBody.AngularVelocity *= 0;
     }
 
     public void StopDriving() {

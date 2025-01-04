@@ -28,5 +28,5 @@ public partial class InfiniteRoadManager : Node3D {
         _world.UpdateLatestPos(pos);
     }
 
-    public Vector3 GetClosestPointTo(Vector3 pos) => _world.GetClosestPointTo(pos) + new Vector3(0, 0.5f, 0);
+    public Transform3D GetClosestPointTo(Vector3 pos) => _world.GetClosestPointTo(pos);
 }
