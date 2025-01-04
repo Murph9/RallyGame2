@@ -17,7 +17,7 @@ public partial class InfiniteRoadManager : Node3D {
     private readonly InfiniteWorldPieces _world;
 
     public InfiniteRoadManager() {
-        _world = new InfiniteWorldPieces(WorldType.Simple);
+        _world = new InfiniteWorldPieces(WorldType.Simple2);
     }
 
     public override void _Ready() {

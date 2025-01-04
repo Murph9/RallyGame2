@@ -99,8 +99,12 @@ public partial class InfiniteWorldPieces : Node3D {
             }
 
             var current = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
-            GD.Print($"Found piece {current?.Name} in {attempts} tries, at " + transform);
-            PlacePiece(current, transform, _rand.RandiRange(0, current.Directions.Length - 1));
+            var directionIndex = _rand.RandiRange(0, current.Directions.Length - 1);
+            
+            // GD.Print($"Found piece {current?.Name} in {attempts} tries, at " + transform);
+            // GD.Print(current.Directions[directionIndex].Offset + " " + current.Directions[directionIndex].Turn  + " " + current.Directions[directionIndex].Vert);
+
+            PlacePiece(current, transform, directionIndex);
 
             transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
@@ -135,11 +139,11 @@ public partial class InfiniteWorldPieces : Node3D {
         toAdd.Transform = new Transform3D(transform.Basis, transform.Origin);
 
         // soz can only select the first one for now
-        var outLocalTransform = piece.Directions.Skip(outIndex).First().Transform;
+        var outDirection = piece.Directions.Skip(outIndex).First();
 
         // TODO there has to be a way to do this with inbuilt methods:
-        var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outLocalTransform.Origin;
-        var rot = (_nextTransform.FinalTransform.Basis * outLocalTransform.Basis).GetRotationQuaternion().Normalized();
+        var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.Transform.Origin;
+        var rot = (_nextTransform.FinalTransform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
         _nextTransform = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
         AddChild(toAdd);
