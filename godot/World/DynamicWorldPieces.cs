@@ -7,7 +7,8 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.World;
 
 public enum WorldType {
-    Simple
+    Simple,
+    Simple2
 }
 
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
@@ -16,10 +17,13 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
     private static Basis LEFT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(90));
     private static Basis RIGHT90 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-90));
 
+    private static Basis LEFT45 = new (new Vector3(0, 1, 0), Mathf.DegToRad(45));
+    private static Basis RIGHT45 = new (new Vector3(0, 1, 0), Mathf.DegToRad(-45));
+
     public static WorldPieceDir FromTransform3D(Transform3D transform) {
         // TODO normalize the rotation a little (to like closest 15' or something)
         // normalize the transform
-        var t = new Transform3D(transform.Basis, transform.Origin.Round());
+        var t = new Transform3D(transform.Basis, transform.Origin);
 
         var turn = TurnType.Straight;
         var offset = OffsetType.None;
@@ -36,11 +40,16 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
         else if (t.Basis.IsEqualApprox(RIGHT90))
             turn = TurnType.Right90;
 
+        if (t.Basis.IsEqualApprox(LEFT45))
+            turn = TurnType.Left45;
+        else if (t.Basis.IsEqualApprox(RIGHT45))
+            turn = TurnType.Right45;
+
         return new WorldPieceDir(t, turn, offset, vert);
     }
 
     public enum TurnType {
-        Straight, Left90, Right90
+        Straight, Left90, Right90, Left45, Right45
     }
     public enum VertType {
         Level, Down, Up
