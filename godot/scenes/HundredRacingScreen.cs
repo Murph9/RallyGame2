@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.scenes;
 
-public partial class InfiniteRacingScreen : Node3D {
+public partial class HundredRacingScreen : Node3D {
     // Tracks the current driving stuff
 
     [Signal]
@@ -18,19 +18,19 @@ public partial class InfiniteRacingScreen : Node3D {
     [Signal]
     public delegate void RestartEventHandler();
 
-    // private readonly RacingUI _racingUI;
+    private Car _car;
 
-    private Car Car;
+    public float DistanceTravelled => _car.DistanceTravelled;
+    public Vector3 CarPos => _car.RigidBody.GlobalPosition;
 
-    public InfiniteRacingScreen() {
-        // AddChild(_racingUI);
+    public HundredRacingScreen() {
     }
 
     public override void _Ready() {
-        Car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), Transform3D.Identity);
+        _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), Transform3D.Identity);
         // TODO hardcoded
-        Car.RigidBody.Transform = new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
-        AddChild(Car);
+        _car.RigidBody.Transform = new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+        AddChild(_car);
     }
 
     public override void _Process(double delta) {
@@ -42,14 +42,10 @@ public partial class InfiniteRacingScreen : Node3D {
     }
 
     public void StopDriving() {
-        Car.IgnoreInputs();
+        _car.IgnoreInputs();
     }
 
     public void StartDriving() {
-        Car.AcceptInputs();
-    }
-
-    public Vector3 GetCarPos() {
-        return Car.RigidBody.GlobalPosition;
+        _car.AcceptInputs();
     }
 }

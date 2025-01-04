@@ -48,8 +48,8 @@ public partial class Main : Node
         GetTree().ChangeSceneToFile("res://UpgradeMenu.tscn");
     }
 
-    public void _on_infinitestart_button_pressed() {
-        GetTree().ChangeSceneToFile("res://InfiniteRallyGame.tscn");
+    public void _on_hundredstart_button_pressed() {
+        GetTree().ChangeSceneToFile("res://HundredRallyGame.tscn");
     }
     public void _on_circuitstart_button_pressed() {
         GetTree().ChangeSceneToFile("res://CircuitGame.tscn");
