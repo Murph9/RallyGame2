@@ -22,6 +22,7 @@ public partial class HundredRacingScreen : Node3D {
 
     public float DistanceTravelled => _car.DistanceTravelled;
     public Vector3 CarPos => _car.RigidBody.GlobalPosition;
+    public Vector3 CarLinearVelocity => _car.RigidBody.LinearVelocity;
 
     public HundredRacingScreen() {
     }

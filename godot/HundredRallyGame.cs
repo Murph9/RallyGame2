@@ -35,5 +35,6 @@ public partial class HundredRallyGame : Node {
         _roadManager.UpdateCarPos(_racingScreen.CarPos);
 
         _ui.DistanceTravelled = _racingScreen.DistanceTravelled;
+        _ui.SpeedKMH = _racingScreen.CarLinearVelocity.Length() * 3.6f;
     }
 }
