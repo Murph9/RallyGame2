@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://doui1ba7roie0"]
 
-[ext_resource type="Script" path="res://scenes/HundredRacingScreen.cs" id="1_cn23i"]
+[ext_resource type="Script" path="res://scenes/HundredRacingScene.cs" id="1_cn23i"]
 
-[node name="HundredRacingScreen" type="Node3D"]
+[node name="HundredRacingScene" type="Node3D"]
 script = ExtResource("1_cn23i")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]

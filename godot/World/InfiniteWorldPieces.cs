@@ -22,6 +22,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<Node3D> _placedPieces = [];
     public List<WorldPiece> Pieces => [.. _pieces];
     
+    public Vector3 LastUpdatePos { get; private set; }
     private LastPlacedDetails _nextTransform;
 
     public InfiniteWorldPieces(WorldType type) {
@@ -78,6 +79,8 @@ public partial class InfiniteWorldPieces : Node3D {
 
         // calc if we need to make more pieces
         while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < 40) {
+            LastUpdatePos = _nextTransform.FinalTransform.Origin;
+
             if (_placedPieces.Count >= MAX_COUNT)
                 return;
 
@@ -101,15 +104,21 @@ public partial class InfiniteWorldPieces : Node3D {
             GD.PushError("My world piece was wrong");
             return false;
         }
-        
-        var space = GetWorld3D().DirectSpaceState;
-        var physicsParams = new PhysicsShapeQueryParameters3D {
-            Shape = collisions.First().Shape, // TODO test all of them
-            Transform = transform
-        };
-        var result = space.IntersectShape(physicsParams);
 
-        return result.Count < 1;
+        foreach (var collisionShape in collisions) {
+            var space = GetWorld3D().DirectSpaceState;
+            var physicsParams = new PhysicsShapeQueryParameters3D {
+                Shape = collisionShape.Shape,
+                // Transform = transform
+            };
+            var result = space.IntersectShape(physicsParams);
+
+            if (result.Count > 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0) {

@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.scenes;
 
-public partial class HundredRacingScreen : Node3D {
+public partial class HundredRacingScene : Node3D {
     // Tracks the current driving stuff
 
     [Signal]
@@ -24,7 +24,7 @@ public partial class HundredRacingScreen : Node3D {
     public Vector3 CarPos => _car.RigidBody.GlobalPosition;
     public Vector3 CarLinearVelocity => _car.RigidBody.LinearVelocity;
 
-    public HundredRacingScreen() {
+    public HundredRacingScene() {
     }
 
     public override void _Ready() {
@@ -40,6 +40,11 @@ public partial class HundredRacingScreen : Node3D {
 
     public void Exit() {
         EmitSignal(SignalName.Restart);
+    }
+
+    public void ResetCarTo(Vector3 pos) {
+        _car.RigidBody.Position = pos;
+        _car.RigidBody.LinearVelocity *= 0;
     }
 
     public void StopDriving() {
