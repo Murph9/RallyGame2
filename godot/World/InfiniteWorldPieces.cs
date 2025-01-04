@@ -22,7 +22,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<Node3D> _placedPieces = [];
     public List<WorldPiece> Pieces => [.. _pieces];
     
-    private LastPlacedDetails _lastPlacedDetails;
+    private LastPlacedDetails _nextTransform;
 
     public InfiniteWorldPieces(WorldType type) {
         _pieceType = type;
@@ -46,14 +46,10 @@ public partial class InfiniteWorldPieces : Node3D {
         boxBody.Position = new Vector3(0, -0.501f, 0);
         AddChild(boxBody);
 
-        _lastPlacedDetails = new LastPlacedDetails(null, Transform3D.Identity);
+        _nextTransform = new LastPlacedDetails(null, Transform3D.Identity);
     }
 
     public override void _Ready() {
-        LoadPiecesFromScene();
-    }
-
-    private void LoadPiecesFromScene() {
         var scene = _blenderScene.Instantiate<Node3D>();
 
         try {
@@ -78,25 +74,27 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     public void UpdateLatestPos(Vector3 pos) {
+        var transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
+
         // calc if we need to make more pieces
-        while (pos.DistanceTo(_lastPlacedDetails.FinalTransform.Origin) < 40) {
+        while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < 40) {
             if (_placedPieces.Count >= MAX_COUNT)
                 return;
 
             var attempts = 0;
             var piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
-            while (!PieceValid(piece) && attempts < 10) {
+            while (!PieceValid(piece, transform) && attempts < 10) {
                 piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
                 attempts++;
             }
             GD.Print($"Found piece {piece?.Name} in {attempts} tries");
             
             var current = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
-            PlacePiece(current, _rand.RandiRange(0, current.Directions.Length - 1));
+            PlacePiece(current, transform, _rand.RandiRange(0, current.Directions.Length - 1));
         }
     }
 
-    private bool PieceValid(WorldPiece piece) {
+    private bool PieceValid(WorldPiece piece, Transform3D transform) {
         var collisions = (piece.Model.Duplicate() as Node3D).GetAllChildrenOfType<CollisionShape3D>();
 
         if (!collisions.Any() || collisions.Count() > 1) {
@@ -106,25 +104,25 @@ public partial class InfiniteWorldPieces : Node3D {
         
         var space = GetWorld3D().DirectSpaceState;
         var physicsParams = new PhysicsShapeQueryParameters3D {
-            Shape = collisions.First().Shape,
-            Transform = new Transform3D(_lastPlacedDetails.FinalTransform.Basis, _lastPlacedDetails.FinalTransform.Origin)
+            Shape = collisions.First().Shape, // TODO test all of them
+            Transform = transform
         };
         var result = space.IntersectShape(physicsParams);
 
         return result.Count < 1;
     }
 
-    private void PlacePiece(WorldPiece piece, int outIndex = 0) {
+    private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0) {
         var toAdd = piece.Model.Duplicate() as Node3D;
-        toAdd.Transform = new Transform3D(_lastPlacedDetails.FinalTransform.Basis, _lastPlacedDetails.FinalTransform.Origin);
+        toAdd.Transform = new Transform3D(transform.Basis, transform.Origin);
 
         // soz can only select the first one for now
-        var dir = piece.Directions.Skip(outIndex).First().Transform;
+        var outLocalTransform = piece.Directions.Skip(outIndex).First().Transform;
 
         // TODO there has to be a way to do this with inbuilt methods:
-        var pos = _lastPlacedDetails.FinalTransform.Origin + _lastPlacedDetails.FinalTransform.Basis * dir.Origin;
-        var rot = (_lastPlacedDetails.FinalTransform.Basis * dir.Basis).GetRotationQuaternion().Normalized();
-        _lastPlacedDetails = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
+        var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outLocalTransform.Origin;
+        var rot = (_nextTransform.FinalTransform.Basis * outLocalTransform.Basis).GetRotationQuaternion().Normalized();
+        _nextTransform = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
