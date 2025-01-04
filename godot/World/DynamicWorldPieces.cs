@@ -8,7 +8,8 @@ namespace murph9.RallyGame2.godot.World;
 
 public enum WorldType {
     Simple,
-    Simple2
+    Simple2,
+    Ditch
 }
 
 public record WorldPiece(string Name, WorldPieceDir[] Directions, Node3D Model);
