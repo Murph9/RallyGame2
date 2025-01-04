@@ -40,7 +40,7 @@ public partial class HundredRallyGame : Node {
 
         if (Input.IsKeyPressed(Key.Enter)) {
             // reset back to last road thing
-            var pos = _roadManager.LastUpdatePos;
+            var pos = _roadManager.GetClosestPointTo(_racingScene.CarPos);
             _racingScene.ResetCarTo(pos);
         }
     }

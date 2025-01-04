@@ -15,6 +15,7 @@ public partial class InfiniteWorldPieces : Node3D {
     // tracks the world pieces
 
     private readonly RandomNumberGenerator _rand = new ();
+    private readonly float _distance;
 
     private readonly PackedScene _blenderScene;
     private readonly WorldType _pieceType;
@@ -22,10 +23,10 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<Node3D> _placedPieces = [];
     public List<WorldPiece> Pieces => [.. _pieces];
     
-    public Vector3 LastUpdatePos { get; private set; }
     private LastPlacedDetails _nextTransform;
 
-    public InfiniteWorldPieces(WorldType type) {
+    public InfiniteWorldPieces(WorldType type, float distance = 40) {
+        _distance = distance;
         _pieceType = type;
         _blenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + _pieceType.ToString().ToLower() + ".blend");
 
@@ -78,9 +79,7 @@ public partial class InfiniteWorldPieces : Node3D {
         var transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
         // calc if we need to make more pieces
-        while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < 40) {
-            LastUpdatePos = _nextTransform.FinalTransform.Origin;
-
+        while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
             if (_placedPieces.Count >= MAX_COUNT)
                 return;
 
@@ -109,7 +108,7 @@ public partial class InfiniteWorldPieces : Node3D {
             var space = GetWorld3D().DirectSpaceState;
             var physicsParams = new PhysicsShapeQueryParameters3D {
                 Shape = collisionShape.Shape,
-                // Transform = transform
+                Transform = transform
             };
             var result = space.IntersectShape(physicsParams);
 
@@ -139,5 +138,22 @@ public partial class InfiniteWorldPieces : Node3D {
 
     public static Transform3D GetSpawn() {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    }
+
+    public Vector3 GetClosestPointTo(Vector3 pos) {
+        if (_placedPieces.Count < 1) return pos;
+
+        var closestOrigin = _placedPieces.FirstOrDefault().GlobalTransform.Origin;
+        var distance = closestOrigin.DistanceSquaredTo(pos);
+        
+        foreach (var point in _placedPieces) {
+            var currentDistance = point.GlobalTransform.Origin.DistanceSquaredTo(pos);
+            if (currentDistance < distance) {
+                closestOrigin = point.GlobalTransform.Origin;
+                distance = currentDistance;
+            }
+        }
+
+        return closestOrigin;
     }
 }
