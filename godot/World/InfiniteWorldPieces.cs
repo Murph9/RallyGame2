@@ -18,6 +18,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private readonly RandomNumberGenerator _rand = new ();
     private readonly float _distance;
+    private readonly int _pieceAttemptMax;
 
     private readonly PackedScene _blenderScene;
     private readonly WorldType _pieceType;
@@ -27,8 +28,10 @@ public partial class InfiniteWorldPieces : Node3D {
     
     private LastPlacedDetails _nextTransform;
 
-    public InfiniteWorldPieces(WorldType type, float distance = 40) {
+    public InfiniteWorldPieces(WorldType type, float distance = 40, int pieceAttemptMax = 10) {
         _distance = distance;
+        _pieceAttemptMax = pieceAttemptMax;
+
         _pieceType = type;
         _blenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + _pieceType.ToString().ToLower() + ".blend");
 
@@ -77,7 +80,7 @@ public partial class InfiniteWorldPieces : Node3D {
             GD.Print(e);
             return;
         }
-        GD.Print("Loaded " + _pieces + " pieces");
+        GD.Print("Loaded " + _pieces.Count + " pieces");
     }
 
     public void UpdateLatestPos(Vector3 pos) {
@@ -90,7 +93,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
             var attempts = 0;
             var piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
-            while (!PieceValid(piece, transform) && attempts < 10) {
+            while (!PieceValid(piece, transform) && attempts < _pieceAttemptMax) {
                 piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
                 attempts++;
             }
@@ -104,15 +107,15 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     private bool PieceValid(WorldPiece piece, Transform3D transform) {
-        var collisions = (piece.Model.Duplicate() as Node3D).GetAllChildrenOfType<CollisionShape3D>();
+        var space = GetWorld3D().DirectSpaceState;
+        var collisionShapes = (piece.Model.Duplicate() as Node3D).GetAllChildrenOfType<CollisionShape3D>();
 
-        if (!collisions.Any() || collisions.Count() > 1) {
-            GD.PushError("My world piece was wrong");
+        if (!collisionShapes.Any() || collisionShapes.Count() > 1) {
+            GD.PushError("My world piece was wrong: " + collisionShapes);
             return false;
         }
-
-        foreach (var collisionShape in collisions) {
-            var space = GetWorld3D().DirectSpaceState;
+        
+        foreach (var collisionShape in collisionShapes) {
             var physicsParams = new PhysicsShapeQueryParameters3D {
                 Shape = collisionShape.Shape,
                 Transform = transform
