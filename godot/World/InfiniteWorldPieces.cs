@@ -8,11 +8,13 @@ namespace murph9.RallyGame2.godot.World;
 
 public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 
+// tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D {
     
     private const int MAX_COUNT = 100;
-
-    // tracks the world pieces
+    // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
+    private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
+        ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
 
     private readonly RandomNumberGenerator _rand = new ();
     private readonly float _distance;
@@ -65,14 +67,17 @@ public partial class InfiniteWorldPieces : Node3D {
                     dir.QueueFree();
                 }
 
-                var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);                
-                _pieces.Add(p);
+                var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);
+
+                if (!EXCLUDED_LIST.Any(x => x == model.Name))
+                    _pieces.Add(p);
             }
         } catch (Exception e) {
             GD.Print("Failed to parse pieces for " + _pieceType);
             GD.Print(e);
             return;
         }
+        GD.Print("Loaded " + _pieces + " pieces");
     }
 
     public void UpdateLatestPos(Vector3 pos) {
@@ -89,9 +94,9 @@ public partial class InfiniteWorldPieces : Node3D {
                 piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
                 attempts++;
             }
-            GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + transform);
-            
+
             var current = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
+            GD.Print($"Found piece {current?.Name} in {attempts} tries, at " + transform);
             PlacePiece(current, transform, _rand.RandiRange(0, current.Directions.Length - 1));
 
             transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
