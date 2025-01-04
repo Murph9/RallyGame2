@@ -116,7 +116,7 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
         _transforms = _basicPieces.ToDictionary(x => x.Name, x => x.Dir.Transform.Basis.GetRotationQuaternion());
 
         var longestLeftTurn = _basicPieces.OrderByDescending(x => x.Dir.Transform.Origin.LengthSquared())
-            .First(x => x.Dir.Turn == WorldPieceDir.TurnType.Left90);
+            .First(x => x.Dir.Turn == WorldPieceDir.TurnType.Left);
         var normalStraight = _basicPieces.First(x => x.Dir.Turn == WorldPieceDir.TurnType.Straight && x.Dir.Vert == WorldPieceDir.VertType.Level);
 
         // TODO a right90 as well to randomly pick from

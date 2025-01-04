@@ -29,27 +29,22 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
         var offset = OffsetType.None;
         var vert = VertType.Level;
 
-        if (Math.Abs(t.Origin.X) > 0 && Math.Abs(t.Origin.Z) > 0) // going in both flat directions
+        if (t.Basis.IsEqualApprox(Basis.Identity) && Math.Abs(t.Origin.X) > 0 && Math.Abs(t.Origin.Z) > 0) // going in both flat directions
             offset = t.Origin.Z > 0 ? OffsetType.OffsetRight : OffsetType.OffsetLeft; // TODO amounts
 
         if (Math.Abs(t.Origin.Y) > 0) // a change in elevation
             vert = t.Origin.Y > 0 ? VertType.Up : VertType.Down;
 
-        if (t.Basis.IsEqualApprox(LEFT90))
-            turn = TurnType.Left90;
-        else if (t.Basis.IsEqualApprox(RIGHT90))
-            turn = TurnType.Right90;
-
-        if (t.Basis.IsEqualApprox(LEFT45))
-            turn = TurnType.Left45;
-        else if (t.Basis.IsEqualApprox(RIGHT45))
-            turn = TurnType.Right45;
+        if (t.Basis.IsEqualApprox(LEFT90) || t.Basis.IsEqualApprox(LEFT45))
+            turn = TurnType.Left;
+        else if (t.Basis.IsEqualApprox(RIGHT90) || t.Basis.IsEqualApprox(RIGHT45))
+            turn = TurnType.Right;
 
         return new WorldPieceDir(t, turn, offset, vert);
     }
 
     public enum TurnType {
-        Straight, Left90, Right90, Left45, Right45
+        Straight, Left, Right
     }
     public enum VertType {
         Level, Down, Up

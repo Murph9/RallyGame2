@@ -93,12 +93,12 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
 
             // the corner issue
             // TODO move around with corners so that it uses straights to get home
-            var lefts = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Left90);
-            var rights = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Right90);
+            var lefts = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Left);
+            var rights = turnTypes.GetValueOrDefault(WorldPieceDir.TurnType.Right);
             if (lefts > rights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Right90);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Right);
             } else if (lefts < rights) {
-                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Left90);
+                chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Left);
             }
 
             chosenPiece ??= neighbours[_rand.RandiRange(0, neighbours.Length - 1)];
