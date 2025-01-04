@@ -219,7 +219,7 @@ public partial class Car : Node3D {
             w.SwayForce = (otherSideWheel.SusTravelDistance - w.SusTravelDistance) * susDetails.Antiroll;
         } else if (w.InContact) {
             // in contact but other not in contact, then its basically max sway
-            var otherLength = w.RayDir.Length();
+            var otherLength = w.RayDirLocal.Length();
             w.SwayForce = (otherLength - w.SusTravelDistance) * susDetails.Antiroll;
         }
 
@@ -227,7 +227,7 @@ public partial class Car : Node3D {
         var totalForce = w.SpringForce - w.Damping - w.SwayForce;
         if (totalForce > 0) {
             // reduce force based on angle to surface
-            var rayDirectionGlobal = RigidBody.GlobalBasis * w.RayDir.Normalized();
+            var rayDirectionGlobal = RigidBody.GlobalBasis * w.RayDirLocal.Normalized();
             var surfaceNormalFactor = w.ContactNormalGlobal.Dot(-rayDirectionGlobal);
 
             w.SusForce = 1000 * -rayDirectionGlobal * totalForce * surfaceNormalFactor;

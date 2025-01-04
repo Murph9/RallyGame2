@@ -9,8 +9,7 @@ public partial class Wheel : Node3D {
     public readonly WheelDetails Details;
 
     public readonly Car Car;
-    public readonly Vector3 RayDir;
-    private Vector3 RayDirInGlobal => GlobalBasis * RayDir;
+    public readonly Vector3 RayDirLocal;
 
     public Node3D WheelModel;
 
@@ -41,7 +40,7 @@ public partial class Wheel : Node3D {
         Details = details;
 
         var sus = car.Details.SusByWheelNum(details.Id);
-        RayDir = new Vector3(0, -sus.TravelTotal() - details.Radius, 0);
+        RayDirLocal = new Vector3(0, -sus.TravelTotal() - details.Radius, 0);
     }
 
     public override void _Ready() {
@@ -55,12 +54,12 @@ public partial class Wheel : Node3D {
     }
 
     public override void _Process(double delta) {
-        WheelModel.Position = RayDirInGlobal - RayDirInGlobal.Normalized() * (Details.Radius + SusTravelDistance);
+        WheelModel.Position = RayDirLocal - RayDirLocal.Normalized() * (Details.Radius + SusTravelDistance);
         WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);
     }
 
     public void DoRaycast(PhysicsDirectSpaceState3D physicsState, RigidBody3D carRigidBody) {
-        var query = PhysicsRayQueryParameters3D.Create(GlobalPosition, GlobalPosition + RayDirInGlobal);
+        var query = PhysicsRayQueryParameters3D.Create(GlobalPosition, GlobalPosition + carRigidBody.GlobalBasis * RayDirLocal);
         query.Exclude = [carRigidBody.GetRid()];
         var result = physicsState.IntersectRay(query);
 
@@ -80,7 +79,7 @@ public partial class Wheel : Node3D {
         ContactNode = result["collider"].Obj as Node3D;
 
         var distance = GlobalPosition.DistanceTo(ContactPointGlobal);
-        var maxDist = RayDir.Length();
+        var maxDist = RayDirLocal.Length();
 
         SusTravelDistance = Math.Clamp(maxDist - distance, 0, maxDist);
     }

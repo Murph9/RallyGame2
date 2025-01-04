@@ -12,16 +12,13 @@ public partial class CarUI : Control {
 
     [DebugGUIText(g:0)]
     [DebugGUIGraph(g:0, group: 2, min: -10, max: 150)]
-    private float RadSec0 => Car.Wheels[0].RadSec;
-    [DebugGUIText(g:0.5f)]
+    private float SusForce0 => Car.Wheels[0].SusForce.Length();
     [DebugGUIGraph(g:0.5f, group: 2, min: -10, max: 150)]
-    private float RadSec1 => Car.Wheels[1].RadSec;
-    [DebugGUIText(r:0f)]
+    private float SusForce1 => Car.Wheels[1].SusForce.Length();
     [DebugGUIGraph(r:0f, group: 2, min: -10, max: 150)]
-    private float RadSec2 => Car.Wheels[2].RadSec;
-    [DebugGUIText(b:0f)]
+    private float SusForce2 => Car.Wheels[2].SusForce.Length();
     [DebugGUIGraph(b:0f, group: 2, min: -10, max: 150)]
-    private float RadSec3 => Car.Wheels[3].RadSec;
+    private float SusForce3 => Car.Wheels[3].SusForce.Length();
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
