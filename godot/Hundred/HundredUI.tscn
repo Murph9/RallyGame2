@@ -35,8 +35,7 @@ layout_mode = 2
 [node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer/HBoxContainerSpeed"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
-min_value = 30.0
-value = 30.0
+max_value = 10.0
 allow_greater = true
 allow_lesser = true
 
