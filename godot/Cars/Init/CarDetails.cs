@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
@@ -147,8 +147,8 @@ public class CarDetails : IHaveParts {
             var sus = SusByWheelNum(i);
 
             // Validate that rest suspension position is within min and max
-            float minSusForce = (sus.PreloadDistance + sus.Stiffness) * 0 * 1000;
-            float maxSusForce = sus.Stiffness * (sus.PreloadDistance + sus.MaxTravel - sus.MinTravel) * 1000;
+            float minSusForce = sus.Stiffness * sus.PreloadDistance * 1000;
+            float maxSusForce = sus.Stiffness * (sus.PreloadDistance + Math.Abs(sus.MaxTravel - sus.MinTravel)) * 1000;
             if (quarterMassForce < minSusForce) {
                 throw new Exception("!! Sus min range too high: " + quarterMassForce + " < " + minSusForce + ", decrease pre-load or stiffness");
             }
