@@ -48,7 +48,7 @@ public partial class Car : Node3D {
         var camera = new CarCamera(this);
         AddChild(camera);
 
-        var scene = GD.Load<PackedScene>("res://assets/" + Details.CarModel);
+        var scene = GD.Load<PackedScene>("res://assets/car/" + Details.CarModel);
         var carModel = scene.Instantiate<Node3D>();
         RigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
         var parent = RigidBody.GetParent();

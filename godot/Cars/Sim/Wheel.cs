@@ -44,7 +44,7 @@ public partial class Wheel : Node3D {
     }
 
     public override void _Ready() {
-        var scene = GD.Load<PackedScene>("res://assets/" + Details.ModelName);
+        var scene = GD.Load<PackedScene>("res://assets/car/" + Details.ModelName);
         WheelModel = scene.Instantiate<Node3D>();
         WheelModel.Rotate(Vector3.Up, Details.Id % 2 == 1 ? Mathf.Pi : 0);
         AddChild(WheelModel);

@@ -7,7 +7,7 @@ Download godot, setup the .vscode launch.json script to point to its location
 Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9bb...
 
 
-## How Tos
+## How TOs
 
 ### Adding a model with physics
 1. make model thats ready to import into godot
@@ -23,10 +23,24 @@ Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9
    - and apply it
 1. In godot import as scene, it has static model physics
 
+---
 
-----
+100km Distance Game Idea:
 
-Current game idea:
+An infinite world
+
+- come across cars to race along the road
+  - stop and challenge them
+  - can either race for pink slip or a part
+    - if you lose the pink slip you just lose
+    - if you lose a part you get nothing
+  - also get money per race
+- start with some thing more terrible than the Runner car
+- traffic
+
+---
+
+Circuit game idea:
 
 - You are a test track driver
 - And have to select parts to make your car go faster around the fixed track

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://b17fiphvc07n6"
-path="res://.godot/imported/wheel1.blend-aea85baaa93cdfe66349ea249bb58cdf.scn"
+uid="uid://cgbag5nrwqc4l"
+path="res://.godot/imported/track1_2.blend-f6d93ad406e2a47320e03d18187b886a.scn"
 
 [deps]
 
-source_file="res://assets/wheel1.blend"
-dest_files=["res://.godot/imported/wheel1.blend-aea85baaa93cdfe66349ea249bb58cdf.scn"]
+source_file="res://assets/car/track1_2.blend"
+dest_files=["res://.godot/imported/track1_2.blend-f6d93ad406e2a47320e03d18187b886a.scn"]
 
 [params]
 
@@ -25,13 +25,20 @@ meshes/light_baking=1
 meshes/lightmap_texel_size=0.2
 meshes/force_disable_compression=false
 skins/use_named_skins=true
-animation/import=true
+animation/import=false
 animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
-_subresources={}
+_subresources={
+"nodes": {
+"PATH:chassis": {
+"generate/physics": true,
+"physics/body_type": 1
+}
+}
+}
 blender/nodes/visible=0
 blender/nodes/active_collection_only=false
 blender/nodes/punctual_lights=true

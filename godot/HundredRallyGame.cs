@@ -10,7 +10,7 @@ namespace murph9.RallyGame2.godot;
 
 public partial class HundredRallyGame : Node {
 
-    // Tracks the full game
+    // The manager of the game
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;

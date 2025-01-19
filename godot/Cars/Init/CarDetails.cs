@@ -108,7 +108,7 @@ public class CarDetails : IHaveParts {
 		// calculate wheel positions based on the model
 		Node3D carScene = null;
 		try {
-			var scene = GD.Load<PackedScene>("res://assets/" + CarModel);
+			var scene = GD.Load<PackedScene>("res://assets/car/" + CarModel);
 			carScene = scene.Instantiate<Node3D>();
 			var modelWheelNodes = carScene.GetChildren()
 				.OfType<Node3D>()

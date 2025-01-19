@@ -86,7 +86,7 @@ public partial class InfiniteWorldPieces : Node3D {
     public void UpdateLatestPos(Vector3 pos) {
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
-        // for the physics issues we can only make one piece per frame, so if only
+        // for the physics issues we can only make one piece per frame
         // while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
 
         if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _distance) {
