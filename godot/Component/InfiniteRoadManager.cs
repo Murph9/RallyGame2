@@ -31,5 +31,5 @@ public partial class InfiniteRoadManager : Node3D {
 
     public Transform3D GetClosestPointTo(Vector3 pos) => _world.GetClosestPointTo(pos);
 
-    public Transform3D GetNextCheckpoint(Vector3 pos) => _world.GetNextCheckpoint(pos);
+    public Transform3D GetNextCheckpoint(Vector3 pos) => _world.GetNextCheckpoint(pos, true);
 }

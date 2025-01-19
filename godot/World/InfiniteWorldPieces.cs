@@ -62,8 +62,6 @@ public partial class InfiniteWorldPieces : Node3D {
 
         try {
             foreach (var c in scene.GetChildren().ToList()) {
-                scene.RemoveChild(c);
-
                 if (c is MeshInstance3D model) {
                     GD.Print("Loading " + model.Name + " as a road piece");
                     var directions = model.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
@@ -77,12 +75,15 @@ public partial class InfiniteWorldPieces : Node3D {
 
                     if (!EXCLUDED_LIST.Any(x => x == model.Name))
                         _pieces.Add(p);
-                } else if (c is Node3D node) {
+                } else if (c.GetType() == typeof(Node3D)) {
+                    var node = c as Node3D;
                     if (node.Name == "TrafficLeftSide") {
                         GD.Print("Loading " + node.Name + " as a traffic offset value");
                         _trafficLeftSideOffset = node.Transform.Origin;
                     }
+
                 }
+                scene.RemoveChild(c);
             }
         } catch (Exception e) {
             GD.Print("Failed to parse pieces for " + _pieceType);
@@ -126,11 +127,10 @@ public partial class InfiniteWorldPieces : Node3D {
         PlacePiece(piece, currentTransform, directionIndex);
     }
 
-    private bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {
+    private static bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {
         var outDirection = piece.Directions.Skip(outIndex).First();
         var rot = (transform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
         var angle = rot.AngleTo(Quaternion.Identity);
-        GD.Print(angle);
         if (angle > Math.PI * 1 / 2f) {
             return false;
         }
@@ -187,11 +187,19 @@ public partial class InfiniteWorldPieces : Node3D {
         return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
     }
 
+    public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) {
+        // TODO always drive on left side
+        var transform = GetNextCheckpoint(pos);
+
+        // yes it looks like the inverse() is on the wrong side
+        var offsetOrigin = transform.Origin + transform.Basis * GetSpawn().Basis * (leftSide ? -_trafficLeftSideOffset : _trafficLeftSideOffset);
+        return new Transform3D(transform.Basis, offsetOrigin);
+    }
+
     public Transform3D GetNextCheckpoint(Vector3 pos) {
         var closestIndex = GetClosestToPieceIndex(pos);
 
         if (closestIndex >= _placedPieces.Count) {
-            GD.Print("To far");
             return new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
 
