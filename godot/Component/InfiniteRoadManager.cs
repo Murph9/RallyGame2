@@ -10,10 +10,11 @@ namespace murph9.RallyGame2.godot.Component;
 public partial class InfiniteRoadManager : Node3D {
 
     // places world pieces based on rules
+    // does traffic and stuff
 
     [Signal]
     public delegate void LoadedEventHandler();
-    
+
     private readonly InfiniteWorldPieces _world;
 
     public InfiniteRoadManager() {
@@ -29,4 +30,6 @@ public partial class InfiniteRoadManager : Node3D {
     }
 
     public Transform3D GetClosestPointTo(Vector3 pos) => _world.GetClosestPointTo(pos);
+
+    public Transform3D GetNextCheckpoint(Vector3 pos) => _world.GetNextCheckpoint(pos);
 }

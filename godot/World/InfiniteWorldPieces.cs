@@ -10,13 +10,13 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D {
-    
+
     private const int MAX_COUNT = 100;
     private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
     // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
-        // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
+    // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
 
-    private readonly RandomNumberGenerator _rand = new ();
+    private readonly RandomNumberGenerator _rand = new();
     private readonly float _distance;
     private readonly int _pieceAttemptMax;
 
@@ -25,7 +25,8 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
     public List<WorldPiece> Pieces => [.. _pieces];
-    
+    private Vector3 _trafficLeftSideOffset;
+
     private LastPlacedDetails _nextTransform;
 
     public InfiniteWorldPieces(WorldType type, float distance = 40, int pieceAttemptMax = 10) {
@@ -63,17 +64,25 @@ public partial class InfiniteWorldPieces : Node3D {
             foreach (var c in scene.GetChildren().ToList()) {
                 scene.RemoveChild(c);
 
-                var model = c as Node3D;
-                var directions = model.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
-                foreach (var dir in directions) {
-                    c.RemoveChild(dir);
-                    dir.QueueFree();
+                if (c is MeshInstance3D model) {
+                    GD.Print("Loading " + model.Name + " as a road piece");
+                    var directions = model.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
+
+                    foreach (var dir in directions) {
+                        c.RemoveChild(dir);
+                        dir.QueueFree();
+                    }
+
+                    var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);
+
+                    if (!EXCLUDED_LIST.Any(x => x == model.Name))
+                        _pieces.Add(p);
+                } else if (c is Node3D node) {
+                    if (node.Name == "TrafficLeftSide") {
+                        GD.Print("Loading " + node.Name + " as a traffic offset value");
+                        _trafficLeftSideOffset = node.Transform.Origin;
+                    }
                 }
-
-                var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);
-
-                if (!EXCLUDED_LIST.Any(x => x == model.Name))
-                    _pieces.Add(p);
             }
         } catch (Exception e) {
             GD.Print("Failed to parse pieces for " + _pieceType);
@@ -122,7 +131,7 @@ public partial class InfiniteWorldPieces : Node3D {
         var rot = (transform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
         var angle = rot.AngleTo(Quaternion.Identity);
         GD.Print(angle);
-        if (angle > Math.PI * 1/2f) {
+        if (angle > Math.PI * 1 / 2f) {
             return false;
         }
         return true;
@@ -173,21 +182,55 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     public Transform3D GetClosestPointTo(Vector3 pos) {
-        if (_placedPieces.Count < 1) {
-            return new Transform3D(GetSpawn().Basis, pos);
+        var closestIndex = GetClosestToPieceIndex(pos);
+        var closestTransform = _placedPieces[closestIndex].GlobalTransform;
+        return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
+    }
+
+    public Transform3D GetNextCheckpoint(Vector3 pos) {
+        var closestIndex = GetClosestToPieceIndex(pos);
+
+        if (closestIndex >= _placedPieces.Count) {
+            GD.Print("To far");
+            return new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
 
-        var closestTransform = _placedPieces.FirstOrDefault().GlobalTransform;
-        var distance = closestTransform.Origin.DistanceSquaredTo(pos);
-        
-        foreach (var point in _placedPieces) {
-            var currentDistance = point.GlobalTransform.Origin.DistanceSquaredTo(pos);
-            if (currentDistance < distance) {
-                closestTransform = point.GlobalTransform;
-                distance = currentDistance;
-            }
+        var closestTransform = _placedPieces[closestIndex].GlobalTransform;
+
+        // figure out if we want the next one or the current one
+        // if the distance from pos to i+1 is less from i+1 to i, then return i+1 else return i
+        Transform3D nextTransform;
+        if (closestIndex == _placedPieces.Count - 1) {
+            // if its the last piece use the nextTransform value
+            nextTransform = _nextTransform.FinalTransform;
+        } else {
+            nextTransform = _placedPieces[closestIndex + 1].GlobalTransform;
+        }
+
+        if (nextTransform.Origin.DistanceSquaredTo(pos) < closestTransform.Origin.DistanceSquaredTo(nextTransform.Origin)) {
+            closestTransform = nextTransform;
         }
 
         return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
+    }
+
+    private int GetClosestToPieceIndex(Vector3 pos) {
+        if (_placedPieces.Count < 1) {
+            return 0;
+        }
+
+        var closestDistance = float.MaxValue;
+        var closestIndex = -1;
+
+        for (int i = 0; i < _placedPieces.Count; i++) {
+            var point = _placedPieces[i];
+            var currentDistance = point.GlobalTransform.Origin.DistanceSquaredTo(pos);
+            if (currentDistance < closestDistance) {
+                closestIndex = i;
+                closestDistance = currentDistance;
+            }
+        }
+
+        return closestIndex;
     }
 }
