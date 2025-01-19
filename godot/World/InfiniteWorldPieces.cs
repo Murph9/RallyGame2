@@ -12,9 +12,9 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 public partial class InfiniteWorldPieces : Node3D {
     
     private const int MAX_COUNT = 100;
-    // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
-    private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
-        ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
+    private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
+    // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
+        // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
 
     private readonly RandomNumberGenerator _rand = new ();
     private readonly float _distance;
@@ -86,8 +86,10 @@ public partial class InfiniteWorldPieces : Node3D {
     public void UpdateLatestPos(Vector3 pos) {
         var transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
-        // calc if we need to make more pieces
-        while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
+        // for the physics issues we can only make one piece per frame, so if only
+        // while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
+
+        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
             if (_placedPieces.Count >= MAX_COUNT)
                 return;
 
@@ -98,21 +100,20 @@ public partial class InfiniteWorldPieces : Node3D {
                 attempts++;
             }
 
-            var current = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
-            var directionIndex = _rand.RandiRange(0, current.Directions.Length - 1);
-            
-            // GD.Print($"Found piece {current?.Name} in {attempts} tries, at " + transform);
-            // GD.Print(current.Directions[directionIndex].Offset + " " + current.Directions[directionIndex].Turn  + " " + current.Directions[directionIndex].Vert);
+            var directionIndex = _rand.RandiRange(0, piece.Directions.Length - 1);
 
-            PlacePiece(current, transform, directionIndex);
+            if (attempts > 0) {
+                GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + transform);
+                // GD.Print(piece.Directions[directionIndex].Offset + " " + piece.Directions[directionIndex].Turn  + " " + piece.Directions[directionIndex].Vert);
+            }
 
-            transform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
+            PlacePiece(piece, transform, directionIndex);
         }
     }
 
     private bool PieceValid(WorldPiece piece, Transform3D transform) {
         var space = GetWorld3D().DirectSpaceState;
-        var collisionShapes = (piece.Model.Duplicate() as Node3D).GetAllChildrenOfType<CollisionShape3D>();
+        var collisionShapes = piece.Model.GetAllChildrenOfType<CollisionShape3D>();
 
         if (!collisionShapes.Any() || collisionShapes.Count() > 1) {
             GD.PushError("My world piece was wrong: " + collisionShapes);
