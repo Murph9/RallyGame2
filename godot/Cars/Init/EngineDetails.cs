@@ -16,38 +16,38 @@ public class EngineDetails : IHaveParts {
     public float[] BaseTorqueCurve { get; set; }
     public int BaseTorqueCurveMaxRPM => (BaseTorqueCurve.Length - 1) * 1000;
 
-    [PartField(double.MinValue, PartReader.APPLY_ADD, HigherIs.Bad)]
+    [PartField(0d, HowToApply.Add, HigherIs.Bad)]
     public double EngineMass;
 
-    [PartField(int.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(int.MaxValue, HowToApply.Min)]
     public int PistonCount; // count
-    [PartField(double.MaxValue, PartReader.APPLY_MIN, HigherIs.Bad)]
+    [PartField(double.MaxValue, HowToApply.Min, HigherIs.Bad)]
     public double IdleDrag; // ratio
 
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double Compression; // ratio
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double CombustionEfficiency; // %
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double CylinderBore; // m
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double StrokeLength; // m
 
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double TurboAirMult; // ratio
-    [PartField(double.MaxValue, PartReader.APPLY_MIN, HigherIs.Bad)]
+    [PartField(double.MaxValue, HowToApply.Min, HigherIs.Bad)]
     public double TurboAirStartRPM; // int
 
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double IntakeAirEffiency; // L/s
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double ExhaustAirEffiency; // L/s
-    [PartField(int.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(int.MaxValue, HowToApply.Min)]
     public int MaxRpm; // w/min
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double TransmissionEfficiency; // ratio
 
-    [PartField(double.MaxValue, PartReader.APPLY_MIN)]
+    [PartField(double.MaxValue, HowToApply.Min)]
     public double CoolingRate; // K / min
 
     [JsonIgnore]

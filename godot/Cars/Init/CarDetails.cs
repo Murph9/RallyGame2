@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
@@ -23,15 +23,15 @@ public class CarDetails : IHaveParts {
 	public float CamOffsetHeight; // from the middle of the model up
 	public float CamShake;
 
-	[PartField(0f, PartReader.APPLY_ADD, HigherIs.Bad)]
+	[PartField(0f, HowToApply.Add, HigherIs.Bad)]
     public float BodyMass; // kg (total, do NOT add wheel or engine mass/inertia to this)
 	public double TotalMass => BodyMass + Engine.EngineMass + WheelDetails.Sum(x => x.Mass);
 
 	public float AreoLinearDrag; //0.003 to 0.02 (dimensionless number)
 	public float AeroCrossSection; //m^2 front area
-	[PartField(0f, PartReader.APPLY_ADD, HigherIs.Bad)]
+	[PartField(0f, HowToApply.Add, HigherIs.Bad)]
 	public float AeroDrag;
-	[PartField(0f, PartReader.APPLY_ADD)]
+	[PartField(0f, HowToApply.Add)]
 	public float AeroDownforce; //not a default yet
 
 	// travel values are relative to wheel offset pos
@@ -54,30 +54,30 @@ public class CarDetails : IHaveParts {
 	[JsonIgnore]
     public float[] AutoGearDownSpeed; // m/s for triggering the next gear [calculated]
 
-	[PartField(0f, PartReader.APPLY_SET, HigherIs.Bad)]
+	[PartField(0f, HowToApply.Set, HigherIs.Bad)]
 	public float AutoChangeTime;
 
-	[PartField(0f, PartReader.APPLY_SET, HigherIs.Neutral)]
+	[PartField(0f, HowToApply.Set, HigherIs.Neutral)]
 	public float TransFinaldrive; // helps set the total drive ratio
-	[PartField(new float[]{2f, 2f, 1f}, PartReader.APPLY_SET, HigherIs.Neutral)]
+	[PartField(new float[]{2f, 2f, 1f}, HowToApply.Set, HigherIs.Neutral)]
 	public float[] TransGearRatios; // reverse,gear1,gear2,g3,g4,g5,g6,...
-	[PartField(0f, PartReader.APPLY_SET, HigherIs.Neutral)]
+	[PartField(0f, HowToApply.Set, HigherIs.Neutral)]
 	public float TransPowerBalance; // Only used in all wheel drive cars, 0 front <-> 1 rear
 
-	[PartField(false, PartReader.APPLY_SET, HigherIs.Good, DefaultIs.Okay)]
+	[PartField(false, HowToApply.Set, HigherIs.Good, DefaultIs.Okay)]
 	public bool NitroEnabled;
-	[PartField(float.MinValue, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, HowToApply.Set)]
 	public float NitroForce;
-	[PartField(float.MinValue, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, HowToApply.Set)]
 	public float NitroRate;
-	[PartField(float.MinValue, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, HowToApply.Set)]
 	public float NitroMax;
 
 	public bool FuelEnabled;
 	public float FuelMax = 80;
 	public float FuelRpmRate = 0.00003f;
 
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(0f, HowToApply.Set)]
 	public float BrakeMaxTorque;
 
 	[JsonIgnore]

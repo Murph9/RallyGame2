@@ -8,11 +8,7 @@ using System.Text.Json;
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public class PartReader {
-    record FieldProps(FieldInfo Field, object DefaultValue, string Action, HigherIs HigherIs, DefaultIs DefaultIs);
-
-    public const string APPLY_SET = "apply_set";
-    public const string APPLY_MIN = "apply_min";
-    public const string APPLY_ADD = "apply_add";
+    record FieldProps(FieldInfo Field, object DefaultValue, HowToApply HowToApply, HigherIs HigherIs, DefaultIs DefaultIs);
 
     private readonly IHaveParts _self;
     private readonly ICollection<FieldProps> _fieldProps = [];
@@ -20,6 +16,14 @@ public class PartReader {
         _self = self;
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
+                if (partFieldAttribute.HowToApply == HowToApply.Add) {
+                    if ((field.FieldType == typeof(int) && !partFieldAttribute.DefaultValue.Equals(0)) || 
+                    (field.FieldType == typeof(float) && !partFieldAttribute.DefaultValue.Equals(0f)) || 
+                    (field.FieldType == typeof(double) && !partFieldAttribute.DefaultValue.Equals(0d))) {
+                        throw new Exception(field.Name + " uses ApplyAdd, which can't be used if the default value isn't 0");
+                    }
+                }
+                
                 _fieldProps.Add(new FieldProps(field, partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs, partFieldAttribute.DefaultIs));
             }
         }
@@ -48,12 +52,12 @@ public class PartReader {
 
                 var jsonPartValue = (JsonElement)partValue;
 
-                switch (fieldProp.Action) {
-                    case APPLY_SET: ApplySet(field, _self, jsonPartValue); break;
-                    case APPLY_MIN: ApplyMin(field, _self, jsonPartValue); break;
-                    case APPLY_ADD: ApplyAdd(field, _self, jsonPartValue); break;
+                switch (fieldProp.HowToApply) {
+                    case HowToApply.Set: ApplySet(field, _self, jsonPartValue); break;
+                    case HowToApply.Min: ApplyMin(field, _self, jsonPartValue); break;
+                    case HowToApply.Add: ApplyAdd(field, _self, jsonPartValue); break;
                     default:
-                        throw new Exception("Unknown field action type: " + fieldProp.Action);
+                        throw new Exception("Unknown field action type: " + fieldProp.HowToApply);
                 }
             }
         }

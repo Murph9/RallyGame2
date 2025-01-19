@@ -10,33 +10,33 @@ namespace murph9.RallyGame2.godot.Cars.Init;
 #pragma warning disable IDE0044 // Add readonly modifier, because all private fields are loaded by json
 #pragma warning disable CS0649 // Will always have the default value, but also loaded by json
 public class SuspensionDetails : IHaveParts {
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float FrontAntiroll;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0, HowToApply.Set, HigherIs.Neutral)]
     private float FrontComp;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float FrontMaxTravel;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Bad)]
+    [PartField(0, HowToApply.Set, HigherIs.Bad)]
     private float FrontMinTravel;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float FrontPreloadDistance;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0, HowToApply.Set, HigherIs.Neutral)]
     private float FrontRelax;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float FrontStiffness;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float RearAntiroll;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0, HowToApply.Set, HigherIs.Neutral)]
     private float RearComp;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float RearMaxTravel;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Bad)]
+    [PartField(0, HowToApply.Set, HigherIs.Bad)]
     private float RearMinTravel;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float RearPreloadDistance;
-    [PartField(0, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0, HowToApply.Set, HigherIs.Neutral)]
     private float RearRelax;
-    [PartField(0, PartReader.APPLY_SET)]
+    [PartField(0, HowToApply.Set)]
     private float RearStiffness;
 
     [JsonIgnore]

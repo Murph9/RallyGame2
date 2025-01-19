@@ -11,22 +11,22 @@ public class TractionDetails : IHaveParts {
     private PartReader PartReader { get; init; }
     public List<Part> Parts { get; init; } = [];
 
-    [PartField(0d, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0d, HowToApply.Set, HigherIs.Neutral)]
     public double LatMaxSlip;
-    [PartField(0d, PartReader.APPLY_SET)]
+    [PartField(0d, HowToApply.Set)]
     public double LatGripMax;
-    [PartField(0d, PartReader.APPLY_SET)]
+    [PartField(0d, HowToApply.Set)]
     public double LatPeakLength;
-    [PartField(0d, PartReader.APPLY_SET, HigherIs.Bad)]
+    [PartField(0d, HowToApply.Set, HigherIs.Bad)]
     public double LatPeakDecay;
 
-    [PartField(0d, PartReader.APPLY_SET, HigherIs.Neutral)]
+    [PartField(0d, HowToApply.Set, HigherIs.Neutral)]
     public double LongMaxSlip;
-    [PartField(0d, PartReader.APPLY_SET)]
+    [PartField(0d, HowToApply.Set)]
     public double LongGripMax;
-    [PartField(0d, PartReader.APPLY_SET)]
+    [PartField(0d, HowToApply.Set)]
     public double LongPeakLength;
-    [PartField(0d, PartReader.APPLY_SET, HigherIs.Bad)]
+    [PartField(0d, HowToApply.Set, HigherIs.Bad)]
     public double LongPeakDecay;
 
     public TractionDetails() {
