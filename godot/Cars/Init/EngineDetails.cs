@@ -16,7 +16,7 @@ public class EngineDetails : IHaveParts {
     public float[] BaseTorqueCurve { get; set; }
     public int BaseTorqueCurveMaxRPM => (BaseTorqueCurve.Length - 1) * 1000;
 
-    [PartField(0d, PartReader.APPLY_ADD, HigherIs.Bad)]
+    [PartField(double.MinValue, PartReader.APPLY_ADD, HigherIs.Bad)]
     public double EngineMass;
 
     [PartField(int.MaxValue, PartReader.APPLY_MIN)]

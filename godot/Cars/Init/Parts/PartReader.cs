@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public class PartReader {
-    record FieldProps(FieldInfo Field, object DefaultValue, string Action, HigherIs HigherIs);
+    record FieldProps(FieldInfo Field, object DefaultValue, string Action, HigherIs HigherIs, DefaultIs DefaultIs);
 
     public const string APPLY_SET = "apply_set";
     public const string APPLY_MIN = "apply_min";
@@ -20,7 +20,7 @@ public class PartReader {
         _self = self;
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
-                _fieldProps.Add(new FieldProps(field, partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs));
+                _fieldProps.Add(new FieldProps(field, partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs, partFieldAttribute.DefaultIs));
             }
         }
     }
@@ -58,8 +58,8 @@ public class PartReader {
             }
         }
 
-        foreach (var fieldProp in _fieldProps)
-            if (fieldProp.Field.GetValue(_self) == fieldProp.DefaultValue)
+        foreach (var fieldProp in _fieldProps.Where(x => x.DefaultIs == DefaultIs.NotOkay))
+            if (fieldProp.Field.GetValue(_self).Equals(fieldProp.DefaultValue))
                 return $"Field {fieldProp.Field.Name} was still on the default value of {fieldProp.DefaultValue}";
 
         return null;

@@ -64,13 +64,13 @@ public class CarDetails : IHaveParts {
 	[PartField(0f, PartReader.APPLY_SET, HigherIs.Neutral)]
 	public float TransPowerBalance; // Only used in all wheel drive cars, 0 front <-> 1 rear
 
-	[PartField(false, PartReader.APPLY_SET)]
+	[PartField(false, PartReader.APPLY_SET, HigherIs.Good, DefaultIs.Okay)]
 	public bool NitroEnabled;
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, PartReader.APPLY_SET)]
 	public float NitroForce;
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, PartReader.APPLY_SET)]
 	public float NitroRate;
-	[PartField(0f, PartReader.APPLY_SET)]
+	[PartField(float.MinValue, PartReader.APPLY_SET)]
 	public float NitroMax;
 
 	public bool FuelEnabled;

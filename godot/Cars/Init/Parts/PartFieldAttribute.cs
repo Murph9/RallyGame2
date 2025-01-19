@@ -8,9 +8,15 @@ public enum HigherIs {
     Bad
 }
 
+public enum DefaultIs {
+    NotOkay,
+    Okay
+}
+
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public class PartFieldAttribute(object defaultValue, string howToApply, HigherIs higherIsGood = HigherIs.Good) : Attribute {
+public class PartFieldAttribute(object defaultValue, string howToApply, HigherIs higherIsGood = HigherIs.Good, DefaultIs defaultIs = DefaultIs.NotOkay) : Attribute {
     public object DefaultValue { get; init; } = defaultValue;
     public string HowToApply { get; init; } = howToApply;
     public HigherIs HigherIs { get; init;} = higherIsGood;
+    public DefaultIs DefaultIs { get; init; } = defaultIs;
 }
