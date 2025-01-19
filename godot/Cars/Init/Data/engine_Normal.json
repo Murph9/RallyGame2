@@ -1,0 +1,32 @@
+{
+  "engineInertia": 30,
+  "idlerpm": 1000,
+  "name": "e_Normal",
+  "sound": "sounds/engine.wav",
+  "baseTorqueCurve": [0, 390.0, 390.0, 390.0, 480.0, 475.0, 360.0, 100],
+  "Parts": [
+    {
+      "color": "#010101",
+      "name": "base engine",
+      "levelCost": [0],
+      "levels": [
+        {
+          "CombustionEfficiency": 1,
+          "Compression": 10,
+          "CoolingRate": 50,
+          "CylinderBore": 0.1,
+          "EngineMass": 100,
+          "ExhaustAirEffiency": 1,
+          "IdleDrag": 0.1,
+          "IntakeAirEffiency": 1,
+          "MaxRpm": 7000,
+          "PistonCount": 4,
+          "StrokeLength": 0.1,
+          "TransmissionEfficiency": 0.9,
+          "TurboAirMult": 1,
+          "TurboAirStartRPM": 0
+        }
+      ]
+    }
+  ]
+}

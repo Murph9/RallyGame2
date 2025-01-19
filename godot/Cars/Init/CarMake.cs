@@ -4,7 +4,7 @@ using murph9.RallyGame2.godot.Utilities;
 namespace murph9.RallyGame2.godot.Cars.Init;
 
 public enum CarMake {
-//	Normal,
+	Normal,
 	Runner,
 	/*Rally,
 	Roadster,

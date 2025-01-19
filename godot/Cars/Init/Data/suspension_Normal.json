@@ -1,0 +1,27 @@
+{
+  "Parts": [
+    {
+      "color": "#dcbeff",
+      "name": "Suspension",
+      "levelCost": [0],
+      "levels": [
+        {
+          "FrontAntiroll": 0.5,
+          "FrontComp": 0.4,
+          "FrontMaxTravel": 0.0,
+          "FrontMinTravel": -0.2,
+          "FrontPreloadDistance": 0.1,
+          "FrontRelax": 0.4,
+          "FrontStiffness": 16,
+          "RearAntiroll": 0.3,
+          "RearComp": 0.4,
+          "RearMaxTravel": 0.0,
+          "RearMinTravel": -0.2,
+          "RearPreloadDistance": 0.1,
+          "RearRelax": 0.4,
+          "RearStiffness": 16
+        }
+      ]
+    }
+  ]
+}

@@ -4,21 +4,21 @@
     "y": 1100,
     "z": 0
   },
-  "aeroCrossSection": 0.3,
+  "aeroCrossSection": 0.47,
   "areoLinearDrag": 0.012,
   "camLookAtHeight": 1.3,
   "camOffsetLength": -6,
   "camOffsetHeight": 2.1,
   "camShake": 0.000002,
-  "carModel": "track1_2.blend",
+  "carModel": "car4.blend",
   "driveFront": false,
   "driveRear": true,
-  "engineFileName": "engine_Runner",
+  "engineFileName": "engine_Normal",
   "maxSteerAngle": 0.5,
   "minDriftAngle": 7,
-  "name": "runner",
-  "suspensionFileName": "suspension_Runner",
-  "tractionControl": true,
+  "name": "normal",
+  "suspensionFileName": "suspension_Normal",
+  "tractionControl": false,
   "tractionFileName": "traction_Normal",
   "wheelDetails": [
     {
@@ -50,12 +50,9 @@
     {
       "color": "#e6194B",
       "name": "Brakes",
-      "levelCost": [0, 300, 500, 1000],
+      "levelCost": [0],
       "levels": [
-        {"BrakeMaxTorque": 2000},
-        {"BrakeMaxTorque": 3000},
-        {"BrakeMaxTorque": 5000},
-        {"BrakeMaxTorque": 10000}
+        {"BrakeMaxTorque": 4000}
       ]
     },
     {
@@ -64,8 +61,8 @@
       "levelCost": [0],
       "levels": [
         {
-          "TransFinaldrive": 3.64,
-          "TransGearRatios": [-2.9, 3.76, 2.27, 1.6, 1.2, 1, 0.84],
+          "TransFinaldrive": 3.3,
+          "TransGearRatios": [-2.9, 3.6, 2.5, 1.8, 1.3, 1, 0.74],
           "TransPowerBalance": 0.5
         }
       ]
@@ -73,47 +70,43 @@
     {
       "color": "#f032e6",
       "name": "Flywheel and Clutch",
-      "levelCost": [0, 700],
+      "levelCost": [0],
       "levels": [
-        {"AutoChangeTime": 0.25},
-        {"AutoChangeTime": 0.15}
+        {"AutoChangeTime": 0.25}
       ]
     },
     {
       "color": "#3cb44b",
       "name": "Nitro",
-      "levelCost": [0, 1500],
+      "levelCost": [0],
       "levels": [
-        {"NitroForce": 0, "NitroMax": 0, "NitroEnabled": false, "NitroRate": 0},
-        {"NitroForce": 300, "NitroMax": 15, "NitroEnabled": true, "NitroRate": 1}
+        {"NitroForce": 0, "NitroMax": 0, "NitroEnabled": false, "NitroRate": 0}
       ]
     },
     {
       "color": "#ffffdd",
       "name": "Chassis and Weight Reduction",
-      "levelCost": [0, 1500],
+      "levelCost": [0],
       "levels": [
-        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1050},
-        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1000}
+        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1200}
       ]
     },
     {
       "color": "#42d4f4",
       "name": "Rear Spoiler",
-      "levelCost": [0, 500],
+      "levelCost": [0],
       "levels": [
-        {"AeroDownforce": 0, "AeroDrag": 0},
-        {"AeroDownforce": 0.1, "AeroDrag": 0.02}
+        {"AeroDownforce": 0, "AeroDrag": 0}
       ]
     },
     {
       "color": "#911eb4",
       "name": "Front Bumper",
-      "levelCost": [0, 500],
+      "levelCost": [0],
       "levels": [
-        {"AeroDownforce": 0, "AeroDrag": 0},
-        {"AeroDownforce": 0.1, "AeroDrag": 0.02}
+        {"AeroDownforce": 0, "AeroDrag": 0}
       ]
     }
   ]
 }
+  
