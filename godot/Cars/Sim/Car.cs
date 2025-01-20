@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,9 @@ public partial class Car : Node3D {
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
     private readonly Transform3D _worldSpawn;
+    private readonly CarAi _ai;
 
-    public bool HandbrakeCur { get; private set; }
-    public float AccelCur { get; private set; }
-    public float BrakingCur { get; private set; }
-
-    private float _steeringLeftRaw;
-    private float _steeringRightRaw;
-    public float Steering { get; private set; }
+    public CarInputs Inputs { get; }
 
     public float DriftAngle { get; private set; }
 
@@ -30,23 +26,31 @@ public partial class Car : Node3D {
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
 
-    private bool _listeningToInputs = true;
-
     public float DistanceTravelled { get; private set; }
     private Vector3? _lastPos;
 
-    public Car(CarDetails details, Transform3D? worldSpawn = null) {
+
+    public Car(CarDetails details, CarInputs inputController = null, Transform3D? worldSpawn = null, CarAi ai = null) {
         Details = details;
         _worldSpawn = worldSpawn ?? Transform3D.Identity;
         Engine = new CarEngine(this);
 
-        var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");
-        var instance = uiScene.Instantiate<CarUI>();
-        instance.Car = this;
-        AddChild(instance);
+        Inputs = inputController ?? new CarInputs();
+        Inputs.Car = this;
 
-        var camera = new CarCamera(this);
-        AddChild(camera);
+        if (ai != null) {
+            _ai = ai;
+            _ai.Car = this;
+            AddChild(_ai);
+        } else {
+            var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");
+            var instance = uiScene.Instantiate<CarUI>();
+            instance.Car = this;
+            AddChild(instance);
+
+            var camera = new CarCamera(this);
+            AddChild(camera);
+        }
 
         var scene = GD.Load<PackedScene>("res://assets/car/" + Details.CarModel);
         var carModel = scene.Instantiate<Node3D>();
@@ -71,33 +75,39 @@ public partial class Car : Node3D {
             AddChild(skid);
         }
 
-        // add audio
-        var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
-        var engine = new AudioStreamPlayer() {
-            Stream = stream,
-            Autoplay = true,
-            Name = "engineAudioPlayer",
-            VolumeDb = Mathf.LinearToDb(0.25f)
-        };
-        AddChild(engine);
+        if (_ai == null) {
+            // add audio
+            var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
+            var engine = new AudioStreamPlayer() {
+                Stream = stream,
+                Autoplay = true,
+                Name = "engineAudioPlayer",
+                VolumeDb = Mathf.LinearToDb(0.25f)
+            };
+            AddChild(engine);
+        }
     }
 
     public override void _Process(double delta) {
         foreach (var w in Wheels) {
             // rotate the front wheels (here because the wheels don't have their angle)
             if (w.Details.Id < 2) {
-                w.Rotation = new Vector3(0, Steering, 0);
+                w.Rotation = new Vector3(0, Inputs.Steering, 0);
             }
         }
 
-        // set audio values
-        var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
-        audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.Engine.MaxRpm), 0.5f, 2);
-        audio.VolumeDb = Mathf.LinearToDb(0.25f + AccelCur * 0.25f); // max of .5
+        if (_ai == null) {
+            var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
+            if (audio != null) {
+                // set audio values
+                audio.PitchScale = Mathf.Clamp(0.5f + 1.5f * (Engine.CurRPM / (float)Details.Engine.MaxRpm), 0.5f, 2);
+                audio.VolumeDb = Mathf.LinearToDb(0.25f + Inputs.AccelCur * 0.25f); // max of .5
+            }
+        }
     }
 
     public override void _PhysicsProcess(double delta) {
-        ReadInputs();
+        Inputs.ReadInputs();
 
         Engine._PhysicsProcess(delta);
 
@@ -122,47 +132,6 @@ public partial class Car : Node3D {
         ApplyCentralDrag();
     }
 
-    public void AcceptInputs() {
-        _listeningToInputs = true;
-    }
-
-    public void IgnoreInputs() {
-        _listeningToInputs = false;
-
-        // and reset everything
-        _steeringLeftRaw = 0;
-        _steeringRightRaw = 0;
-        Steering = 0;
-
-        HandbrakeCur = false;
-        BrakingCur = 0.2f; // slow braking
-        AccelCur = 0;
-    }
-
-    private void ReadInputs() {
-        if (!_listeningToInputs) return;
-
-        // TODO speed factor
-        _steeringLeftRaw = Input.GetActionStrength("car_left") * Details.MaxSteerAngle;
-        _steeringRightRaw = Input.GetActionStrength("car_right") * Details.MaxSteerAngle;
-
-        var steeringWant = 0f;
-        if (_steeringLeftRaw != 0) //left
-            steeringWant += GetBestTurnAngle(_steeringLeftRaw, 1);
-        if (_steeringRightRaw != 0) //right
-            steeringWant -= GetBestTurnAngle(_steeringRightRaw, -1);
-        Steering = Mathf.Clamp(steeringWant, -Details.MaxSteerAngle, Details.MaxSteerAngle);
-
-        HandbrakeCur = Input.IsActionPressed("car_handbrake");
-
-        BrakingCur = Input.GetActionStrength("car_brake");
-        AccelCur = Input.GetActionStrength("car_accel");
-
-        if (Input.IsActionPressed("car_reset")) {
-            Reset();
-        }
-    }
-
     public void Reset() {
         RigidBody.Transform = _worldSpawn;
         RigidBody.LinearVelocity = new Vector3();
@@ -170,23 +139,6 @@ public partial class Car : Node3D {
         foreach (var w in Wheels) {
             w.RadSec = 0;
         }
-    }
-
-    private float GetBestTurnAngle(float steeringRaw, int sign) {
-        var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
-        if (localVel.Z < 0 || ((-sign * DriftAngle) < 0 && Mathf.Abs(DriftAngle) > Mathf.DegToRad(Details.MinDriftAngle))) {
-            //when going backwards, slow or needing to turning against drift, you get no speed factor
-            //eg: car is pointing more left than velocity, and is also turning left
-            //and drift angle needs to be large enough to matter
-            return steeringRaw;
-        }
-
-        if (localVel.LengthSquared() < 40) // prevent slow speed weirdness
-            return steeringRaw;
-
-        // this is magic, but: minimum should be best slip angle, but it doesn't catch up to the turning angle required
-        // so we just add some of the angular vel value to it
-        return (float)Details.TractionDetails.LatMaxSlip + RigidBody.AngularVelocity.Length()*0.125f;
     }
 
     private void CalcSuspension(Wheel w) {
@@ -249,10 +201,10 @@ public partial class Car : Node3D {
         var slipr = w.RadSec * w.Details.Radius - groundVelocity.Z;
         w.SlipRatio = slipr / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
 
-        if (HandbrakeCur && w.Details.Id >= 2) // rearwheels only
+        if (Inputs.HandbrakeCur && w.Details.Id >= 2) // rearwheels only
             w.RadSec = 0;
 
-        var steering = Steering;
+        var steering = Inputs.Steering;
         if (groundVelocity.Z < 0) { // to flip the steering on moving in reverse
             steering *= -1;
         }
@@ -298,8 +250,8 @@ public partial class Car : Node3D {
         };
 
         // braking and abs
-        var brakeCurrent2 = BrakingCur;
-        if (Math.Abs(w.SlipRatioLast - w.SlipRatio)*delta/4f > td.LongMaxSlip && groundVelocity.Length() > 4)
+        var brakeCurrent2 = Inputs.BrakingCur;
+        if (Math.Abs(w.SlipRatioLast - w.SlipRatio) * delta / 4f > td.LongMaxSlip && groundVelocity.Length() > 4)
             brakeCurrent2 = 0; // very good abs (predict slip ratio will run out in 4 frames and stop braking so hard)
 
         // calcluate traction control
@@ -350,8 +302,8 @@ public partial class Car : Node3D {
         DragForce = Details.QuadraticDrag(RigidBody.LinearVelocity);
 
         var localVel = RigidBody.LinearVelocity * RigidBody.GlobalBasis;
-		float dragDown = -0.5f * Details.AeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
-		RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
+        float dragDown = -0.5f * Details.AeroDownforce * 1.225f * (localVel.Z * localVel.Z); // formula for downforce from wikipedia
+        RigidBody.ApplyCentralForce(DragForce + new Vector3(0, dragDown, 0)); // apply downforce after
     }
 
     private Wheel GetOtherWheel(Wheel w) => Wheels[w.Details.Id == 0 ? 1 : w.Details.Id == 1 ? 0 : w.Details.Id == 2 ? 3 : 2];

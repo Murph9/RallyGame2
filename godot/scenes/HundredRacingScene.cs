@@ -28,14 +28,14 @@ public partial class HundredRacingScene : Node3D {
     }
 
     public override void _Ready() {
-        _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), Transform3D.Identity);
+        _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), null, Transform3D.Identity);
         // TODO hardcoded
         _car.RigidBody.Transform = new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
         AddChild(_car);
     }
 
     public override void _Process(double delta) {
-        
+
     }
 
     public void Exit() {
@@ -51,10 +51,10 @@ public partial class HundredRacingScene : Node3D {
     }
 
     public void StopDriving() {
-        _car.IgnoreInputs();
+        _car.Inputs.IgnoreInputs();
     }
 
     public void StartDriving() {
-        _car.AcceptInputs();
+        _car.Inputs.AcceptInputs();
     }
 }

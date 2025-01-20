@@ -28,6 +28,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private Vector3 _trafficLeftSideOffset;
 
     private LastPlacedDetails _nextTransform;
+    public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
 
     public InfiniteWorldPieces(WorldType type, float distance = 40, int pieceAttemptMax = 10) {
         _distance = distance;

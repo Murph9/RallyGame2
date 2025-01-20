@@ -30,12 +30,12 @@ public class CarEngine {
         var wheelRadius = d.DriveWheelRadius();
         if (d.DriveFront && d.DriveRear) {
             float balance = Mathf.Clamp(d.TransPowerBalance, 0, 1);
-			WheelEngineTorque[0] = WheelEngineTorque[1] = (1 - balance) * engineTorque/(4 * wheelRadius);
-            WheelEngineTorque[2] = WheelEngineTorque[3] = balance * engineTorque/(4 * wheelRadius);
+            WheelEngineTorque[0] = WheelEngineTorque[1] = (1 - balance) * engineTorque / (4 * wheelRadius);
+            WheelEngineTorque[2] = WheelEngineTorque[3] = balance * engineTorque / (4 * wheelRadius);
         } else if (d.DriveFront)
-			WheelEngineTorque[0] = WheelEngineTorque[1] = engineTorque/(2 * wheelRadius);
-		else if (d.DriveRear)
-            WheelEngineTorque[2] = WheelEngineTorque[3] = engineTorque/(2 * wheelRadius);
+            WheelEngineTorque[0] = WheelEngineTorque[1] = engineTorque / (2 * wheelRadius);
+        else if (d.DriveRear)
+            WheelEngineTorque[2] = WheelEngineTorque[3] = engineTorque / (2 * wheelRadius);
 
         var localVelocity = _car.RigidBody.LinearVelocity * _car.RigidBody.GlobalBasis;
         SimulateAutoTransmission(delta, localVelocity);
@@ -52,54 +52,54 @@ public class CarEngine {
         float diffRatio = d.TransFinaldrive;
 
         float wheelrot = 0;
-		//get the drive wheels rotation speed
-		if (d.DriveFront && d.DriveRear)
-			wheelrot = (w[0].RadSec + w[1].RadSec + w[2].RadSec + w[3].RadSec)/4;
-		else if (d.DriveFront)
-			wheelrot = (w[0].RadSec + w[1].RadSec)/2;
-		else if (d.DriveRear)
-			wheelrot = (w[2].RadSec + w[3].RadSec)/2;
+        //get the drive wheels rotation speed
+        if (d.DriveFront && d.DriveRear)
+            wheelrot = (w[0].RadSec + w[1].RadSec + w[2].RadSec + w[3].RadSec) / 4;
+        else if (d.DriveFront)
+            wheelrot = (w[0].RadSec + w[1].RadSec) / 2;
+        else if (d.DriveRear)
+            wheelrot = (w[2].RadSec + w[3].RadSec) / 2;
 
-        CurRPM = (int)(wheelrot*curGearRatio*diffRatio*(60/Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
+        CurRPM = (int)(wheelrot * curGearRatio * diffRatio * (60 / Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
         CurRPM = Mathf.Max(CurRPM, d.Engine.IdleRPM);
 
-        CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * _car.AccelCur;
+        CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * _car.Inputs.AccelCur;
         double engineDrag = 0;
-		if (_car.AccelCur < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
-			engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); //reverse goes the other way
+        if (_car.Inputs.AccelCur < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
+            engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); //reverse goes the other way
 
         double engineOutTorque;
         if (Mathf.Abs(CurRPM) > d.Engine.MaxRpm)
-			engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
-		else //normal path
-			engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.Engine.TransmissionEfficiency - engineDrag;
+            engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
+        else //normal path
+            engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.Engine.TransmissionEfficiency - engineDrag;
 
-		return (float)engineOutTorque;
+        return (float)engineOutTorque;
     }
 
     private void SimulateAutoTransmission(double delta, Vector3 localVelocity) {
         if (_gearChangeTime != 0) {
-			_gearChangeTime -= delta;
-			if (_gearChangeTime < 0) { // if equal probably shouldn't be trying to set the gear
-				CurGear = _gearChangeTo;
-				_gearChangeTime = 0;
-			}
-			return;
-		}
+            _gearChangeTime -= delta;
+            if (_gearChangeTime < 0) { // if equal probably shouldn't be trying to set the gear
+                CurGear = _gearChangeTo;
+                _gearChangeTime = 0;
+            }
+            return;
+        }
 
-		if (CurGear == REVERSE_GEAR_INDEX)
-			return; //no changing out of reverse on me please...
+        if (CurGear == REVERSE_GEAR_INDEX)
+            return; //no changing out of reverse on me please...
         if (!_car.Wheels.Any(x => x.InContact))
-			return; //if no contact, no changing of gear
+            return; //if no contact, no changing of gear
 
         var d = _car.Details;
 
-		if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.TransGearRatios.Length - 1) {
-			_gearChangeTime = d.AutoChangeTime;
-			_gearChangeTo = CurGear + 1;
-		} else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1) {
-			_gearChangeTime = d.AutoChangeTime;
-			_gearChangeTo = CurGear - 1;
-		}
+        if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.TransGearRatios.Length - 1) {
+            _gearChangeTime = d.AutoChangeTime;
+            _gearChangeTo = CurGear + 1;
+        } else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1) {
+            _gearChangeTime = d.AutoChangeTime;
+            _gearChangeTo = CurGear - 1;
+        }
     }
 }

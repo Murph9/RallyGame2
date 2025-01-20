@@ -11,12 +11,12 @@ namespace murph9.RallyGame2.godot.scenes;
 
 public partial class RacingScreen : Node3D {
 	[Signal]
-    public delegate void FinishedEventHandler();
+	public delegate void FinishedEventHandler();
 	[Signal]
 	public delegate void RestartEventHandler();
 
 	private readonly RacingUI _racingUI;
-    private readonly List<Checkpoint> _checkpointNodes = [];
+	private readonly List<Checkpoint> _checkpointNodes = [];
 
 	private Car Car;
 
@@ -35,7 +35,7 @@ public partial class RacingScreen : Node3D {
 
 	public override void _Ready() {
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
+		Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 
@@ -73,9 +73,9 @@ public partial class RacingScreen : Node3D {
 		var points = trackCurve.GetBakedPoints();
 		for (int i = 1; i < points.Length - 1; i++) {
 			// calc radius from points around this one
-			var before = points[i-1];
+			var before = points[i - 1];
 			var cur = points[i];
-			var after = points[i+1];
+			var after = points[i + 1];
 
 			var radius = MyMath.GetCircleCenterFrom(before, cur, after);
 			var colour = Mathf.InverseLerp(100, 10, radius);
@@ -127,20 +127,20 @@ public partial class RacingScreen : Node3D {
 		EmitSignal(SignalName.Restart);
 	}
 
-    public void StopDriving() {
-        Car.IgnoreInputs();
-    }
+	public void StopDriving() {
+		Car.Inputs.IgnoreInputs();
+	}
 
-    public void StartDriving() {
+	public void StartDriving() {
 		ReplaceCarWithState();
-        Car.AcceptInputs();
+		Car.Inputs.AcceptInputs();
 
 		LapTimes.Clear();
 		LapTimer = 0;
 		CurrentCheckpoint = 0;
 		CurrentLap = 0;
 
-    }
+	}
 
 	public void ReplaceCarWithState() {
 		RemoveChild(Car);
@@ -148,26 +148,26 @@ public partial class RacingScreen : Node3D {
 
 		// clone into new car
 		var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
+		Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
 		Car.RigidBody.Position += new Vector3(-15, 0, 0);
 		AddChild(Car);
 	}
 
 	private static MeshInstance3D BoxLine(Color c, Vector3 start, Vector3 end) {
-        var mat = new StandardMaterial3D() {
-            AlbedoColor = c
-        };
-        var length = (end - start).Length();
+		var mat = new StandardMaterial3D() {
+			AlbedoColor = c
+		};
+		var length = (end - start).Length();
 
-        var mesh = new BoxMesh() {
-            Size = new Vector3(length, 0.1f, 0.1f),
-            Material = mat
-        };
-        var meshObj = new MeshInstance3D() {
-            Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1,0,0), (end-start).Normalized())), start.Lerp(end, 0.5f)),
-            Mesh = mesh
-        };
+		var mesh = new BoxMesh() {
+			Size = new Vector3(length, 0.1f, 0.1f),
+			Material = mat
+		};
+		var meshObj = new MeshInstance3D() {
+			Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1, 0, 0), (end - start).Normalized())), start.Lerp(end, 0.5f)),
+			Mesh = mesh
+		};
 
-        return meshObj;
-    }
+		return meshObj;
+	}
 }
