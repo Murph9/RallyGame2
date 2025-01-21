@@ -37,7 +37,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public override void _Process(double delta) {
         foreach (var traffic in new List<Car>(_traffic)) {
-            if (traffic.RigidBody.GlobalPosition.Y < GetNextCheckpoint(traffic.RigidBody.GlobalPosition).Origin.Y) {
+            if (traffic.RigidBody.GlobalPosition.Y + 100 < GetNextCheckpoint(traffic.RigidBody.GlobalPosition).Origin.Y) {
                 _traffic.Remove(traffic);
                 RemoveChild(traffic);
             }
@@ -47,8 +47,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private void PiecePlacedListener(Transform3D checkpointTransform) {
         if (_traffic.Count >= 10) return;
 
-        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), new TrafficAiInputs(this), checkpointTransform);
+        var ai = new TrafficAiInputs(this);
+        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, checkpointTransform);
         car.RigidBody.Transform = checkpointTransform;
+        car.RigidBody.LinearVelocity = checkpointTransform.Basis * Vector3.Forward * ai.TargetSpeed * -0.75f;
 
         AddChild(car);
         _traffic.Add(car);
@@ -93,8 +95,6 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         if (closestIndex >= pieces.Length - 1) {
             return [closestIndex];
-        } else if (closestIndex >= pieces.Length - 2) {
-            return [closestIndex, closestIndex + 1];
         }
 
         var finalIndex = closestIndex;
@@ -104,7 +104,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             finalIndex = closestIndex + 1;
         }
 
-        return Enumerable.Range(finalIndex, pieces.Length - 1 - finalIndex).ToArray();
+        return Enumerable.Range(finalIndex, pieces.Length - finalIndex).ToArray();
     }
 
     private static int GetClosestToPieceIndex(Transform3D[] list, Vector3 pos) {
