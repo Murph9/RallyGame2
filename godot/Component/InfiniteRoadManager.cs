@@ -50,39 +50,39 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         var ai = new TrafficAiInputs(this);
         var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, checkpointTransform);
         car.RigidBody.Transform = checkpointTransform;
-        car.RigidBody.LinearVelocity = checkpointTransform.Basis * Vector3.Forward * ai.TargetSpeed * -0.75f;
+        car.RigidBody.LinearVelocity = checkpointTransform.Basis * Vector3.Back * ai.TargetSpeed;
 
         AddChild(car);
         _traffic.Add(car);
     }
 
-    public Transform3D GetInitialSpawn() => _world.GetSpawn();
+    public Transform3D GetInitialSpawn() => _world.GetSpawn().Transform;
 
     public Transform3D GetLastCheckpoint(Vector3 pos) {
-        var pieces = _world.GetAllCurrentCheckpoints().ToArray();
-        var index = GetClosestToPieceIndex(pieces, pos);
+        var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
+        var index = GetClosestToPieceIndex(checkpoints, pos);
         GD.Print(index);
-        return pieces[Math.Max(0, index - 1)];
+        return checkpoints[Math.Max(0, index - 1)].Transform;
     }
 
     public Transform3D GetNextCheckpoint(Vector3 pos) {
-        var pieces = _world.GetAllCurrentCheckpoints().ToArray();
-        var indexes = GetNextCheckpointIndexes(pieces, pos);
-        return pieces[indexes.First()];
+        var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
+        var indexes = GetNextCheckpointIndexes(checkpoints, pos);
+        return checkpoints[indexes.First()].Transform;
     }
 
     public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) => GetNextCheckpoints(pos, 1, leftSide).First();
 
     public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSide) {
-        var pieces = _world.GetAllCurrentCheckpoints().ToArray();
-        var indexes = GetNextCheckpointIndexes(pieces, pos);
+        var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
+        var indexes = GetNextCheckpointIndexes(checkpoints, pos);
 
         var list = new List<Transform3D>();
         foreach (var index in indexes) {
-            var transform = pieces[index];
+            var checkpoint = checkpoints[index];
             // yes it looks like the left side is wrong here
-            var originOffset = transform.Basis * (leftSide ? -_world.TrafficLeftSideOffset : _world.TrafficLeftSideOffset);
-            list.Add(new Transform3D(transform.Basis, transform.Origin + originOffset));
+            var originOffset = leftSide ? checkpoint.LeftOffset : -checkpoint.LeftOffset;
+            list.Add(new Transform3D(checkpoint.Transform.Basis, checkpoint.Transform.Origin + originOffset));
         }
         if (list.Count < 1) {
             GD.Print("No checkpoints found");
@@ -90,34 +90,34 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return list;
     }
 
-    private static int[] GetNextCheckpointIndexes(Transform3D[] pieces, Vector3 pos) {
-        var closestIndex = GetClosestToPieceIndex(pieces, pos);
+    private static int[] GetNextCheckpointIndexes(InfiniteCheckpoint[] checkpoints, Vector3 pos) {
+        var closestIndex = GetClosestToPieceIndex(checkpoints, pos);
 
-        if (closestIndex >= pieces.Length - 1) {
+        if (closestIndex >= checkpoints.Length - 1) {
             return [closestIndex];
         }
 
         var finalIndex = closestIndex;
-        var closestTransform = pieces[closestIndex];
-        var nextTransform = pieces[closestIndex + 1];
-        if (nextTransform.Origin.DistanceSquaredTo(pos) < closestTransform.Origin.DistanceSquaredTo(nextTransform.Origin)) {
+        var closestTransform = checkpoints[closestIndex];
+        var checkpoint = checkpoints[closestIndex + 1];
+        if (checkpoint.Transform.Origin.DistanceSquaredTo(pos) < closestTransform.Transform.Origin.DistanceSquaredTo(checkpoint.Transform.Origin)) {
             finalIndex = closestIndex + 1;
         }
 
-        return Enumerable.Range(finalIndex, pieces.Length - finalIndex).ToArray();
+        return Enumerable.Range(finalIndex, checkpoints.Length - finalIndex).ToArray();
     }
 
-    private static int GetClosestToPieceIndex(Transform3D[] list, Vector3 pos) {
-        if (list.Length < 1) {
+    private static int GetClosestToPieceIndex(InfiniteCheckpoint[] checkpoints, Vector3 pos) {
+        if (checkpoints.Length < 1) {
             return 0;
         }
 
         var closestDistance = float.MaxValue;
         var closestIndex = -1;
 
-        for (int i = 0; i < list.Length; i++) {
-            var point = list[i];
-            var currentDistance = point.Origin.DistanceSquaredTo(pos);
+        for (int i = 0; i < checkpoints.Length; i++) {
+            var checkpoint = checkpoints[i];
+            var currentDistance = checkpoint.Transform.Origin.DistanceSquaredTo(pos);
             if (currentDistance < closestDistance) {
                 closestIndex = i;
                 closestDistance = currentDistance;

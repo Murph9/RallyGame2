@@ -28,7 +28,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly WorldType _pieceType;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
-    public Vector3 TrafficLeftSideOffset { get; private set; }
+    private Vector3 _trafficLeftSideOffset;
 
     private LastPlacedDetails _nextTransform;
     public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
@@ -83,7 +83,7 @@ public partial class InfiniteWorldPieces : Node3D {
                     var node = c as Node3D;
                     if (node.Name == "TrafficLeftSide") {
                         GD.Print("Loading " + node.Name + " as a traffic offset value");
-                        TrafficLeftSideOffset = node.Transform.Origin;
+                        _trafficLeftSideOffset = node.Transform.Origin;
                     }
 
                 }
@@ -125,8 +125,7 @@ public partial class InfiniteWorldPieces : Node3D {
         }
 
         if (attempts > 0) {
-            GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + currentTransform);
-            // GD.Print(piece.Directions[directionIndex].Offset + " " + piece.Directions[directionIndex].Turn  + " " + piece.Directions[directionIndex].Vert);
+            // GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + currentTransform);
         }
 
         PlacePiece(piece, currentTransform, directionIndex);
@@ -185,17 +184,21 @@ public partial class InfiniteWorldPieces : Node3D {
         EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin));
     }
 
-    public Transform3D GetSpawn() {
+    public InfiniteCheckpoint GetSpawn() {
         if (_placedPieces == null || _placedPieces.Count() == 0) {
-            return STARTING_OFFSET;
+            return new InfiniteCheckpoint(STARTING_OFFSET, Vector3.Zero);
         }
 
         return GetAllCurrentCheckpoints().First();
     }
 
-    public IReadOnlyCollection<Transform3D> GetAllCurrentCheckpoints() {
-        return _placedPieces.Select(x => new Transform3D(STARTING_OFFSET.Basis * x.GlobalTransform.Basis, x.GlobalTransform.Origin))
-            .Append(new Transform3D(STARTING_OFFSET.Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin))
+    public IReadOnlyCollection<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
+        return _placedPieces
+            .Select(x => x.GlobalTransform)
+            .Append(_nextTransform.FinalTransform)
+            .Select(x => new InfiniteCheckpoint(new Transform3D(STARTING_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _trafficLeftSideOffset))
             .ToList();
     }
 }
+
+public record InfiniteCheckpoint(Transform3D Transform, Vector3 LeftOffset);
