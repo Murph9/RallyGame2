@@ -15,9 +15,8 @@ public partial class Car : Node3D {
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
     private readonly Transform3D _worldSpawn;
-    private readonly CarAi _ai;
 
-    public CarInputs Inputs { get; }
+    public ICarInputs Inputs { get; }
 
     public float DriftAngle { get; private set; }
 
@@ -30,18 +29,17 @@ public partial class Car : Node3D {
     private Vector3? _lastPos;
 
 
-    public Car(CarDetails details, CarInputs inputController = null, Transform3D? worldSpawn = null, CarAi ai = null) {
+    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? worldSpawn = null) {
         Details = details;
         _worldSpawn = worldSpawn ?? Transform3D.Identity;
         Engine = new CarEngine(this);
 
-        Inputs = inputController ?? new CarInputs();
+        Inputs = inputs ?? new HumanCarInputs();
         Inputs.Car = this;
 
-        if (ai != null) {
-            _ai = ai;
-            _ai.Car = this;
-            AddChild(_ai);
+        if (Inputs.IsAi) {
+            var ai = Inputs as Node3D;
+            AddChild(ai);
         } else {
             var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");
             var instance = uiScene.Instantiate<CarUI>();
@@ -75,7 +73,7 @@ public partial class Car : Node3D {
             AddChild(skid);
         }
 
-        if (_ai == null) {
+        if (!Inputs.IsAi) {
             // add audio
             var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
             var engine = new AudioStreamPlayer() {
@@ -96,7 +94,7 @@ public partial class Car : Node3D {
             }
         }
 
-        if (_ai == null) {
+        if (!Inputs.IsAi) {
             var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
             if (audio != null) {
                 // set audio values

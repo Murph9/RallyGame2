@@ -24,7 +24,6 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly WorldType _pieceType;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
-    public List<WorldPiece> Pieces => [.. _pieces];
     private Vector3 _trafficLeftSideOffset;
 
     private LastPlacedDetails _nextTransform;
@@ -180,6 +179,10 @@ public partial class InfiniteWorldPieces : Node3D {
 
     public static Transform3D GetSpawn() {
         return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    }
+
+    public IReadOnlyCollection<Transform3D> GetAllCurrentPieces() {
+        return _placedPieces.Select(x => x.Transform).ToList();
     }
 
     public Transform3D GetClosestPointTo(Vector3 pos) {

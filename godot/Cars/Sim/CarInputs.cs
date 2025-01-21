@@ -2,9 +2,23 @@ using Godot;
 
 namespace murph9.RallyGame2.godot.Cars.Sim;
 
-public interface ICarInputs { }
+public interface ICarInputs {
+    public Car Car { get; set; }
+    public bool IsAi { get; }
 
-public class CarInputs {
+    public bool HandbrakeCur { get; }
+    public float AccelCur { get; }
+    public float BrakingCur { get; }
+    public float Steering { get; }
+
+    void AcceptInputs();
+    void IgnoreInputs();
+    void ReadInputs();
+}
+
+public class HumanCarInputs : ICarInputs {
+
+    public bool IsAi => false;
 
     public bool HandbrakeCur { get; private set; }
     public float AccelCur { get; private set; }

@@ -61,7 +61,7 @@ public partial class HundredRallyGame : Node {
             _racingScene.ResetCarTo(pos);
         }
 
-        var nextCheckpoint = _roadManager.GetNextCheckpoint(_racingScene.CarPos);
+        var nextCheckpoint = _roadManager.GetNextCheckpoint(_racingScene.CarPos, true);
         CheckpointNode.Transform = nextCheckpoint;
     }
 
