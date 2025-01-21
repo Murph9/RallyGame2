@@ -26,6 +26,7 @@ public partial class HundredRallyGame : Node {
         AddChild(_roadManager);
 
         _racingScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRacingScene))).Instantiate<HundredRacingScene>();
+        _racingScene.InitialPosition = _roadManager.GetInitialSpawn();
         AddChild(_racingScene);
 
         _ui = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUI))).Instantiate<HundredUI>();
@@ -57,17 +58,15 @@ public partial class HundredRallyGame : Node {
 
         if (Input.IsActionJustPressed("car_reset")) {
             // reset back to last road thing
-            var pos = _roadManager.GetClosestPointTo(_racingScene.CarPos);
+            var pos = _roadManager.GetLastCheckpoint(_racingScene.CarPos);
             _racingScene.ResetCarTo(pos);
         }
 
-        var nextCheckpoint = _roadManager.GetNextCheckpoint(_racingScene.CarPos, true);
+        var nextCheckpoint = _roadManager.GetNextCheckpoint(_racingScene.CarPos);
         CheckpointNode.Transform = nextCheckpoint;
     }
 
     public override void _PhysicsProcess(double delta) {
-        _roadManager.UpdateCarPos(_racingScene.CarPos);
-
         _ui.DistanceTravelled = _racingScene.DistanceTravelled;
         _ui.SpeedKMH = _racingScene.CarLinearVelocity.Length() * 3.6f;
     }

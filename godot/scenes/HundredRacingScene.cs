@@ -20,17 +20,14 @@ public partial class HundredRacingScene : Node3D {
 
     private Car _car;
 
+    public Transform3D InitialPosition { get; set; } = Transform3D.Identity;
     public float DistanceTravelled => _car.DistanceTravelled;
     public Vector3 CarPos => _car.RigidBody.GlobalPosition;
     public Vector3 CarLinearVelocity => _car.RigidBody.LinearVelocity;
 
-    public HundredRacingScene() {
-    }
-
     public override void _Ready() {
         _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), null, Transform3D.Identity);
-        // TODO hardcoded
-        _car.RigidBody.Transform = new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+        _car.RigidBody.Transform = InitialPosition;
         AddChild(_car);
     }
 

@@ -11,7 +11,11 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D {
 
+    [Signal]
+    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
+
     private const int MAX_COUNT = 100;
+    private static readonly Transform3D STARTING_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
     // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
     // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
@@ -24,7 +28,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly WorldType _pieceType;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
-    private Vector3 _trafficLeftSideOffset;
+    public Vector3 TrafficLeftSideOffset { get; private set; }
 
     private LastPlacedDetails _nextTransform;
     public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
@@ -79,7 +83,7 @@ public partial class InfiniteWorldPieces : Node3D {
                     var node = c as Node3D;
                     if (node.Name == "TrafficLeftSide") {
                         GD.Print("Loading " + node.Name + " as a traffic offset value");
-                        _trafficLeftSideOffset = node.Transform.Origin;
+                        TrafficLeftSideOffset = node.Transform.Origin;
                     }
 
                 }
@@ -93,7 +97,8 @@ public partial class InfiniteWorldPieces : Node3D {
         GD.Print("Loaded " + _pieces.Count + " pieces");
     }
 
-    public void UpdateLatestPos(Vector3 pos) {
+    public override void _PhysicsProcess(double delta) {
+        var pos = GetViewport().GetCamera3D().Position;
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
         // for the physics issues we can only make one piece per frame
@@ -175,69 +180,21 @@ public partial class InfiniteWorldPieces : Node3D {
 
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
+
+        EmitSignal(SignalName.PieceAdded, toAdd.Transform);
     }
 
-    public static Transform3D GetSpawn() {
-        return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    public Transform3D GetSpawn() {
+        if (_placedPieces == null || _placedPieces.Count() == 0) {
+            return STARTING_OFFSET;
+        }
+
+        return GetAllCurrentCheckpoints().First();
     }
 
-    public IReadOnlyCollection<Transform3D> GetAllCurrentPieces() {
-        return _placedPieces.Select(x => x.Transform).ToList();
-    }
-
-    public Transform3D GetClosestPointTo(Vector3 pos) {
-        var closestIndex = GetClosestToPieceIndex(pos);
-        var closestTransform = _placedPieces[closestIndex].GlobalTransform;
-        return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
-    }
-
-    public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) => GetNextCheckpoints(pos, 1, leftSide).First();
-
-    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSide) {
-        var closestIndex = GetClosestToPieceIndex(pos);
-
-        if (closestIndex >= _placedPieces.Count - 1) {
-            return [new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin)];
-        }
-
-        var finalIndex = closestIndex;
-        var closestTransform = _placedPieces[closestIndex].GlobalTransform;
-        var nextTransform = _placedPieces[closestIndex + 1].GlobalTransform;
-        if (nextTransform.Origin.DistanceSquaredTo(pos) < closestTransform.Origin.DistanceSquaredTo(nextTransform.Origin)) {
-            finalIndex = closestIndex + 1;
-        }
-
-        if (finalIndex >= _placedPieces.Count - 1) {
-            return [new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin)];
-        }
-
-        var list = new List<Transform3D>();
-        for (var i = finalIndex; i < _placedPieces.Count - 1; i++) {
-            var transform = _placedPieces[i].GlobalTransform;
-            // yes it looks like the inverse() is on the wrong side
-            var originWithOffset = transform.Origin + transform.Basis * GetSpawn().Basis * (leftSide ? -_trafficLeftSideOffset : _trafficLeftSideOffset);
-            list.Add(new Transform3D(transform.Basis, originWithOffset));
-        }
-        return list;
-    }
-
-    private int GetClosestToPieceIndex(Vector3 pos) {
-        if (_placedPieces.Count < 1) {
-            return 0;
-        }
-
-        var closestDistance = float.MaxValue;
-        var closestIndex = -1;
-
-        for (int i = 0; i < _placedPieces.Count; i++) {
-            var point = _placedPieces[i];
-            var currentDistance = point.GlobalTransform.Origin.DistanceSquaredTo(pos);
-            if (currentDistance < closestDistance) {
-                closestIndex = i;
-                closestDistance = currentDistance;
-            }
-        }
-
-        return closestIndex;
+    public IReadOnlyCollection<Transform3D> GetAllCurrentCheckpoints() {
+        return _placedPieces.Select(x => new Transform3D(STARTING_OFFSET.Basis * x.GlobalTransform.Basis, x.GlobalTransform.Origin))
+            .Append(new Transform3D(STARTING_OFFSET.Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin))
+            .ToList();
     }
 }

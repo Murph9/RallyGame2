@@ -14,7 +14,6 @@ public partial class Car : Node3D {
 
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
-    private readonly Transform3D _worldSpawn;
 
     public ICarInputs Inputs { get; }
 
@@ -29,9 +28,8 @@ public partial class Car : Node3D {
     private Vector3? _lastPos;
 
 
-    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? worldSpawn = null) {
+    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null) {
         Details = details;
-        _worldSpawn = worldSpawn ?? Transform3D.Identity;
         Engine = new CarEngine(this);
 
         Inputs = inputs ?? new HumanCarInputs();
@@ -60,7 +58,7 @@ public partial class Car : Node3D {
 
         // set values from the details
         RigidBody.Mass = (float)Details.TotalMass;
-        RigidBody.Transform = _worldSpawn;
+        RigidBody.Transform = initialTransform ?? Transform3D.Identity;
         AddChild(RigidBody);
 
         Wheels = Details.WheelDetails.Select(x => new Wheel(this, x)).ToArray();
@@ -129,15 +127,6 @@ public partial class Car : Node3D {
             w._PhysicsProcess(delta);
         }
         ApplyCentralDrag();
-    }
-
-    public void Reset() {
-        RigidBody.Transform = _worldSpawn;
-        RigidBody.LinearVelocity = new Vector3();
-        RigidBody.AngularVelocity = new Vector3();
-        foreach (var w in Wheels) {
-            w.RadSec = 0;
-        }
     }
 
     private void CalcSuspension(Wheel w) {
