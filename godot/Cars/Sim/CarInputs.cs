@@ -67,10 +67,6 @@ public class HumanCarInputs : ICarInputs {
 
         BrakingCur = Input.GetActionStrength("car_brake");
         AccelCur = Input.GetActionStrength("car_accel");
-
-        if (Input.IsActionPressed("car_reset")) {
-            Car.Reset();
-        }
     }
 
     private float GetBestTurnAngle(float steeringRaw, int sign) {

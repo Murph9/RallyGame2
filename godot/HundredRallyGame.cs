@@ -49,13 +49,13 @@ public partial class HundredRallyGame : Node {
 
 
     public override void _Process(double delta) {
-        if (Input.IsKeyPressed(Key.Escape)) {
+        if (Input.IsActionJustPressed("menu_back")) {
             // TODO actually pause
             GetTree().ChangeSceneToFile("res://Main.tscn");
             return;
         }
 
-        if (Input.IsKeyPressed(Key.Enter)) {
+        if (Input.IsActionJustPressed("car_reset")) {
             // reset back to last road thing
             var pos = _roadManager.GetClosestPointTo(_racingScene.CarPos);
             _racingScene.ResetCarTo(pos);
