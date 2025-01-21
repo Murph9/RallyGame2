@@ -16,7 +16,8 @@ public partial class HundredRallyGame : Node {
     private HundredRacingScene _racingScene;
     private HundredUI _ui;
 
-    private Node3D CheckpointNode;
+    private readonly Node3D CheckpointNode = new();
+    private readonly List<Node3D> CheckpointNodes = [];
 
     public HundredRallyGame() {
     }
@@ -32,9 +33,6 @@ public partial class HundredRallyGame : Node {
         _ui = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUI))).Instantiate<HundredUI>();
         AddChild(_ui);
 
-        CheckpointNode = new Node3D();
-        AddChild(CheckpointNode);
-
         var boxMesh = new MeshInstance3D() {
             Mesh = new BoxMesh() {
                 Size = new Vector3(5, 5, 5)
@@ -47,7 +45,6 @@ public partial class HundredRallyGame : Node {
         };
         CheckpointNode.AddChild(boxMesh);
     }
-
 
     public override void _Process(double delta) {
         if (Input.IsActionJustPressed("menu_back")) {
@@ -62,8 +59,16 @@ public partial class HundredRallyGame : Node {
             _racingScene.ResetCarTo(pos);
         }
 
-        var nextCheckpoint = _roadManager.GetNextCheckpoint(_racingScene.CarPos);
-        CheckpointNode.Transform = nextCheckpoint;
+        foreach (var node in CheckpointNodes) RemoveChild(node);
+        CheckpointNodes.Clear();
+
+        foreach (var checkpoint in _roadManager.GetNextCheckpoints(_racingScene.CarPos, 6, true)) {
+            var newC = CheckpointNode.Duplicate() as Node3D;
+            newC.Transform = checkpoint;
+            AddChild(newC);
+            CheckpointNodes.Add(newC);
+        }
+
     }
 
     public override void _PhysicsProcess(double delta) {

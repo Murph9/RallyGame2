@@ -181,7 +181,8 @@ public partial class InfiniteWorldPieces : Node3D {
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
 
-        EmitSignal(SignalName.PieceAdded, toAdd.Transform);
+        // the transform is expected to be in the direction of travel here
+        EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin));
     }
 
     public Transform3D GetSpawn() {

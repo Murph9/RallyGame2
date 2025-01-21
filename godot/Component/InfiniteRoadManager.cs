@@ -104,7 +104,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             finalIndex = closestIndex + 1;
         }
 
-        return Enumerable.Range(finalIndex, pieces.Length - 1 - closestIndex).ToArray();
+        return Enumerable.Range(finalIndex, pieces.Length - 1 - finalIndex).ToArray();
     }
 
     private static int GetClosestToPieceIndex(Transform3D[] list, Vector3 pos) {
