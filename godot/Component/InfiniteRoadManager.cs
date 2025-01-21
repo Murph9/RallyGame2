@@ -10,6 +10,7 @@ namespace murph9.RallyGame2.godot.Component;
 
 public interface IRoadManager {
     Transform3D GetNextCheckpoint(Vector3 pos, bool leftSideOfRoad);
+    IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSideOfRoad);
 }
 
 public partial class InfiniteRoadManager : Node3D, IRoadManager {
@@ -51,5 +52,5 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSideOfRoad) => _world.GetNextCheckpoint(pos, leftSideOfRoad);
 
-    public Transform3D GetNextCheckpoints(Vector3 pos, bool leftSideOfRoad) => _world.GetNextCheckpoint(pos, leftSideOfRoad);
+    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSideOfRoad) => _world.GetNextCheckpoints(pos, count, leftSideOfRoad);
 }

@@ -191,39 +191,34 @@ public partial class InfiniteWorldPieces : Node3D {
         return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
     }
 
-    public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) {
-        // TODO always drive on left side
-        var transform = GetNextCheckpoint(pos);
+    public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) => GetNextCheckpoints(pos, 1, leftSide).First();
 
-        // yes it looks like the inverse() is on the wrong side
-        var offsetOrigin = transform.Origin + transform.Basis * GetSpawn().Basis * (leftSide ? -_trafficLeftSideOffset : _trafficLeftSideOffset);
-        return new Transform3D(transform.Basis, offsetOrigin);
-    }
-
-    public Transform3D GetNextCheckpoint(Vector3 pos) {
+    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSide) {
         var closestIndex = GetClosestToPieceIndex(pos);
 
-        if (closestIndex >= _placedPieces.Count) {
-            return new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
+        if (closestIndex >= _placedPieces.Count - 1) {
+            return [new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin)];
         }
 
+        var finalIndex = closestIndex;
         var closestTransform = _placedPieces[closestIndex].GlobalTransform;
-
-        // figure out if we want the next one or the current one
-        // if the distance from pos to i+1 is less from i+1 to i, then return i+1 else return i
-        Transform3D nextTransform;
-        if (closestIndex == _placedPieces.Count - 1) {
-            // if its the last piece use the nextTransform value
-            nextTransform = _nextTransform.FinalTransform;
-        } else {
-            nextTransform = _placedPieces[closestIndex + 1].GlobalTransform;
-        }
-
+        var nextTransform = _placedPieces[closestIndex + 1].GlobalTransform;
         if (nextTransform.Origin.DistanceSquaredTo(pos) < closestTransform.Origin.DistanceSquaredTo(nextTransform.Origin)) {
-            closestTransform = nextTransform;
+            finalIndex = closestIndex + 1;
         }
 
-        return new Transform3D(GetSpawn().Basis * closestTransform.Basis, closestTransform.Origin);
+        if (finalIndex >= _placedPieces.Count - 1) {
+            return [new Transform3D(GetSpawn().Basis * _nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin)];
+        }
+
+        var list = new List<Transform3D>();
+        for (var i = finalIndex; i < _placedPieces.Count - 1; i++) {
+            var transform = _placedPieces[i].GlobalTransform;
+            // yes it looks like the inverse() is on the wrong side
+            var originWithOffset = transform.Origin + transform.Basis * GetSpawn().Basis * (leftSide ? -_trafficLeftSideOffset : _trafficLeftSideOffset);
+            list.Add(new Transform3D(transform.Basis, originWithOffset));
+        }
+        return list;
     }
 
     private int GetClosestToPieceIndex(Vector3 pos) {

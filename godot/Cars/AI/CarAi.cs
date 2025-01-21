@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using System;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
@@ -58,8 +59,8 @@ public partial class TrafficAiInputs : CarAi {
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
-        var nextCheckPoint = _roadManager.GetNextCheckpoint(Car.RigidBody.GlobalPosition, true);
-        DriveAt(nextCheckPoint);
+        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, 2, true);
+        DriveAt(nextCheckPoints.First());
 
         // if going too fast slow down a little
         if (Car.RigidBody.LinearVelocity.Length() > MAX_SPEED) {
