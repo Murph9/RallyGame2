@@ -65,11 +65,9 @@ public partial class Car : Node3D {
         foreach (var w in Wheels) {
             RigidBody.AddChild(w);
 
-            if (!Inputs.IsAi) { // TODO perf issues as it runs
-                var skid = new WheelSkid(w);
-                _skids.Add(skid);
-                AddChild(skid);
-            }
+            var skid = new WheelSkid(w);
+            _skids.Add(skid);
+            AddChild(skid);
         }
 
         if (!Inputs.IsAi) {
