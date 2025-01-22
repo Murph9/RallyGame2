@@ -86,10 +86,14 @@ public partial class InfiniteWorldPieces : Node3D {
                         GD.Print("Loading " + node.Name + " as a traffic offset value");
                         _trafficLeftSideOffset = node.Transform.Origin;
                     }
-
                 }
                 scene.RemoveChild(c);
             }
+
+            if (_trafficLeftSideOffset == Vector3.Zero) {
+                throw new Exception("Traffic offset not set for model type " + _pieceType);
+            }
+
         } catch (Exception e) {
             GD.Print("Failed to parse pieces for " + _pieceType);
             GD.Print(e);
