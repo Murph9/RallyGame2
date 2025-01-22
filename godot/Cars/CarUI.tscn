@@ -9,6 +9,7 @@ anchors_preset = 0
 script = ExtResource("1_ujtt8")
 
 [node name="WheelGridContainer" type="GridContainer" parent="."]
+visible = false
 layout_mode = 0
 offset_right = 304.0
 offset_bottom = 374.0

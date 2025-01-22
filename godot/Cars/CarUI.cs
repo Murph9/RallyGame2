@@ -117,6 +117,10 @@ public partial class CarUI : Control {
         // force the torque outputs to the bottom left
         var torqueGraph = GetNode<TorqueCurveGraph>("TorqueCurveGraph");
         torqueGraph.Position = new Vector2(0, GetViewportRect().End.Y - torqueGraph.Size.Y);
+
+        if (Input.IsActionJustPressed("toggle_wheel_telemetry")) {
+            wheels.Visible = !wheels.Visible;
+        }
     }
 
     private static string V3toStr(Vector3 v) {
