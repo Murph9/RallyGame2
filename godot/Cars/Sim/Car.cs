@@ -1,5 +1,4 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using System;
 using System.Collections.Generic;
@@ -26,7 +25,6 @@ public partial class Car : Node3D {
 
     public float DistanceTravelled { get; private set; }
     private Vector3? _lastPos;
-
 
     public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null) {
         Details = details;
@@ -67,9 +65,11 @@ public partial class Car : Node3D {
         foreach (var w in Wheels) {
             RigidBody.AddChild(w);
 
-            var skid = new WheelSkid(w);
-            _skids.Add(skid);
-            AddChild(skid);
+            if (!Inputs.IsAi) { // TODO perf issues as it runs
+                var skid = new WheelSkid(w);
+                _skids.Add(skid);
+                AddChild(skid);
+            }
         }
 
         if (!Inputs.IsAi) {
