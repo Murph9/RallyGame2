@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.World.Search;
 
 public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
-    private readonly RandomNumberGenerator _rand = new ();
+    private readonly RandomNumberGenerator _rand = new();
     private readonly BasicEl[] _pieces = pieces;
 
     public IEnumerable<BasicEl> GenerateRandomLoop(int randAmount = 3, int startAmount = 8, int maxCount = 20) {
@@ -180,6 +181,6 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
     private static string GetNamesOfPath(SearchPiece end) {
         if (end.Parent == null)
             return end.Piece.Name;
-        return GetNamesOfPath(end.Parent) +  " " + end.Piece.Name;
+        return GetNamesOfPath(end.Parent) + " " + end.Piece.Name;
     }
 }

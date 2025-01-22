@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,7 @@ public class SearchPiece {
         var newExtentMin = Position + Rotation * piece.ExtentMin;
         var newExtentMax = Position + Rotation * piece.ExtentMax;
         var size = newExtentMax - newExtentMin;
-        Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
+        Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF / 2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
         // next position is pos + our rotation * our offset
         FinalPosition = Position + Rotation * piece.Dir.Transform.Origin;
@@ -66,8 +67,7 @@ public class SearchPiece {
 
     public override int GetHashCode() {
         int hash = 37;
-        foreach (var foo in GetParentPath().Select(x => x.Piece.Name))
-        {
+        foreach (var foo in GetParentPath().Select(x => x.Piece.Name)) {
             hash = hash * 31 + foo.GetHashCode();
         }
         return hash;

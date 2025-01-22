@@ -4,27 +4,28 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.scenes;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 
 namespace murph9.RallyGame2.godot.Component;
 
 public partial class CircuitRoadManager : Node3D {
 	[Signal]
-    public delegate void LoadedEventHandler();
+	public delegate void LoadedEventHandler();
 
-    private readonly DynamicWorldPieces _world;
+	private readonly DynamicWorldPieces _world;
 
-    public IWorld World => _world;
+	public IWorld World => _world;
 
 	public Curve3D RoadCurve { get; private set; }
 
 	public float ExpectedFinishTime { get; private set; }
 
-    public CircuitRoadManager() {
-        _world = new DynamicWorldPieces(WorldType.Simple);
-    }
+	public CircuitRoadManager() {
+		_world = new DynamicWorldPieces(WorldType.Simple);
+	}
 
-    public override void _Ready() {
-        AddChild(_world);
+	public override void _Ready() {
+		AddChild(_world);
 		var state = GetNode<GlobalState>("/root/GlobalState");
 		var carDetails = state.CarDetails;
 
@@ -47,9 +48,9 @@ public partial class CircuitRoadManager : Node3D {
 		var points = RoadCurve.GetBakedPoints();
 		for (int i = 1; i < points.Length - 1; i++) {
 			// calc radius from points around this one
-			var before = points[i-1];
+			var before = points[i - 1];
 			var cur = points[i];
-			var after = points[i+1];
+			var after = points[i + 1];
 
 			var radius = MyMath.GetCircleCenterFrom(before, cur, after);
 
@@ -71,5 +72,5 @@ public partial class CircuitRoadManager : Node3D {
 		ExpectedFinishTime = (float)Math.Ceiling(totalTime);
 
 		EmitSignal(SignalName.Loaded);
-    }
+	}
 }

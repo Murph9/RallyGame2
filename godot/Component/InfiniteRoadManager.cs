@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.World;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

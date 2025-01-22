@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ public class El(BasicEl piece) {
     public Aabb Aabb { get; set; }
 
     public override string ToString() {
-        return "el@"+Piece.Name;
+        return "el@" + Piece.Name;
     }
 
     public El Clone() {
@@ -24,7 +25,7 @@ public class ElList {
     private const float AABB_BUFFER_DIFF = 0.05f;
     private readonly List<El> _elements = [];
 
-    public ElList() {}
+    public ElList() { }
     public ElList(params El[] els) {
         _elements = els.ToList();
         UpdateChainFrom();
@@ -44,7 +45,7 @@ public class ElList {
 
     private void UpdateChainFrom(int index = 0) {
         for (var i = index; i < _elements.Count; i++) {
-            var parent = i-1 < 0 ? new El(null) : _elements[i-1];
+            var parent = i - 1 < 0 ? new El(null) : _elements[i - 1];
             var el = _elements[i];
 
             // next position is pos + our rotation * our offset
@@ -55,7 +56,7 @@ public class ElList {
             var newExtentMin = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMin;
             var newExtentMax = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMax;
             var size = newExtentMax - newExtentMin;
-            el.Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF/2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
+            el.Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF / 2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
         }
     }
 
@@ -178,7 +179,7 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
                 }
             }
 
-            SearchDone: {}
+        SearchDone: { }
         }
 
         Console.WriteLine("Added " + added + " pieces");
