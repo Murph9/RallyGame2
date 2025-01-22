@@ -10,9 +10,8 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.Component;
 
 public interface IRoadManager {
-    Transform3D GetLastCheckpoint(Vector3 pos);
-    Transform3D GetNextCheckpoint(Vector3 pos, bool leftSideOfRoad);
-    IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSideOfRoad);
+    Transform3D GetPassedCheckpoint(Vector3 pos);
+    IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, bool leftSideOfRoad);
 }
 
 public partial class InfiniteRoadManager : Node3D, IRoadManager {
@@ -20,11 +19,14 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     // places world pieces based on rules
     // does traffic and stuff
 
+    public const int MAX_TRAFFIC_COUNT = 100;
+
     [Signal]
     public delegate void LoadedEventHandler();
 
     private readonly InfiniteWorldPieces _world;
     private readonly List<Car> _traffic = [];
+    private readonly RandomNumberGenerator _rand = new();
 
     public InfiniteRoadManager() {
         _world = new InfiniteWorldPieces(WorldType.Simple2, 50);
@@ -45,12 +47,18 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     private void PiecePlacedListener(Transform3D checkpointTransform) {
-        if (_traffic.Count >= 10) return;
+        if (_traffic.Count >= MAX_TRAFFIC_COUNT) return;
 
-        var ai = new TrafficAiInputs(this);
-        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, checkpointTransform);
-        car.RigidBody.Transform = checkpointTransform;
-        car.RigidBody.LinearVelocity = checkpointTransform.Basis * Vector3.Back * ai.TargetSpeed;
+        var isReverse = _rand.Randf() > 0.5f;
+        var ai = new TrafficAiInputs(this, isReverse);
+
+        var realPosition = GetNextCheckpoint(checkpointTransform.Origin, isReverse, !isReverse);
+        if (isReverse) {
+            realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
+        }
+        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition);
+        car.RigidBody.Transform = realPosition;
+        car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeed;
 
         AddChild(car);
         _traffic.Add(car);
@@ -58,53 +66,63 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public Transform3D GetInitialSpawn() => _world.GetSpawn().Transform;
 
-    public Transform3D GetLastCheckpoint(Vector3 pos) {
+    public Transform3D GetPassedCheckpoint(Vector3 pos) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
         var index = GetClosestToPieceIndex(checkpoints, pos);
-        GD.Print(index);
         return checkpoints[Math.Max(0, index - 1)].Transform;
     }
 
     public Transform3D GetNextCheckpoint(Vector3 pos) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
-        var indexes = GetNextCheckpointIndexes(checkpoints, pos);
+        var indexes = GetNextCheckpointIndexes(checkpoints, pos, false);
         return checkpoints[indexes.First()].Transform;
     }
 
-    public Transform3D GetNextCheckpoint(Vector3 pos, bool leftSide) => GetNextCheckpoints(pos, 1, leftSide).First();
+    public Transform3D GetNextCheckpoint(Vector3 pos, bool inReverse, bool leftSide) => GetNextCheckpoints(pos, inReverse, leftSide).First();
 
-    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, int count, bool leftSide) {
+    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, bool leftSide) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
-        var indexes = GetNextCheckpointIndexes(checkpoints, pos);
+        var indexes = GetNextCheckpointIndexes(checkpoints, pos, inReverse);
 
         var list = new List<Transform3D>();
         foreach (var index in indexes) {
             var checkpoint = checkpoints[index];
-            // yes it looks like the left side is wrong here
             var originOffset = leftSide ? checkpoint.LeftOffset : -checkpoint.LeftOffset;
             list.Add(new Transform3D(checkpoint.Transform.Basis, checkpoint.Transform.Origin + originOffset));
         }
-        if (list.Count < 1) {
-            GD.Print("No checkpoints found");
-        }
+
         return list;
     }
 
-    private static int[] GetNextCheckpointIndexes(InfiniteCheckpoint[] checkpoints, Vector3 pos) {
+    private static int[] GetNextCheckpointIndexes(InfiniteCheckpoint[] checkpoints, Vector3 pos, bool inReverse) {
         var closestIndex = GetClosestToPieceIndex(checkpoints, pos);
 
-        if (closestIndex >= checkpoints.Length - 1) {
+        if (inReverse) {
+            if (closestIndex <= 0) {
+                return [0];
+            }
+        } else if (closestIndex >= checkpoints.Length - 1) {
             return [closestIndex];
         }
 
+        var reverseOffset = inReverse ? -1 : 1;
+
         var finalIndex = closestIndex;
         var closestTransform = checkpoints[closestIndex];
-        var checkpoint = checkpoints[closestIndex + 1];
+        var checkpoint = checkpoints[closestIndex + reverseOffset];
         if (checkpoint.Transform.Origin.DistanceSquaredTo(pos) < closestTransform.Transform.Origin.DistanceSquaredTo(checkpoint.Transform.Origin)) {
-            finalIndex = closestIndex + 1;
+            finalIndex = closestIndex + reverseOffset;
         }
 
-        return Enumerable.Range(finalIndex, checkpoints.Length - finalIndex).ToArray();
+        var result = Enumerable.Range(finalIndex, checkpoints.Length - finalIndex).ToArray();
+        if (inReverse) {
+            result = Enumerable.Range(0, finalIndex + 1).Reverse().ToArray();
+        }
+        if (result.Length < 1) {
+            GD.PushError("No checkpoints in result");
+        }
+
+        return result;
     }
 
     private static int GetClosestToPieceIndex(InfiniteCheckpoint[] checkpoints, Vector3 pos) {

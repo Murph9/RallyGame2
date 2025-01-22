@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Hundred;
 using murph9.RallyGame2.godot.scenes;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
 using System.Collections.Generic;
 
@@ -16,13 +17,12 @@ public partial class HundredRallyGame : Node {
     private HundredRacingScene _racingScene;
     private HundredUI _ui;
 
-    private readonly Node3D CheckpointNode = new();
-    private readonly List<Node3D> CheckpointNodes = [];
-
     public HundredRallyGame() {
     }
 
     public override void _Ready() {
+        DebugGUI.IsActive = false; // TODO
+
         _roadManager = new InfiniteRoadManager();
         AddChild(_roadManager);
 
@@ -32,18 +32,6 @@ public partial class HundredRallyGame : Node {
 
         _ui = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUI))).Instantiate<HundredUI>();
         AddChild(_ui);
-
-        var boxMesh = new MeshInstance3D() {
-            Mesh = new BoxMesh() {
-                Size = new Vector3(5, 5, 5)
-            },
-            Position = new Vector3(0, 0, 0),
-            MaterialOverride = new StandardMaterial3D() {
-                AlbedoColor = new Color(0, 1, 1, 0.8f),
-                Transparency = BaseMaterial3D.TransparencyEnum.Alpha
-            }
-        };
-        CheckpointNode.AddChild(boxMesh);
     }
 
     public override void _Process(double delta) {
@@ -55,20 +43,9 @@ public partial class HundredRallyGame : Node {
 
         if (Input.IsActionJustPressed("car_reset")) {
             // reset back to last road thing
-            var pos = _roadManager.GetLastCheckpoint(_racingScene.CarPos);
+            var pos = _roadManager.GetPassedCheckpoint(_racingScene.CarPos);
             _racingScene.ResetCarTo(pos);
         }
-
-        foreach (var node in CheckpointNodes) RemoveChild(node);
-        CheckpointNodes.Clear();
-
-        foreach (var checkpoint in _roadManager.GetNextCheckpoints(_racingScene.CarPos, 6, true)) {
-            var newC = CheckpointNode.Duplicate() as Node3D;
-            newC.Transform = checkpoint;
-            AddChild(newC);
-            CheckpointNodes.Add(newC);
-        }
-
     }
 
     public override void _PhysicsProcess(double delta) {

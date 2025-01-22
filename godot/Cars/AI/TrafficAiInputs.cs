@@ -14,7 +14,10 @@ public partial class TrafficAiInputs : CarAi {
 
     public float TargetSpeed { get; set; } = BASE_TARGET_SPEED;
 
-    public TrafficAiInputs(IRoadManager roadManager) : base(roadManager) {
+    public bool InReverse { get; init; }
+
+    public TrafficAiInputs(IRoadManager roadManager, bool inReverse) : base(roadManager) {
+        InReverse = inReverse;
     }
 
     public override void _Ready() {
@@ -24,11 +27,11 @@ public partial class TrafficAiInputs : CarAi {
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
-        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, 2, true);
+        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, InReverse, !InReverse);
 
         _lineDebug3D.Start = Car.RigidBody.GlobalPosition;
         _lineDebug3D.End = nextCheckPoints.First().Origin;
-        _lineDebug3D.Colour = Colors.Blue;
+        _lineDebug3D.Colour = InReverse ? Colors.Blue : Colors.Green;
 
         DriveAt(nextCheckPoints.First());
 
