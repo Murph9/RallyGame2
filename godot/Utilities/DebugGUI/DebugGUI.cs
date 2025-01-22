@@ -11,6 +11,7 @@ public partial class DebugGUI : VBoxContainer {
 
     // from https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs
     private static DebugGUI Instance;
+    public static bool IsActive { get; set; }
 
     private record GraphMapping {
         public Graph.Dataset Dataset;
@@ -30,8 +31,8 @@ public partial class DebugGUI : VBoxContainer {
     private static readonly double RESCAN_TIMER = 5; // big perf
     private double _rescanTimer = RESCAN_TIMER;
 
-    private readonly Dictionary<Node, IList<GraphMapping>> Datasets = new ();
-    private readonly Dictionary<Node, IList<TextMapping>> LabelSets = new ();
+    private readonly Dictionary<Node, IList<GraphMapping>> Datasets = [];
+    private readonly Dictionary<Node, IList<TextMapping>> LabelSets = [];
 
     public static void ForceReinitializeAttributes() {
         Instance.LoadAllAttributes(Instance.GetTree().Root);
@@ -49,6 +50,8 @@ public partial class DebugGUI : VBoxContainer {
     }
 
     public override void _Process(double delta) {
+        if (!IsActive) return;
+
         CallDeferred(nameof(GetValues));
         CallDeferred(nameof(CleanupOld));
 
