@@ -54,4 +54,6 @@ public partial class HundredRacingScene : Node3D {
     public void StartDriving() {
         _car.Inputs.AcceptInputs();
     }
+
+    public bool IsMainCar(Node3D node) => _car.RigidBody == node;
 }

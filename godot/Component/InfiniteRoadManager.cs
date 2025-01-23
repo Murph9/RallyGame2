@@ -24,6 +24,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     [Signal]
     public delegate void LoadedEventHandler();
+    [Signal]
+    public delegate void StopCreatedEventHandler(Transform3D transform);
 
     private readonly InfiniteWorldPieces _world;
     private readonly List<Car> _traffic = [];
@@ -47,7 +49,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         }
     }
 
-    private void PiecePlacedListener(Transform3D checkpointTransform) {
+    private void PiecePlacedListener(Transform3D checkpointTransform, string name, bool queuedPiece) {
         if (_traffic.Count >= MAX_TRAFFIC_COUNT) return;
 
         var isReverse = _rand.Randf() > 0.5f;
@@ -63,6 +65,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         AddChild(car);
         _traffic.Add(car);
+
+        if (queuedPiece) {
+            EmitSignal(SignalName.StopCreated, checkpointTransform);
+        }
     }
 
     public Transform3D GetInitialSpawn() => _world.GetSpawn().Transform;
@@ -144,5 +150,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         }
 
         return closestIndex;
+    }
+
+    public void TriggerStop() {
+        var piece = _world.GetStraightPiece();
+        _world.QueuePiece(piece);
     }
 }

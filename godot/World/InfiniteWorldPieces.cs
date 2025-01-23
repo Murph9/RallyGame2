@@ -13,7 +13,7 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 public partial class InfiniteWorldPieces : Node3D {
 
     [Signal]
-    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
+    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
 
     private const int MAX_COUNT = 100;
     private static readonly Transform3D STARTING_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
@@ -29,6 +29,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly WorldType _pieceType;
     private readonly List<WorldPiece> _pieces = [];
     private readonly List<Node3D> _placedPieces = [];
+    private readonly List<WorldPiece> _queuedPieces = [];
     private Vector3 _trafficLeftSideOffset;
 
     private LastPlacedDetails _nextTransform;
@@ -114,12 +115,19 @@ public partial class InfiniteWorldPieces : Node3D {
         }
 
         if (_placedPieces.Count >= MAX_COUNT) {
-            // keep max piece count by removing the first one
+            // keep max piece count by removing the oldest one
             var removal = _placedPieces.First();
 
             _placedPieces.Remove(removal);
             RemoveChild(removal);
         }
+
+        foreach (var queuedPiece in new List<WorldPiece>(_queuedPieces)) {
+            PlacePiece(queuedPiece, currentTransform, 0, true); // TODO only the first one so far
+
+            currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
+        }
+        _queuedPieces.Clear();
 
         var attempts = 0;
         var piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
@@ -134,6 +142,14 @@ public partial class InfiniteWorldPieces : Node3D {
         }
 
         PlacePiece(piece, currentTransform, directionIndex);
+    }
+
+    public WorldPiece GetStraightPiece() {
+        return _pieces.First(x => x.Name.Contains("straight", StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public void QueuePiece(WorldPiece piece) {
+        _queuedPieces.Add(piece);
     }
 
     private static bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {
@@ -170,7 +186,7 @@ public partial class InfiniteWorldPieces : Node3D {
         return true;
     }
 
-    private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0) {
+    private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0, bool queuedPiece = false) {
         var toAdd = piece.Model.Duplicate() as Node3D;
         toAdd.Transform = new Transform3D(transform.Basis, transform.Origin);
 
@@ -186,7 +202,7 @@ public partial class InfiniteWorldPieces : Node3D {
         _placedPieces.Add(toAdd);
 
         // the transform is expected to be in the direction of travel here
-        EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin));
+        EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin), piece.Name, queuedPiece);
     }
 
     public InfiniteCheckpoint GetSpawn() {
