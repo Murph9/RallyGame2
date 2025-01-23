@@ -53,7 +53,7 @@ public partial class RacingScreen : Node3D {
 			}
 			var index = i; // this is to protect the lambda below from losing the index
 
-			var checkArea = Checkpoint.AsBox(curCheckpoint.Origin, size, new Color(1, 1, 1, 0.3f));
+			var checkArea = Checkpoint.AsBox(curCheckpoint, size, new Color(1, 1, 1, 0.3f));
 			checkArea.ThingEntered += (Node3D node) => { CheckpointDetection(index, node); };
 			_checkpointNodes.Add(checkArea);
 			AddChild(checkArea);
