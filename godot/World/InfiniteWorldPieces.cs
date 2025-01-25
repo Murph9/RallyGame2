@@ -12,14 +12,8 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D {
 
-    [Signal]
-    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
-
     private const int MAX_COUNT = 100;
     private static readonly Transform3D STARTING_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
-    private readonly IReadOnlyCollection<string> EXCLUDED_LIST = [];
-    // private readonly IReadOnlyCollection<string> EXCLUDED_LIST = // debugging
-    // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
 
     private readonly RandomNumberGenerator _rand = new();
     private readonly float _distance;
@@ -34,6 +28,12 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private LastPlacedDetails _nextTransform;
     public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
+
+    public List<string> IgnoredList { get; set; } = [];
+    // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
+
+    [Signal]
+    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
 
     public InfiniteWorldPieces(WorldType type, float distance = 40, int pieceAttemptMax = 10) {
         _distance = distance;
@@ -63,6 +63,7 @@ public partial class InfiniteWorldPieces : Node3D {
         _nextTransform = new LastPlacedDetails(null, Transform3D.Identity);
     }
 
+
     public override void _Ready() {
         var scene = _blenderScene.Instantiate<Node3D>();
 
@@ -78,9 +79,7 @@ public partial class InfiniteWorldPieces : Node3D {
                     }
 
                     var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);
-
-                    if (!EXCLUDED_LIST.Any(x => x == model.Name))
-                        _pieces.Add(p);
+                    _pieces.Add(p);
                 } else if (c.GetType() == typeof(Node3D)) {
                     var node = c as Node3D;
                     if (node.Name == "TrafficLeftSide") {
@@ -101,6 +100,11 @@ public partial class InfiniteWorldPieces : Node3D {
             return;
         }
         GD.Print("Loaded " + _pieces.Count + " pieces");
+    }
+
+    private WorldPiece PickRandom() {
+        var pieceList = _pieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
+        return pieceList[_rand.RandiRange(0, pieceList.Length - 1)];
     }
 
     public override void _PhysicsProcess(double delta) {
@@ -130,10 +134,10 @@ public partial class InfiniteWorldPieces : Node3D {
         _queuedPieces.Clear();
 
         var attempts = 0;
-        var piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
+        var piece = PickRandom();
         var directionIndex = _rand.RandiRange(0, piece.Directions.Length - 1);
         while (!PieceValidSimple(piece, currentTransform, directionIndex) && attempts < _pieceAttemptMax) {
-            piece = _pieces[_rand.RandiRange(0, _pieces.Count - 1)];
+            piece = PickRandom();
             attempts++;
         }
 
@@ -144,12 +148,10 @@ public partial class InfiniteWorldPieces : Node3D {
         PlacePiece(piece, currentTransform, directionIndex);
     }
 
-    public WorldPiece GetStraightPiece() {
-        return _pieces.First(x => x.Name.Contains("straight", StringComparison.InvariantCultureIgnoreCase));
-    }
-
-    public void QueuePiece(WorldPiece piece) {
-        _queuedPieces.Add(piece);
+    public void QueuePiece(string pieceName) {
+        var piece = _pieces.FirstOrDefault(x => x.Name.Contains(pieceName));
+        if (piece != null)
+            _queuedPieces.Add(piece);
     }
 
     private static bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {

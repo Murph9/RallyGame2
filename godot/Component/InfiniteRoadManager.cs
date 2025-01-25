@@ -34,6 +34,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public InfiniteRoadManager() {
         _world = new InfiniteWorldPieces(WorldType.Simple2, 50);
         _world.PieceAdded += PiecePlacedListener;
+        _world.IgnoredList.Add("station");
     }
 
     public override void _Ready() {
@@ -153,7 +154,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public void TriggerStop() {
-        var piece = _world.GetStraightPiece();
-        _world.QueuePiece(piece);
+        _world.QueuePiece("station");
+    }
+    public void TriggerRaceEnd() {
+        _world.QueuePiece("small_straight");
     }
 }

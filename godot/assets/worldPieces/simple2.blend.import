@@ -53,6 +53,9 @@ _subresources={
 },
 "PATH:small_straight": {
 "generate/physics": true
+},
+"PATH:station": {
+"generate/physics": true
 }
 }
 }

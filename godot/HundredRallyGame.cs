@@ -77,7 +77,7 @@ public partial class HundredRallyGame : Node {
         if (_rivalRaceDetails.HasValue && !_rivalRaceDetails.Value.CheckpointSent
                 && _rivalRaceDetails.Value.StartDistance + _rivalRaceDetails.Value.RaceDistance < _racingScene.DistanceTravelled) {
             GD.Print("Triggering race end because: " + (_rivalRaceDetails.Value.StartDistance + _rivalRaceDetails.Value.RaceDistance) + "<" + _racingScene.DistanceTravelled);
-            _roadManager.TriggerStop();
+            _roadManager.TriggerRaceEnd();
             _rivalRaceDetails = _rivalRaceDetails.Value with { CheckpointSent = true };
         }
     }
