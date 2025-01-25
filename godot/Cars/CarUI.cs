@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
@@ -73,10 +74,6 @@ public partial class CarUI : Control {
             DrawLine(middle + rotationQua * (arcSize - defaultFontSize), middle + rotationQua * arcSize, Colors.White, 2);
         }
 
-        // rpm debug number
-        var rpmStr = Car.Engine.CurRPM.ToString();
-        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize), rpmStr, width: -1, fontSize: defaultFontSize);
-
         // show gear
         DrawString(defaultFont, new Vector2(30, speedoRect.Size.Y - 20), Car.Engine.CurGear.ToString(), width: -1, fontSize: defaultFontSize * 4);
 
@@ -99,6 +96,18 @@ public partial class CarUI : Control {
         DrawRect(new Rect2(controlBarX, middle.Y + CONTROL_BAR_HEIGHT * 2, CONTROL_BAR_WIDTH, CONTROL_BAR_HEIGHT), Colors.White * 0.2f);
         DrawRect(new Rect2(controlBarX + CONTROL_BAR_WIDTH / 2 - CONTROL_BAR_HEIGHT / 2 + (CONTROL_BAR_WIDTH - CONTROL_BAR_HEIGHT) * -Car.Inputs.Steering,
             middle.Y + CONTROL_BAR_HEIGHT * 2, CONTROL_BAR_HEIGHT, CONTROL_BAR_HEIGHT), Colors.White * 0.7f);
+
+
+        // debug numbers
+        // rpm
+        var rpmStr = Car.Engine.CurRPM.ToString() + " rpm";
+        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize), rpmStr, width: -1, fontSize: defaultFontSize);
+
+        // engine stuff
+        var engineTorqueStr = (int)Car.Engine.CurrentTorque + " Nm";
+        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 2), engineTorqueStr, width: -1, fontSize: defaultFontSize);
+        var enginekWStr = (int)EngineDetails.TorqueToKw(Car.Engine.CurrentTorque, Car.Engine.CurRPM) + " kW";
+        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 3), enginekWStr, width: -1, fontSize: defaultFontSize);
     }
 
     public override void _Process(double delta) {
