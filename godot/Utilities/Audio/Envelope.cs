@@ -3,7 +3,7 @@ using Godot;
 namespace murph9.RallyGame2.godot.Utilities.Audio;
 
 public record Envelope(double Attack, double Decay, double Sustain, double SustainVolume, double Release) {
-    public readonly static Envelope BASIC = new (0, 0, double.MaxValue, 1, 0);
+    public readonly static Envelope BASIC = new(0, 0, double.MaxValue, 1, 0);
 
     public double Current { get; set; } // handy inbuilt tracking
 

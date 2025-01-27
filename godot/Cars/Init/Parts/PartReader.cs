@@ -17,13 +17,13 @@ public class PartReader {
         foreach (var field in _self.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
             if (Attribute.GetCustomAttribute(field, typeof(PartFieldAttribute)) is PartFieldAttribute partFieldAttribute) {
                 if (partFieldAttribute.HowToApply == HowToApply.Add) {
-                    if ((field.FieldType == typeof(int) && !partFieldAttribute.DefaultValue.Equals(0)) || 
-                    (field.FieldType == typeof(float) && !partFieldAttribute.DefaultValue.Equals(0f)) || 
+                    if ((field.FieldType == typeof(int) && !partFieldAttribute.DefaultValue.Equals(0)) ||
+                    (field.FieldType == typeof(float) && !partFieldAttribute.DefaultValue.Equals(0f)) ||
                     (field.FieldType == typeof(double) && !partFieldAttribute.DefaultValue.Equals(0d))) {
                         throw new Exception(field.Name + " uses ApplyAdd, which can't be used if the default value isn't 0");
                     }
                 }
-                
+
                 _fieldProps.Add(new FieldProps(field, partFieldAttribute.DefaultValue, partFieldAttribute.HowToApply, partFieldAttribute.HigherIs, partFieldAttribute.DefaultIs));
             }
         }

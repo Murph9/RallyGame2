@@ -17,7 +17,7 @@ public class MyMath {
 
         // area of the triangle is too small (you may additionally check the points for colinearity if you are paranoid)
         // if (wsl < 10e-14)
-            // return double.MaxValue;
+        //     return double.MaxValue;
 
         // helpers
         var iwsl2 = 1f / (2f * wsl);
@@ -26,8 +26,8 @@ public class MyMath {
 
         // result circle
         Vector3 circCenter = p1 + (u * tt * (u.Dot(v)) - t * uu * (t.Dot(v))) * iwsl2;
-        var     circRadius = Mathf.Sqrt(tt * uu * (v.Dot(v)) * iwsl2 * 0.5f);
-        Vector3 circAxis   = w / Mathf.Sqrt(wsl);
+        var circRadius = Mathf.Sqrt(tt * uu * (v.Dot(v)) * iwsl2 * 0.5f);
+        Vector3 circAxis = w / Mathf.Sqrt(wsl);
 
         return circRadius;
     }

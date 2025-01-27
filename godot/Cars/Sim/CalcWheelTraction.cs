@@ -23,12 +23,12 @@ public class CalcWheelTraction {
 
         // before peak, quick ramp to t
         if (slip < s) {
-            return t*slip/s;
+            return t * slip / s;
         }
 
         // after peak with decay to t/2
-        if (slip > s+l) {
-            return Mathf.Max(t+(s+l-slip)*d, t/2);
+        if (slip > s + l) {
+            return Mathf.Max(t + (s + l - slip) * d, t / 2);
         }
 
         // at peak

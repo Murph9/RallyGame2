@@ -13,7 +13,7 @@ public class DebugHelper {
         return instance;
     }
 
-    public static bool IsNumeric(object o){
+    public static bool IsNumeric(object o) {
         var numType = typeof(System.Numerics.INumber<>);
         return o.GetType().GetInterfaces().Any(iface =>
             iface.IsGenericType && (iface.GetGenericTypeDefinition() == numType));

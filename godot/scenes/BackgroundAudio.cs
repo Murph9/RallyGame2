@@ -63,7 +63,7 @@ public partial class BackgroundAudio : Node {
             synth._Process(delta);
 
             // if (synth.EnvelopeEnded) {
-                // _synths.Remove(synth);
+            // _synths.Remove(synth);
             // } // TODO figure out how to remove only note synths
         }
 

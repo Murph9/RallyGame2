@@ -16,10 +16,10 @@ public class GodotClassHelper {
     }
 
     public static string ToStringWithRounding(object obj, int length) {
-		if (obj is float f)
-			return float.Round(f, length).ToString();
-		if (obj is double d)
-			return double.Round(d, length).ToString();
-		return obj.ToString();
-	}
+        if (obj is float f)
+            return float.Round(f, length).ToString();
+        if (obj is double d)
+            return double.Round(d, length).ToString();
+        return obj.ToString();
+    }
 }

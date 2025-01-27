@@ -23,8 +23,7 @@ public class DebugGUIGraphAttribute : Attribute {
         int group = 0,
         // Auto-adjust min/max to fit the values
         bool autoScale = true
-    )
-    {
+    ) {
         Color = new Color(r, g, b, 0.9f);
         Min = min;
         Max = max;

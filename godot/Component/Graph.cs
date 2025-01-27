@@ -7,14 +7,14 @@ namespace murph9.RallyGame2.godot.Component;
 
 public partial class Graph : HBoxContainer {
 
-	public class Dataset {
+    public class Dataset {
         public string GraphName { get; }
         public readonly float[] Values;
         public readonly Vector2[] GraphPoints;
 
         public float Min { get; private set; }
         public float Max { get; private set; }
-        internal int CurrentIndex  { get; private set; }
+        internal int CurrentIndex { get; private set; }
 
         public Color Color { get; set; } = Colors.White;
         public bool AutoScale { get; set; } = true;
@@ -31,8 +31,7 @@ public partial class Graph : HBoxContainer {
 
         public void Push(float value) {
             // perf, but autoscale is helpful
-            if (AutoScale && (value > Max || value < Min))
-            {
+            if (AutoScale && (value > Max || value < Min)) {
                 Min = Mathf.Min(value, Min);
                 Max = Mathf.Max(value, Max);
             }
@@ -93,8 +92,7 @@ public partial class Graph : HBoxContainer {
         });
     }
 
-    public override void _Draw()
-    {
+    public override void _Draw() {
         var colorRect = GetNode<ColorRect>("GraphRect");
         var pos = GetRect().End - GetRect().Position;
         DrawRect(new Rect2(0, 0, pos.X, pos.Y), new Color(0, 0, 0, 0.2f));
@@ -104,16 +102,16 @@ public partial class Graph : HBoxContainer {
         var offset = new Vector2();
         foreach (var dataset in _datasets) {
             DrawString(defaultFont, colorRect.Position + new Vector2(0, defaultFontSize) + offset,
-                float.Round(dataset.Max, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  dataset.Color);
+                float.Round(dataset.Max, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize, dataset.Color);
             DrawString(defaultFont, colorRect.Position + new Vector2(0, colorRect.Size.Y) + offset,
-                float.Round(dataset.Min, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize,  dataset.Color);
+                float.Round(dataset.Min, 2).ToString(), HorizontalAlignment.Left, -1, defaultFontSize, dataset.Color);
 
             var fraction = Mathf.InverseLerp(dataset.Min, dataset.Max, 0);
             if (fraction > 0 && fraction < 1 && Math.Abs(fraction - 0.5f) < 0.35f) {
                 // add a 0 label when its inbetween min and max
                 // and prevent overlapping the min/max values a little
-                DrawString(defaultFont, colorRect.Position + new Vector2(3, colorRect.Size.Y * (1-fraction) + defaultFontSize/2) + offset,
-                    "0", HorizontalAlignment.Left, -1, defaultFontSize,  dataset.Color);
+                DrawString(defaultFont, colorRect.Position + new Vector2(3, colorRect.Size.Y * (1 - fraction) + defaultFontSize / 2) + offset,
+                    "0", HorizontalAlignment.Left, -1, defaultFontSize, dataset.Color);
             }
 
             offset += new Vector2(50, 0);
@@ -121,8 +119,7 @@ public partial class Graph : HBoxContainer {
 
         foreach (var dataset in _datasets) {
             int num = dataset.Values.Length;
-            for (int i = 0; i < num; i++)
-            {
+            for (int i = 0; i < num; i++) {
                 float value = dataset.Values[Mod(dataset.CurrentIndex - i - 1, dataset.Values.Length)];
                 // Note flipped inverse lerp min max to account for y = down in godot UI
                 dataset.GraphPoints[i] = new Vector2(
@@ -139,8 +136,7 @@ public partial class Graph : HBoxContainer {
         QueueRedraw();
     }
 
-    private static int Mod(int n, int m)
-    {
+    private static int Mod(int n, int m) {
         return ((n % m) + m) % m;
     }
 }

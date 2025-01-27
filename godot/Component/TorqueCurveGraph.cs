@@ -18,23 +18,23 @@ public partial class TorqueCurveGraph(CarDetails details, CarDetails compareTo =
         var datasetTorque = new Graph.Dataset("Torque", 200, max: 500) {
             Color = Colors.Green
         };
-		var datasetKw = new Graph.Dataset("kW", 200, max: 500) {
+        var datasetKw = new Graph.Dataset("kW", 200, max: 500) {
             Color = Colors.Green * 0.8f
         };
-		var datasetTorqueCompare = new Graph.Dataset("Torque 2", 200, max: 500) {
+        var datasetTorqueCompare = new Graph.Dataset("Torque 2", 200, max: 500) {
             Color = Colors.Blue
         };
-		var datasetKwCompare = new Graph.Dataset("kW 2", 200, max: 500) {
+        var datasetKwCompare = new Graph.Dataset("kW 2", 200, max: 500) {
             Color = Colors.Blue * 0.8f
         };
         for (int i = 0; i < 200; i++) {
-			if (i*50 <= peakRPM) {
-            	datasetTorque.Push((float)_details.Engine.CalcTorqueFor(i*50));
-            	datasetKw.Push((float)_details.Engine.CalcKwFor(i*50));
+            if (i * 50 <= peakRPM) {
+                datasetTorque.Push((float)_details.Engine.CalcTorqueFor(i * 50));
+                datasetKw.Push((float)_details.Engine.CalcKwFor(i * 50));
 
-            	datasetTorqueCompare.Push((float)(_compareTo?.Engine?.CalcTorqueFor(i*50) ?? 0));
-            	datasetKwCompare.Push((float)(_compareTo?.Engine?.CalcKwFor(i*50) ?? 0));
-			}
+                datasetTorqueCompare.Push((float)(_compareTo?.Engine?.CalcTorqueFor(i * 50) ?? 0));
+                datasetKwCompare.Push((float)(_compareTo?.Engine?.CalcKwFor(i * 50) ?? 0));
+            }
         }
 
         List<Graph.Dataset> datasets = [datasetTorque, datasetKw];
@@ -43,6 +43,6 @@ public partial class TorqueCurveGraph(CarDetails details, CarDetails compareTo =
             datasets.Add(datasetKwCompare);
         }
 
-		AddChild(new Graph(new Vector2(300, 250), datasets));
+        AddChild(new Graph(new Vector2(300, 250), datasets));
     }
 }

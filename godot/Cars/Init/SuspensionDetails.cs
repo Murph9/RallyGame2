@@ -40,7 +40,7 @@ public class SuspensionDetails : IHaveParts {
     private float RearStiffness;
 
     [JsonIgnore]
-	private PartReader PartReader { get; init; }
+    private PartReader PartReader { get; init; }
     public List<Part> Parts { get; set; } = [];
 
     public SuspensionDetails() {
@@ -50,8 +50,8 @@ public class SuspensionDetails : IHaveParts {
     public IEnumerable<PartResult> GetResultsInTree() => PartReader.GetResults();
     public IEnumerable<Part> GetAllPartsInTree() => Parts;
 
-    public CarSusDetails Front => new (FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
-    public CarSusDetails Rear => new (RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);
+    public CarSusDetails Front => new(FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
+    public CarSusDetails Rear => new(RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);
 
     public void LoadSelf() {
         if (PartReader.ValidateAndSetFields() is string str) {
@@ -70,18 +70,17 @@ public class SuspensionDetails : IHaveParts {
 #pragma warning restore CS0649 // will always have default value
 
 
-public record CarSusDetails(float Antiroll, float Comp, float MaxTravel, float MinTravel, float PreloadDistance, float Relax, float Stiffness)
-{
-	// travel values are relative to wheel offset pos
-	// minTravel m [-0.3 - 0.3] upper travel length - closer to car
-	// maxTravel m [-0.3 - 0.3] lower travel length - closer to ground
-	// preloadDistance m [~ 0.2] spring travel at max sus travel
-	// stiffness kg/mm [10-200] 10 is soft car, 100 is race car
-	// antiroll kg/mm [2 - 20], same as stiffness between the axle's other wheel
-	// comp [0.2] should be less than relax
-	// relax [0.3]
+public record CarSusDetails(float Antiroll, float Comp, float MaxTravel, float MinTravel, float PreloadDistance, float Relax, float Stiffness) {
+    // travel values are relative to wheel offset pos
+    // minTravel m [-0.3 - 0.3] upper travel length - closer to car
+    // maxTravel m [-0.3 - 0.3] lower travel length - closer to ground
+    // preloadDistance m [~ 0.2] spring travel at max sus travel
+    // stiffness kg/mm [10-200] 10 is soft car, 100 is race car
+    // antiroll kg/mm [2 - 20], same as stiffness between the axle's other wheel
+    // comp [0.2] should be less than relax
+    // relax [0.3]
 
-	public float TravelTotal() { return MaxTravel - MinTravel; }
-	public float Compression() { return Comp * 2 * Mathf.Sqrt(Stiffness); }
-	public float Rebound() { return Relax * 2 * Mathf.Sqrt(Stiffness); }
+    public float TravelTotal() { return MaxTravel - MinTravel; }
+    public float Compression() { return Comp * 2 * Mathf.Sqrt(Stiffness); }
+    public float Rebound() { return Relax * 2 * Mathf.Sqrt(Stiffness); }
 }

@@ -15,8 +15,7 @@ public partial class Oscillator {
     public Vector2[] GenFrames(int frames, double sampleRate) {
         var increment = Freq / sampleRate;
         var output = new Vector2[frames];
-        for (int i = 0; i < frames; i++)
-        {
+        for (int i = 0; i < frames; i++) {
             if (!Playing) {
                 output[i] = Vector2.Zero;
                 break;

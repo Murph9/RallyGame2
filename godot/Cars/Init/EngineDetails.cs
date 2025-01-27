@@ -78,8 +78,8 @@ public class EngineDetails : IHaveParts {
         const int DIVISIONS = 10;
         var max = 0d;
         int atRpm = 0;
-        for (int i = 0; i <= MaxRpm/(float)DIVISIONS; i++) {
-            var torque = CalcTorqueFor(i*DIVISIONS);
+        for (int i = 0; i <= MaxRpm / (float)DIVISIONS; i++) {
+            var torque = CalcTorqueFor(i * DIVISIONS);
             if (torque > max) {
                 max = torque;
                 atRpm = i * DIVISIONS;
@@ -91,8 +91,8 @@ public class EngineDetails : IHaveParts {
         const int DIVISIONS = 10;
         var max = 0d;
         int atRpm = 0;
-        for (int i = 0; i <= MaxRpm/(float)DIVISIONS; i++) {
-            var torque = CalcKwFor(i*DIVISIONS);
+        for (int i = 0; i <= MaxRpm / (float)DIVISIONS; i++) {
+            var torque = CalcKwFor(i * DIVISIONS);
             if (torque > max) {
                 max = torque;
                 atRpm = i * DIVISIONS;

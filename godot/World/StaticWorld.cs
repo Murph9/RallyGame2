@@ -40,7 +40,7 @@ public partial class StaticWorld : Node3D, IWorld {
         if (!_worldName.EndsWith(".blend")) {
             _worldName += ".blend";
         }
-        var packedScene = GD.Load<PackedScene>("res://assets/staticWorld/"+_worldName);
+        var packedScene = GD.Load<PackedScene>("res://assets/staticWorld/" + _worldName);
         _scene = packedScene.Instantiate<Node3D>();
         AddChild(_scene);
     }

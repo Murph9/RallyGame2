@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace murph9.RallyGame2.godot.Utilities;
 
 public class FileLoader {
-    private readonly static JsonSerializerOptions DEFAULT_OPTIONS = new () {
+    private readonly static JsonSerializerOptions DEFAULT_OPTIONS = new() {
         AllowTrailingCommas = true,
         PropertyNameCaseInsensitive = true,
         IncludeFields = true

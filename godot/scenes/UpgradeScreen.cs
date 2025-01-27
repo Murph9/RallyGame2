@@ -31,7 +31,7 @@ public partial class UpgradeScreen : CenterContainer, IScene {
             var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
             allParts.Remove(part);
             var optionButton = new Button() {
-                Text = $"{part.Name} lvl {part.CurrentLevel+1} for ${part.LevelCost[part.CurrentLevel + 1]}"
+                Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
             };
             optionButton.Pressed += () => {
                 // TODO do part reward count here
@@ -82,27 +82,27 @@ public partial class UpgradeScreen : CenterContainer, IScene {
         });
 
         var stats = new RichTextLabel() {
-			LayoutMode = 2,
-			BbcodeEnabled = true,
-			SizeFlagsHorizontal = SizeFlags.Fill,
-			FitContent = true,
-			AutowrapMode = TextServer.AutowrapMode.Off
-		};
-		statsBox.AddChild(stats);
+            LayoutMode = 2,
+            BbcodeEnabled = true,
+            SizeFlagsHorizontal = SizeFlags.Fill,
+            FitContent = true,
+            AutowrapMode = TextServer.AutowrapMode.Off
+        };
+        statsBox.AddChild(stats);
 
-		var maxTorque = state.CarDetails.Engine.MaxTorque();
-		var maxKw = state.CarDetails.Engine.MaxKw();
-		stats.AppendText($"Max Torque (Nm): {double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm\n");
-		stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
-		stats.PushColor(Colors.White);
-		stats.PushTable(4);
-		var prevDetails = _oldCarDetails.GetResultsInTree();
-		var details = state.CarDetails.GetResultsInTree();
-		foreach (var entry in details) {
+        var maxTorque = state.CarDetails.Engine.MaxTorque();
+        var maxKw = state.CarDetails.Engine.MaxKw();
+        stats.AppendText($"Max Torque (Nm): {double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm\n");
+        stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
+        stats.PushColor(Colors.White);
+        stats.PushTable(4);
+        var prevDetails = _oldCarDetails.GetResultsInTree();
+        var details = state.CarDetails.GetResultsInTree();
+        foreach (var entry in details) {
             // if the values are different show them:
-			if ((dynamic)entry.Value != (dynamic)prevDetails.First(x => x.Name == entry.Name).Value) {
-				// https://stackoverflow.com/a/8855857/9353639
-				// TODO support array diff detection
+            if ((dynamic)entry.Value != (dynamic)prevDetails.First(x => x.Name == entry.Name).Value) {
+                // https://stackoverflow.com/a/8855857/9353639
+                // TODO support array diff detection
 
                 stats.PushCell();
                 stats.AppendText(entry.Name);
@@ -113,24 +113,24 @@ public partial class UpgradeScreen : CenterContainer, IScene {
                 stats.AppendText(GodotClassHelper.ToStringWithRounding(prevDetails.First(x => x.Name == entry.Name).Value, 2));
                 stats.Pop();
                 stats.Pop();
-				stats.PushCell();
-				stats.PushColor(Colors.Green);
-				stats.AppendText(GodotClassHelper.ToStringWithRounding(entry.Value, 2));
-				stats.Pop();
-				stats.Pop();
+                stats.PushCell();
+                stats.PushColor(Colors.Green);
+                stats.AppendText(GodotClassHelper.ToStringWithRounding(entry.Value, 2));
+                stats.Pop();
+                stats.Pop();
 
                 stats.PushCell();
                 stats.PushColor(Colors.Gray);
                 stats.AppendText(string.Join(", ", entry.BecauseOf.Select(x => $"[color={x.Color}]{x.Name}[/color]")));
                 stats.Pop();
                 stats.Pop();
-			}
-		}
+            }
+        }
 
-		stats.Pop();
-		stats.Pop();
+        stats.Pop();
+        stats.Pop();
 
         var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, _oldCarDetails);
-		statsBox.AddChild(torqueCurveGraph);
+        statsBox.AddChild(torqueCurveGraph);
     }
 }

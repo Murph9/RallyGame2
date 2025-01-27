@@ -60,8 +60,8 @@ public partial class ChordChainer {
         return indexes.Select(x => new Note(x + root)).ToArray();
     }
 
-    private Queue<Chord> _prevChords = new ();
-    public Chord CurrentChord {get; private set; }
+    private Queue<Chord> _prevChords = new();
+    public Chord CurrentChord { get; private set; }
 
     public void SetRandomChord() {
         CurrentChord = ALL_CHORDS[GD.RandRange(0, ALL_CHORDS.Count - 1)];

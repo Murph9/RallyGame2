@@ -3,16 +3,14 @@ using System;
 
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
-public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert)
-{
+public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
     private static Basis LEFT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(90));
     private static Basis RIGHT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-90));
 
     private static Basis LEFT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(45));
     private static Basis RIGHT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-45));
 
-    public static WorldPieceDir FromTransform3D(Transform3D transform)
-    {
+    public static WorldPieceDir FromTransform3D(Transform3D transform) {
         // TODO normalize the rotation a little (to like closest 15' or something)
         // normalize the transform
         var t = new Transform3D(transform.Basis, transform.Origin);
@@ -35,16 +33,13 @@ public record WorldPieceDir(Transform3D Transform, WorldPieceDir.TurnType Turn, 
         return new WorldPieceDir(t, turn, offset, vert);
     }
 
-    public enum TurnType
-    {
+    public enum TurnType {
         Straight, Left, Right
     }
-    public enum VertType
-    {
+    public enum VertType {
         Level, Down, Up
     }
-    public enum OffsetType
-    {
+    public enum OffsetType {
         None, OffsetLeft, OffsetRight
     }
 }

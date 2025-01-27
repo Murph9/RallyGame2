@@ -23,6 +23,6 @@ public enum DefaultIs {
 public class PartFieldAttribute(object defaultValue, HowToApply howToApply, HigherIs higherIsGood = HigherIs.Good, DefaultIs defaultIs = DefaultIs.NotOkay) : Attribute {
     public object DefaultValue { get; init; } = defaultValue;
     public HowToApply HowToApply { get; init; } = howToApply;
-    public HigherIs HigherIs { get; init;} = higherIsGood;
+    public HigherIs HigherIs { get; init; } = higherIsGood;
     public DefaultIs DefaultIs { get; init; } = defaultIs;
 }

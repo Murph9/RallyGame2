@@ -24,7 +24,7 @@ public partial class GlobalState : Node {
     }
 
     public double SecondsToWin(int roundDiff = 0) {
-        return 15 * Mathf.Exp(-(_roundResults.Count + roundDiff)/40f) + WorldDetails.ExpectedFinishTime;
+        return 15 * Mathf.Exp(-(_roundResults.Count + roundDiff) / 40f) + WorldDetails.ExpectedFinishTime;
     }
 
     public void Reset() {
