@@ -24,6 +24,7 @@ public partial class HundredRallyGame : Node {
     private Checkpoint _currentStop;
 
     private RivalRace? _rivalRaceDetails;
+    private double _totalTime;
 
     private float _nextDistanceMilestone = 100; // in meters
 
@@ -46,6 +47,9 @@ public partial class HundredRallyGame : Node {
     }
 
     public override void _Process(double delta) {
+        _totalTime += delta;
+        _ui.TotalTime = _totalTime;
+
         if (Input.IsActionJustPressed("menu_back")) {
             // TODO actually pause
             GetTree().ChangeSceneToFile("res://Main.tscn");

@@ -18,6 +18,12 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
 
+[node name="HBoxContainerTime" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/HBoxContainerTime"]
+layout_mode = 2
+
 [node name="HBoxContainerDistance" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 

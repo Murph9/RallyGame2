@@ -5,6 +5,7 @@ namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredUI : VBoxContainer {
 
+    public double TotalTime { get; set; }
     public float TargetDistance { get; set; } = 100 * 1000;
     public float MinimumSpeed { get; set; } = 50;
     public float DistanceTravelled { get; set; }
@@ -17,6 +18,9 @@ public partial class HundredUI : VBoxContainer {
     public override void _Ready() { }
 
     public override void _Process(double delta) {
+        var timeLabel = GetNode<Label>("CenterContainer/VBoxContainer/HBoxContainerTime/Label");
+        timeLabel.Text = GenerateTimeString(TotalTime);
+
         var progressBar = GetNode<ProgressBar>("CenterContainer/VBoxContainer/HBoxContainerDistance/ProgressBar");
         var value = DistanceTravelled / TargetDistance * 100;
         progressBar.Value = value;
@@ -39,5 +43,16 @@ public partial class HundredUI : VBoxContainer {
 
         var rivalInfo = GetNode<Label>("CenterContainer/VBoxContainer/VBoxContainerRival/Label");
         rivalInfo.Text = RivalDetails ?? "";
+    }
+
+    private static string GenerateTimeString(double time) {
+        var hours = (int)time / 60 / 60;
+        var mins = (int)time / 60 % 60;
+        string output = null;
+        if (hours > 0)
+            output += hours + " hrs ";
+        if (mins > 0)
+            output += mins + " min ";
+        return output + ((int)time % 60) + " sec";
     }
 }
