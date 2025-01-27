@@ -61,7 +61,7 @@ public partial class DebugGUI : VBoxContainer {
     }
 
     public override void _Process(double delta) {
-        if (!IsActive) return;
+        if (!_isActive) return;
 
         CallDeferred(nameof(GetValues));
         CallDeferred(nameof(CleanupOld));
