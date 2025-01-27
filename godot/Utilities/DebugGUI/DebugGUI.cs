@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace murph9.RallyGame2.godot.Utilities.DebugGUI;
 
@@ -11,7 +12,17 @@ public partial class DebugGUI : VBoxContainer {
 
     // from https://github.com/WeaverDev/DebugGUIGraph/blob/master/addons/DebugGUI/Windows/GraphWindow.cs
     private static DebugGUI Instance;
-    public static bool IsActive { get; set; }
+
+    private bool _isActive;
+    public static bool IsActive {
+        get => Instance?._isActive ?? false;
+        set {
+            if (Instance != null) {
+                Instance._isActive = value;
+                Instance.Visible = value;
+            }
+        }
+    }
 
     private record GraphMapping {
         public Graph.Dataset Dataset;

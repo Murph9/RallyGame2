@@ -21,6 +21,8 @@ public partial class CarUI : Control {
     [DebugGUIGraph(b: 0f, group: 2, min: -10, max: 150)]
     private float SusForce3 => Car.Wheels[3].SusForce.Length();
 
+    private TorqueCurveGraph _torqueCurveGraph;
+
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
             var node = GetNode<WheelUI>("WheelGridContainer/WheelUi" + i);
@@ -30,10 +32,11 @@ public partial class CarUI : Control {
         GetTree().Root.SizeChanged += WindowSizeChanged;
         WindowSizeChanged();
 
-        var torqueCurveGraph = new TorqueCurveGraph(Car.Details) {
-            Name = "TorqueCurveGraph"
+        _torqueCurveGraph = new TorqueCurveGraph(Car.Details) {
+            Name = "TorqueCurveGraph",
+            Visible = false
         };
-        AddChild(torqueCurveGraph);
+        AddChild(_torqueCurveGraph);
     }
 
     private void WindowSizeChanged() {
@@ -129,6 +132,7 @@ public partial class CarUI : Control {
 
         if (Input.IsActionJustPressed("toggle_wheel_telemetry")) {
             wheels.Visible = !wheels.Visible;
+            _torqueCurveGraph.Visible = !_torqueCurveGraph.Visible;
         }
     }
 
