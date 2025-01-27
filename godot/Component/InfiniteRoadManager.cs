@@ -32,7 +32,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly RandomNumberGenerator _rand = new();
 
     public InfiniteRoadManager() {
-        _world = new InfiniteWorldPieces(WorldType.Simple2, 50);
+        _world = new InfiniteWorldPieces(WorldType.Simple2, 100);
         _world.PieceAdded += PiecePlacedListener;
         _world.IgnoredList.Add("station");
     }

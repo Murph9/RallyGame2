@@ -8,25 +8,28 @@ using murph9.RallyGame2.godot.scenes;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
+using System.Data;
 
 namespace murph9.RallyGame2.godot;
 
 internal readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
+internal class HundredGameState {
+    public double TotalTimePassed { get; set; }
+    public float NextDistanceMilestone { get; set; } = 100; // in meters
+    public RivalRace? RivalRaceDetails { get; set; }
+}
 
 public partial class HundredRallyGame : Node {
 
     // The manager of the game
+
+    private readonly HundredGameState _state = new();
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;
     private HundredUI _ui;
 
     private Checkpoint _currentStop;
-
-    private RivalRace? _rivalRaceDetails;
-    private double _totalTime;
-
-    private float _nextDistanceMilestone = 100; // in meters
 
     public HundredRallyGame() {
     }
@@ -47,8 +50,11 @@ public partial class HundredRallyGame : Node {
     }
 
     public override void _Process(double delta) {
-        _totalTime += delta;
-        _ui.TotalTime = _totalTime;
+        // update state
+        _state.TotalTimePassed += delta;
+
+
+        _ui.TotalTime = _state.TotalTimePassed;
 
         if (Input.IsActionJustPressed("menu_back")) {
             // TODO actually pause
@@ -58,31 +64,33 @@ public partial class HundredRallyGame : Node {
 
         if (Input.IsActionJustPressed("car_reset")) {
             // reset back to last road thing
-            var pos = _roadManager.GetPassedCheckpoint(_racingScene.CarPos);
+            var pos = _roadManager.GetPassedCheckpoint(_racingScene.PlayerCarPos);
             _racingScene.ResetCarTo(pos);
         }
     }
 
     public override void _PhysicsProcess(double delta) {
-        _ui.DistanceTravelled = _racingScene.DistanceTravelled;
-        _ui.SpeedKMH = _racingScene.CarLinearVelocity.Length() * 3.6f;
+        _ui.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
+        _ui.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
 
-        if (_racingScene.DistanceTravelled > _nextDistanceMilestone && !_rivalRaceDetails.HasValue) {
-            GD.Print("Queuing piece because of next trigger " + _nextDistanceMilestone);
-            if (_nextDistanceMilestone == 100) {
-                _nextDistanceMilestone = 500;
+        if (_racingScene.PlayerDistanceTravelled > _state.NextDistanceMilestone && !_state.RivalRaceDetails.HasValue) {
+            GD.Print("Queuing piece because of next trigger " + _state.NextDistanceMilestone);
+            if (_state.NextDistanceMilestone == 100) {
+                _state.NextDistanceMilestone = 500;
             } else {
-                _nextDistanceMilestone += 500;
+                _state.NextDistanceMilestone += 500;
             }
 
             _roadManager.TriggerStop();
         }
 
-        if (_rivalRaceDetails.HasValue && !_rivalRaceDetails.Value.CheckpointSent
-                && _rivalRaceDetails.Value.StartDistance + _rivalRaceDetails.Value.RaceDistance < _racingScene.DistanceTravelled) {
-            GD.Print("Triggering race end because: " + (_rivalRaceDetails.Value.StartDistance + _rivalRaceDetails.Value.RaceDistance) + "<" + _racingScene.DistanceTravelled);
+        var rival = _state.RivalRaceDetails;
+
+        if (rival.HasValue && !rival.Value.CheckpointSent
+                && rival.Value.StartDistance + rival.Value.RaceDistance < _racingScene.PlayerDistanceTravelled) {
+            GD.Print("Triggering race end because: " + (rival.Value.StartDistance + rival.Value.RaceDistance) + "<" + _racingScene.PlayerDistanceTravelled);
             _roadManager.TriggerRaceEnd();
-            _rivalRaceDetails = _rivalRaceDetails.Value with { CheckpointSent = true };
+            _state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
         }
     }
 
@@ -95,7 +103,7 @@ public partial class HundredRallyGame : Node {
     private void PlayerHitStop(Node3D node) {
         if (node.GetParent() is not Car) return;
 
-        if (_rivalRaceDetails == null) {
+        if (_state.RivalRaceDetails == null) {
             if (_racingScene.IsMainCar(node)) {
                 // race start checkpoint triggered
                 CallDeferred(MethodName.ResetStop);
@@ -108,8 +116,8 @@ public partial class HundredRallyGame : Node {
                 rival.RigidBody.LinearVelocity = _currentStop.GlobalTransform.Basis * Vector3.Back * ai.TargetSpeed;
                 AddChild(rival);
 
-                _rivalRaceDetails = new RivalRace(rival, _racingScene.DistanceTravelled, 100, false);
-                _ui.RivalDetails = "Rival race started, dist: " + _rivalRaceDetails.Value.RaceDistance + "m";
+                _state.RivalRaceDetails = new RivalRace(rival, _racingScene.PlayerDistanceTravelled, 100, false);
+                _ui.RivalDetails = "Rival race started, dist: " + _state.RivalRaceDetails.Value.RaceDistance + "m";
             }
         } else {
             // oh the race is over?
@@ -118,15 +126,15 @@ public partial class HundredRallyGame : Node {
                 CallDeferred(MethodName.ResetStop);
                 _ui.RivalDetails = "Nice win";
                 raceOver = true;
-            } else if (node == _rivalRaceDetails.Value.Rival.RigidBody) {
+            } else if (node == _state.RivalRaceDetails.Value.Rival.RigidBody) {
                 CallDeferred(MethodName.ResetStop);
                 _ui.RivalDetails = "You lost";
                 raceOver = true;
             }
 
             if (raceOver) {
-                RemoveChild(_rivalRaceDetails.Value.Rival);
-                _rivalRaceDetails = null;
+                RemoveChild(_state.RivalRaceDetails.Value.Rival);
+                _state.RivalRaceDetails = null;
             }
         }
     }

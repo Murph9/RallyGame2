@@ -9,7 +9,7 @@ public partial class HundredUI : VBoxContainer {
     public float TargetDistance { get; set; } = 100 * 1000;
     public float MinimumSpeed { get; set; } = 50;
     public float DistanceTravelled { get; set; }
-    public float SpeedKMH { get; set; }
+    public float CurrentSpeedKMH { get; set; }
 
     public string RivalDetails { get; set; }
 
@@ -28,7 +28,7 @@ public partial class HundredUI : VBoxContainer {
         var progressLabel = GetNode<Label>("CenterContainer/VBoxContainer/HBoxContainerDistance/Label");
         progressLabel.Text = Math.Round(value, 2) + " km";
 
-        if (SpeedKMH < MinimumSpeed) {
+        if (CurrentSpeedKMH < MinimumSpeed) {
             MinimumSpeedProgress += delta;
         } else {
             MinimumSpeedProgress -= delta;

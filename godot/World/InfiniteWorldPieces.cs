@@ -16,7 +16,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private static readonly Transform3D STARTING_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
 
     private readonly RandomNumberGenerator _rand = new();
-    private readonly float _distance;
+    private readonly float _generationRange;
     private readonly int _pieceAttemptMax;
 
     private readonly PackedScene _blenderScene;
@@ -35,8 +35,8 @@ public partial class InfiniteWorldPieces : Node3D {
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
 
-    public InfiniteWorldPieces(WorldType type, float distance = 40, int pieceAttemptMax = 10) {
-        _distance = distance;
+    public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
+        _generationRange = generationRange;
         _pieceAttemptMax = pieceAttemptMax;
 
         _pieceType = type;
@@ -114,7 +114,7 @@ public partial class InfiniteWorldPieces : Node3D {
         // for the physics issues we can only make one piece per frame
         // while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
 
-        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _distance) {
+        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _generationRange) {
             return;
         }
 

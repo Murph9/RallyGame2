@@ -21,9 +21,9 @@ public partial class HundredRacingScene : Node3D {
     private Car _car;
 
     public Transform3D InitialPosition { get; set; } = Transform3D.Identity;
-    public float DistanceTravelled => _car.DistanceTravelled;
-    public Vector3 CarPos => _car.RigidBody.GlobalPosition;
-    public Vector3 CarLinearVelocity => _car.RigidBody.LinearVelocity;
+    public float PlayerDistanceTravelled => _car.DistanceTravelled;
+    public Vector3 PlayerCarPos => _car.RigidBody.GlobalPosition;
+    public Vector3 PlayerCarLinearVelocity => _car.RigidBody.LinearVelocity;
 
     public override void _Ready() {
         _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), null, Transform3D.Identity);
