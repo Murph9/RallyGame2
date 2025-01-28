@@ -9,6 +9,7 @@ using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
 using System.Data;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot;
 
@@ -29,6 +30,7 @@ public partial class HundredRallyGame : Node {
     private HundredRacingScene _racingScene;
     private HundredUI _ui;
 
+    private Checkpoint _raceFinishLine;
     private Checkpoint _currentStop;
 
     public HundredRallyGame() {
@@ -38,7 +40,7 @@ public partial class HundredRallyGame : Node {
         DebugGUI.IsActive = false; // TODO
 
         _roadManager = new InfiniteRoadManager();
-        _roadManager.StopCreated += StopTriggeredAt;
+        _roadManager.ShopPlaced += ShopTriggeredAt;
         AddChild(_roadManager);
 
         _racingScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRacingScene))).Instantiate<HundredRacingScene>();
@@ -73,74 +75,72 @@ public partial class HundredRallyGame : Node {
         _ui.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
         _ui.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
 
-        if (_racingScene.PlayerDistanceTravelled > _state.NextDistanceMilestone && !_state.RivalRaceDetails.HasValue) {
-            GD.Print("Queuing piece because of next trigger " + _state.NextDistanceMilestone);
+        if (_racingScene.PlayerDistanceTravelled > _state.NextDistanceMilestone) {
+            GD.Print("Queuing shop because of next trigger " + _state.NextDistanceMilestone);
             if (_state.NextDistanceMilestone == 100) {
                 _state.NextDistanceMilestone = 500;
             } else {
                 _state.NextDistanceMilestone += 500;
             }
 
-            _roadManager.TriggerStop();
+            _roadManager.TriggerShop();
         }
-
-        var rival = _state.RivalRaceDetails;
-
-        if (rival.HasValue && !rival.Value.CheckpointSent
-                && rival.Value.StartDistance + rival.Value.RaceDistance < _racingScene.PlayerDistanceTravelled) {
-            GD.Print("Triggering race end because: " + (rival.Value.StartDistance + rival.Value.RaceDistance) + "<" + _racingScene.PlayerDistanceTravelled);
-            _roadManager.TriggerRaceEnd();
-            _state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
-        }
-    }
-
-    private void StopTriggeredAt(Transform3D transform) {
-        _currentStop = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(0, 0, 0, 0.4f)); // should be invisible
-        _currentStop.ThingEntered += PlayerHitStop;
-        AddChild(_currentStop);
-    }
-
-    private void PlayerHitStop(Node3D node) {
-        if (node.GetParent() is not Car) return;
 
         if (_state.RivalRaceDetails == null) {
-            if (_racingScene.IsMainCar(node)) {
-                // race start checkpoint triggered
-                CallDeferred(MethodName.ResetStop);
-
-                GD.Print("Spawning Rival");
-                // create car in the center of the road which we are going to race against
-                var ai = new TrafficAiInputs(_roadManager, false);
-                var rival = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, _currentStop.GlobalTransform);
-                rival.RigidBody.Transform = _currentStop.GlobalTransform;
-                rival.RigidBody.LinearVelocity = _currentStop.GlobalTransform.Basis * Vector3.Back * ai.TargetSpeed;
-                AddChild(rival);
-
-                _state.RivalRaceDetails = new RivalRace(rival, _racingScene.PlayerDistanceTravelled, 100, false);
+            var closestRival = _roadManager.GetClosestOpponent(_racingScene.PlayerCarPos);
+            if (closestRival != null && closestRival.RigidBody.GlobalPosition.DistanceTo(_racingScene.PlayerCarPos) < 10 && (closestRival.RigidBody.LinearVelocity - _racingScene.PlayerCarLinearVelocity).Length() < 3) {
+                GD.Print("Challenged rival");
+                _state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
                 _ui.RivalDetails = "Rival race started, dist: " + _state.RivalRaceDetails.Value.RaceDistance + "m";
             }
         } else {
-            // oh the race is over?
-            bool raceOver = false;
-            if (_racingScene.IsMainCar(node)) {
-                CallDeferred(MethodName.ResetStop);
-                _ui.RivalDetails = "Nice win";
-                raceOver = true;
-            } else if (node == _state.RivalRaceDetails.Value.Rival.RigidBody) {
-                CallDeferred(MethodName.ResetStop);
-                _ui.RivalDetails = "You lost";
-                raceOver = true;
-            }
+            var rival = _state.RivalRaceDetails;
+            if (!rival.Value.CheckpointSent && rival.Value.StartDistance + rival.Value.RaceDistance < _racingScene.PlayerDistanceTravelled) {
+                GD.Print("Triggering race end because: " + (rival.Value.StartDistance + rival.Value.RaceDistance) + "<" + _racingScene.PlayerDistanceTravelled);
+                var checkpoints = _roadManager.GetNextCheckpoints(_racingScene.PlayerCarPos, false, 0);
+                var checkpoint = checkpoints.Skip(10).FirstOrDefault();
+                if (checkpoint == default) {
+                    checkpoint = checkpoints.Last();
+                }
 
-            if (raceOver) {
-                RemoveChild(_state.RivalRaceDetails.Value.Rival);
-                _state.RivalRaceDetails = null;
+                _state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
+                // TODO spawn checkpoint there
+                _raceFinishLine = Checkpoint.AsBox(checkpoint, Vector3.One * 20, new Color(1, 1, 1, 0.7f)); // should be invisible-ish
+                AddChild(_raceFinishLine);
+                _raceFinishLine.ThingEntered += (Node3D node) => {
+                    if (node.GetParent() is not Car) return;
+
+                    if (_state.RivalRaceDetails != null) {
+                        // oh the race is over?
+                        if (_racingScene.IsMainCar(node)) {
+                            CallDeferred(MethodName.ResetStop);
+                            _ui.RivalDetails = "Nice win";
+                        }
+                        if (node == _state.RivalRaceDetails.Value.Rival.RigidBody) {
+                            CallDeferred(MethodName.ResetStop);
+                            _ui.RivalDetails = "You lost";
+                        }
+                    }
+                };
             }
         }
     }
 
+    private void ShopTriggeredAt(Transform3D transform) {
+        _currentStop = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(0, 0, 0, 0.4f)); // should be invisible
+        AddChild(_currentStop);
+        _currentStop.ThingEntered += (Node3D node) => {
+            if (node.GetParent() is not Car) return;
+
+            // TODO if shop
+        };
+    }
+
     private void ResetStop() {
-        RemoveChild(_currentStop);
-        _currentStop = null;
+        RemoveChild(_raceFinishLine);
+        _raceFinishLine = null;
+        _state.RivalRaceDetails = null;
+
+        // no need to delete the rival, its not like it should disappear
     }
 }

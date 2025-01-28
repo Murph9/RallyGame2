@@ -12,27 +12,30 @@ namespace murph9.RallyGame2.godot.Component;
 
 public interface IRoadManager {
     Transform3D GetPassedCheckpoint(Vector3 pos);
-    IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, bool leftSideOfRoad);
+    IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, int positionIndex);
 }
 
 public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
-    // places world pieces based on rules
+    // Makes a world based on the infinite world pieces
     // does traffic and stuff
 
-    public const int MAX_TRAFFIC_COUNT = 100;
+    public const int MAX_TRAFFIC_COUNT = 10;
+    public const int RIVAL_MAX_COUNT = 3;
+    public const float OPPONENT_SPAWN_BUFFER_DISTANCE = 250;
 
     [Signal]
     public delegate void LoadedEventHandler();
     [Signal]
-    public delegate void StopCreatedEventHandler(Transform3D transform);
+    public delegate void ShopPlacedEventHandler(Transform3D transform);
 
     private readonly InfiniteWorldPieces _world;
-    private readonly List<Car> _traffic = [];
+    private readonly List<Car> _normalTraffic = [];
+    private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
 
     public InfiniteRoadManager() {
-        _world = new InfiniteWorldPieces(WorldType.Simple2, 100);
+        _world = new InfiniteWorldPieces(WorldType.Simple2, 1000);
         _world.PieceAdded += PiecePlacedListener;
         _world.IgnoredList.Add("station");
     }
@@ -42,34 +45,74 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public override void _Process(double delta) {
-        foreach (var traffic in new List<Car>(_traffic)) {
+        foreach (var traffic in new List<Car>(_normalTraffic)) {
+            // find cars which are greatly below their next checkpoint to kill them
             if (traffic.RigidBody.GlobalPosition.Y + 100 < GetNextCheckpoint(traffic.RigidBody.GlobalPosition).Origin.Y) {
-                _traffic.Remove(traffic);
+                _normalTraffic.Remove(traffic);
                 RemoveChild(traffic);
             }
         }
+
+        TrySpawnOpponent();
+    }
+
+    private void TrySpawnOpponent() {
+        // attempt to generate opponents
+        if (_opponents.Count >= RIVAL_MAX_COUNT)
+            return;
+
+        var cameraPos = GetViewport().GetCamera3D().Position;
+
+        var nextPieces = GetNextCheckpoints(cameraPos, false, 0);
+        // don't spawn them too close to the player
+        var position = nextPieces.Skip(10).FirstOrDefault();
+        if (position == default)
+            return;
+
+        // don't spawn them too close to each other
+        foreach (var opp in _opponents) {
+            if (position.Origin.DistanceTo(opp.RigidBody.GlobalPosition) < OPPONENT_SPAWN_BUFFER_DISTANCE) {
+                return;
+            }
+        }
+
+        // give them basic ai for now
+        var ai = new StopAiInputs(this);
+        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position);
+        car.RigidBody.LinearVelocity = position.Basis * Vector3.Back * 10; // TODO
+
+        AddChild(car);
+        _opponents.Add(car);
+
+        GD.Print("Spawned rival at " + position);
     }
 
     private void PiecePlacedListener(Transform3D checkpointTransform, string name, bool queuedPiece) {
-        if (_traffic.Count >= MAX_TRAFFIC_COUNT) return;
+        TryGenerateTrafficCarNow(checkpointTransform);
+
+        if (queuedPiece) {
+            EmitSignal(SignalName.ShopPlaced, checkpointTransform);
+        }
+    }
+
+    private bool TryGenerateTrafficCarNow(Transform3D spawnTransform) {
+        if (_normalTraffic.Count >= MAX_TRAFFIC_COUNT) return false;
 
         var isReverse = _rand.Randf() > 0.5f;
         var ai = new TrafficAiInputs(this, isReverse);
 
-        var realPosition = GetNextCheckpoint(checkpointTransform.Origin, isReverse, !isReverse);
+        var realPosition = GetNextCheckpoint(spawnTransform.Origin, isReverse, isReverse ? -1 : 1);
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
         }
         var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition);
-        car.RigidBody.Transform = realPosition;
+        // car.RigidBody.Transform = realPosition;
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeed;
 
         AddChild(car);
-        _traffic.Add(car);
+        _normalTraffic.Add(car);
 
-        if (queuedPiece) {
-            EmitSignal(SignalName.StopCreated, checkpointTransform);
-        }
+        return true;
     }
 
     public Transform3D GetInitialSpawn() => _world.GetSpawn().Transform;
@@ -86,16 +129,16 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return checkpoints[indexes.First()].Transform;
     }
 
-    public Transform3D GetNextCheckpoint(Vector3 pos, bool inReverse, bool leftSide) => GetNextCheckpoints(pos, inReverse, leftSide).First();
+    public Transform3D GetNextCheckpoint(Vector3 pos, bool inReverse, int positionIndex) => GetNextCheckpoints(pos, inReverse, positionIndex).First();
 
-    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, bool leftSide) {
+    public IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse, int positionIndex) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
         var indexes = GetNextCheckpointIndexes(checkpoints, pos, inReverse);
 
         var list = new List<Transform3D>();
         foreach (var index in indexes) {
             var checkpoint = checkpoints[index];
-            var originOffset = leftSide ? checkpoint.LeftOffset : -checkpoint.LeftOffset;
+            var originOffset = checkpoint.LeftOffset * positionIndex;
             list.Add(new Transform3D(checkpoint.Transform.Basis, checkpoint.Transform.Origin + originOffset));
         }
 
@@ -153,10 +196,20 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return closestIndex;
     }
 
-    public void TriggerStop() {
+    public void TriggerShop() {
         _world.QueuePiece("station");
     }
-    public void TriggerRaceEnd() {
-        _world.QueuePiece("small_straight");
+
+    public Car GetClosestOpponent(Vector3 pos) {
+        if (_opponents.Count <= 0) return null;
+
+        var closestOpponent = _opponents.First();
+        foreach (var opp in _opponents.Skip(1)) {
+            if (opp.RigidBody.GlobalPosition.DistanceSquaredTo(pos) < closestOpponent.RigidBody.GlobalPosition.DistanceSquaredTo(pos)) {
+                closestOpponent = opp;
+            }
+        }
+
+        return closestOpponent;
     }
 }

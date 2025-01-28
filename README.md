@@ -32,7 +32,7 @@ An infinite world
 
 -   spawn next to the road with a goal of driving 100km
 -   come across cars to race along the road
-    -   stop and challenge them
+    -   match their speed and challenge them
     -   can either race for pink slip or a part
         -   if you lose the pink slip you just lose
         -   if you lose a part you get nothing

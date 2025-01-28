@@ -27,7 +27,7 @@ public partial class TrafficAiInputs : CarAi {
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
-        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, InReverse, !InReverse);
+        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, InReverse, InReverse ? -1 : 1);
 
         _lineDebug3D.Start = Car.RigidBody.GlobalPosition;
         _lineDebug3D.End = nextCheckPoints.First().Origin;
