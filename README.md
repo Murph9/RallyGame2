@@ -33,12 +33,36 @@ An infinite world
 -   spawn next to the road with a goal of driving 100km
 -   come across cars to race along the road
     -   match their speed and challenge them
-    -   can either race for pink slip or a part
-        -   if you lose the pink slip you just lose
-        -   if you lose a part you get nothing
+        -   win and get a random part (with rarity)
+        -   if you lose you get nothing
     -   also get money per race
 -   start with a bad car but slowly have a minimum speed you need to hit
 -   traffic
+    -   but also traffic that can stay on road
+-   get money from making it distance or find along road
+-   shops spawn along route
+-   nos doesn't come back
+-   tyre wear
+-   fuel use
+-   body damage from collisions (which affects aero and performance somehow)
+
+Ideas for relics:
+
+-   nos refils while idling (no accel/braking)
+-   nos refills based on speed
+-   money for continually accelerating
+-   reduced damage from collisions
+-   money for near misses
+-   a big helpful fun
+-   hopping ability
+-   super bouncy
+-   drift points (with no benefit)
+-   money from style points
+-   money per car flip
+-   money per second spent in races
+-   increased money per race won
+-   reduction in tyre wear
+-   reduction in fuel use
 
 ---
 
