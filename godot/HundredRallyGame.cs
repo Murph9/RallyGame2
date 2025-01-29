@@ -50,7 +50,6 @@ public partial class HundredRallyGame : Node {
 
         // update state
         state.TotalTimePassed += delta;
-        _ui.TotalTime = state.TotalTimePassed;
 
         if (Input.IsActionJustPressed("menu_back")) {
             // TODO actually pause
@@ -66,11 +65,21 @@ public partial class HundredRallyGame : Node {
     }
 
     public override void _PhysicsProcess(double delta) {
+        // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        _ui.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
-        _ui.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
+        state.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
+        state.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
 
+        // minimum speed math
+        if (state.CurrentSpeedKMH < state.MinimumSpeedKMH) {
+            state.MinimumSpeedProgress += delta;
+        } else {
+            state.MinimumSpeedProgress -= delta;
+        }
+        if (state.MinimumSpeedProgress < 0) state.MinimumSpeedProgress = 0;
+
+        // trigger next shop stop
         if (_racingScene.PlayerDistanceTravelled > state.NextDistanceMilestone) {
             GD.Print("Queuing shop because of next trigger " + state.NextDistanceMilestone);
             if (state.NextDistanceMilestone == 100) {
@@ -82,14 +91,8 @@ public partial class HundredRallyGame : Node {
             _roadManager.TriggerShop();
         }
 
-        if (state.RivalRaceDetails == null) {
-            var closestRival = _roadManager.GetClosestOpponent(_racingScene.PlayerCarPos);
-            if (closestRival != null && closestRival.RigidBody.GlobalPosition.DistanceTo(_racingScene.PlayerCarPos) < 10 && (closestRival.RigidBody.LinearVelocity - _racingScene.PlayerCarLinearVelocity).Length() < 3) {
-                GD.Print("Challenged rival");
-                state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
-                _ui.RivalDetails = "Rival race started, dist: " + state.RivalRaceDetails.Value.RaceDistance + "m";
-            }
-        } else {
+        // check the current race state
+        if (state.RivalRaceDetails.HasValue) {
             var rival = state.RivalRaceDetails;
             if (!rival.Value.CheckpointSent && rival.Value.StartDistance + rival.Value.RaceDistance < _racingScene.PlayerDistanceTravelled) {
                 GD.Print("Triggering race end because: " + (rival.Value.StartDistance + rival.Value.RaceDistance) + "<" + _racingScene.PlayerDistanceTravelled);
@@ -110,14 +113,21 @@ public partial class HundredRallyGame : Node {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetStop);
-                            _ui.RivalDetails = "Nice win";
+                            state.RivalRaceMessage = "Nice win";
                         }
                         if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetStop);
-                            _ui.RivalDetails = "You lost";
+                            state.RivalRaceMessage = "You lost";
                         }
                     }
                 };
+            }
+        } else {
+            var closestRival = _roadManager.GetClosestOpponent(_racingScene.PlayerCarPos);
+            if (closestRival != null && closestRival.RigidBody.GlobalPosition.DistanceTo(_racingScene.PlayerCarPos) < 10 && (closestRival.RigidBody.LinearVelocity - _racingScene.PlayerCarLinearVelocity).Length() < 3) {
+                GD.Print("Challenged rival");
+                state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
+                state.RivalRaceMessage = "Rival race started, dist: " + state.RivalRaceDetails.Value.RaceDistance + "m";
             }
         }
     }
