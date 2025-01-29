@@ -26,7 +26,9 @@ public partial class HundredRacingScene : Node3D {
     public Vector3 PlayerCarLinearVelocity => _car.RigidBody.LinearVelocity;
 
     public override void _Ready() {
-        _car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), null, Transform3D.Identity);
+        // load from global state
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        _car = new Car(state.CarDetails, null, Transform3D.Identity);
         _car.RigidBody.Transform = InitialPosition;
         AddChild(_car);
     }

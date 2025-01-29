@@ -24,6 +24,7 @@ buses/default_bus_layout=""
 DebugGui="*res://Utilities/DebugGUI/DebugGUI.cs"
 GlobalState="*res://scenes/GlobalState.cs"
 BackgroundAudio="*res://scenes/BackgroundAudio.cs"
+HundredGlobalState="*res://Hundred/HundredGlobalState.cs"
 
 [dotnet]
 
