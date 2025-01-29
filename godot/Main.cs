@@ -3,9 +3,8 @@ using murph9.RallyGame2.godot.World;
 
 namespace murph9.RallyGame2.godot;
 
-public partial class Main : Node
-{
-    public static readonly Vector3 DEFAULT_GRAVITY = new (0, -(float)ProjectSettings.GetSetting("physics/3d/default_gravity"), 0);
+public partial class Main : Node {
+    public static readonly Vector3 DEFAULT_GRAVITY = new(0, -(float)ProjectSettings.GetSetting("physics/3d/default_gravity"), 0);
     private int sphereCount = 0;
 
     private StaticWorld _world;
@@ -45,7 +44,7 @@ public partial class Main : Node
     }
 
     public void _on_upgrade_button_pressed() {
-        GetTree().ChangeSceneToFile("res://UpgradeMenu.tscn");
+        GetTree().ChangeSceneToFile("res://UpgradeTestMenu.tscn");
     }
 
     public void _on_hundredstart_button_pressed() {

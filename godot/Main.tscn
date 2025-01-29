@@ -54,7 +54,7 @@ layout_mode = 2
 
 [node name="UpgradeButton" type="Button" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
-text = "Upgrade Test"
+text = "[debug] Upgrade Test"
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/StartButtonHundred" to="." method="_on_hundredstart_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/StartButton" to="." method="_on_circuitstart_button_pressed"]
