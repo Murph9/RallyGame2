@@ -32,7 +32,7 @@ public partial class HundredRallyGame : Node {
         }
         state.CarDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 
-        _roadManager = new InfiniteRoadManager();
+        _roadManager = new InfiniteRoadManager(100);
         _roadManager.ShopPlaced += ShopTriggeredAt;
         AddChild(_roadManager);
 
@@ -140,6 +140,8 @@ public partial class HundredRallyGame : Node {
 
             GD.Print("Hit shop");
             CallDeferred(MethodName.RemoveNode, node);
+
+            CallDeferred(MethodName.ShowShop);
         };
     }
 
@@ -153,5 +155,11 @@ public partial class HundredRallyGame : Node {
         state.RivalRaceDetails = null;
 
         // no need to delete the rival, its not like it should disappear
+    }
+
+    private void ShowShop() {
+        var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
+        upgrade.Closed += () => { };
+        AddChild(upgrade);
     }
 }

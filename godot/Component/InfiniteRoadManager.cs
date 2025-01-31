@@ -34,8 +34,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
 
-    public InfiniteRoadManager() {
-        _world = new InfiniteWorldPieces(WorldType.Simple2, 1000);
+    public InfiniteRoadManager(int spawnDistance) {
+        _world = new InfiniteWorldPieces(WorldType.Simple2, spawnDistance);
         _world.PieceAdded += PiecePlacedListener;
         _world.IgnoredList.Add("station");
     }

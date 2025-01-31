@@ -25,6 +25,8 @@ public partial class HundredGlobalState : Node {
     public RivalRace? RivalRaceDetails { get; set; }
     public string RivalRaceMessage { get; set; }
 
+    public int ShopPartCount { get; set; }
+
     public HundredGlobalState() {
         Reset();
     }
@@ -44,6 +46,8 @@ public partial class HundredGlobalState : Node {
 
         RivalRaceDetails = null;
         RivalRaceMessage = null;
+
+        ShopPartCount = 3;
 
         PartsUpgraded.Clear();
     }
