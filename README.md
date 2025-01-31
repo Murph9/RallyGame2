@@ -41,7 +41,7 @@ An infinite world
     -   but also traffic that can stay on road
 -   get money from making it distance or find along road
 -   shops spawn along route
--   nos doesn't come back
+-   nos doesn't come back by default
 -   tyre wear
 -   fuel use
 -   body damage from collisions (which affects aero and performance somehow)

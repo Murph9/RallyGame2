@@ -19,7 +19,6 @@ public partial class HundredRallyGame : Node {
     private HundredUI _ui;
 
     private Checkpoint _raceFinishLine;
-    private Checkpoint _currentStop;
 
     public HundredRallyGame() {
     }
@@ -112,11 +111,11 @@ public partial class HundredRallyGame : Node {
                     if (state.RivalRaceDetails != null) {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
-                            CallDeferred(MethodName.ResetStop);
+                            CallDeferred(MethodName.ResetRivalRace);
                             state.RivalRaceMessage = "Nice win";
                         }
                         if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
-                            CallDeferred(MethodName.ResetStop);
+                            CallDeferred(MethodName.ResetRivalRace);
                             state.RivalRaceMessage = "You lost";
                         }
                     }
@@ -133,16 +132,20 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShopTriggeredAt(Transform3D transform) {
-        _currentStop = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(0, 0, 0, 0.4f)); // should be invisible
-        AddChild(_currentStop);
-        _currentStop.ThingEntered += (Node3D node) => {
+        var shop = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(0, 0, 0, 0.4f)); // should be invisible
+        AddChild(shop);
+        shop.ThingEntered += (Node3D node) => {
             if (node.GetParent() is not Car) return;
+            if (!_racingScene.IsMainCar(node)) return;
 
-            // TODO if shop
+            GD.Print("Hit shop");
+            CallDeferred(MethodName.RemoveNode, node);
         };
     }
 
-    private void ResetStop() {
+    private void RemoveNode(Node node) => RemoveChild(node);
+
+    private void ResetRivalRace() {
         RemoveChild(_raceFinishLine);
         _raceFinishLine = null;
 
