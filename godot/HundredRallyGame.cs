@@ -79,12 +79,12 @@ public partial class HundredRallyGame : Node {
         if (state.MinimumSpeedProgress < 0) state.MinimumSpeedProgress = 0;
 
         // trigger next shop stop
-        if (_racingScene.PlayerDistanceTravelled > state.NextDistanceMilestone) {
-            GD.Print("Queuing shop because of next trigger " + state.NextDistanceMilestone);
-            if (state.NextDistanceMilestone == 100) {
-                state.NextDistanceMilestone = 500;
+        if (_racingScene.PlayerDistanceTravelled > state.NextShopDistance) {
+            GD.Print("Queuing shop because of next trigger " + state.NextShopDistance);
+            if (state.NextShopDistance < state.ShopSpread) {
+                state.NextShopDistance = state.ShopSpread; // the first one is much closer than normal
             } else {
-                state.NextDistanceMilestone += 500;
+                state.NextShopDistance += state.ShopSpread;
             }
 
             _roadManager.TriggerShop();
@@ -138,9 +138,8 @@ public partial class HundredRallyGame : Node {
             if (node.GetParent() is not Car) return;
             if (!_racingScene.IsMainCar(node)) return;
 
-            GD.Print("Hit shop");
-            CallDeferred(MethodName.RemoveNode, node);
-
+            GD.Print("Hit shop trigger");
+            CallDeferred(MethodName.RemoveNode, shop);
             CallDeferred(MethodName.ShowShop);
         };
     }
@@ -159,7 +158,11 @@ public partial class HundredRallyGame : Node {
 
     private void ShowShop() {
         var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
-        upgrade.Closed += () => { };
+        upgrade.Closed += () => {
+            _racingScene.ReplaceCarWithState();
+
+            CallDeferred(MethodName.RemoveNode, upgrade);
+        };
         AddChild(upgrade);
     }
 }

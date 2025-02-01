@@ -14,8 +14,10 @@ public partial class HundredGlobalState : Node {
     public float TargetDistance { get; set; }
     public float MinimumSpeedKMH { get; set; }
 
+    public float NextShopDistance { get; set; }
+    public float ShopSpread { get; set; }
+
     public CarDetails CarDetails { get; set; }
-    public float NextDistanceMilestone { get; set; }
     public double TotalTimePassed { get; set; }
     public float Money { get; set; } = 1000;
     public float DistanceTravelled { get; set; }
@@ -36,13 +38,14 @@ public partial class HundredGlobalState : Node {
         MinimumSpeedKMH = 50; // km/h
 
         CarDetails = null;
-        NextDistanceMilestone = 100; // m
+        NextShopDistance = 100; // m
+        ShopSpread = 100; // m
 
-        TotalTimePassed = 0;
+        TotalTimePassed = 0; // s
         Money = 0; // $
-        DistanceTravelled = 0;
-        CurrentSpeedKMH = 0;
-        MinimumSpeedProgress = 0;
+        DistanceTravelled = 0; // m
+        CurrentSpeedKMH = 0; // km/h
+        MinimumSpeedProgress = 0; // km/h
 
         RivalRaceDetails = null;
         RivalRaceMessage = null;

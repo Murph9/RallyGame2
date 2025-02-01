@@ -30,6 +30,10 @@ public partial class HundredUpgradeScreen : CenterContainer {
         var allParts = state.CarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
 
         for (int i = 0; i < state.ShopPartCount; i++) {
+            if (allParts.Count <= 0) {
+                break;
+            }
+
             var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
             allParts.Remove(part);
             var optionButton = new Button() {

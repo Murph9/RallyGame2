@@ -293,4 +293,14 @@ public partial class Car : Node3D {
     }
 
     private Wheel GetOtherWheel(Wheel w) => Wheels[w.Details.Id == 0 ? 1 : w.Details.Id == 1 ? 0 : w.Details.Id == 2 ? 3 : 2];
+
+
+    public Car CloneWithNewDetails(CarDetails details = null) {
+        // clone into new car
+        var car = new Car(details ?? Details, null, RigidBody.Transform);
+        car.RigidBody.LinearVelocity = RigidBody.LinearVelocity;
+        car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
+        // car.Engine.CurRPM = Engine.CurRPM; TODO
+        return car;
+    }
 }

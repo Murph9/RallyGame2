@@ -37,6 +37,18 @@ public partial class HundredRacingScene : Node3D {
 
     }
 
+    public void ReplaceCarWithState() {
+        Callable.From(() => {
+            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+            var newCar = _car.CloneWithNewDetails(state.CarDetails);
+            RemoveChild(_car);
+            _car.QueueFree();
+
+            _car = newCar;
+            AddChild(_car);
+        }).CallDeferred();
+    }
+
     public void Exit() {
         EmitSignal(SignalName.Restart);
     }
