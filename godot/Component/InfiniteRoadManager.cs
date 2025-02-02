@@ -53,6 +53,16 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             }
         }
 
+        foreach (var opponent in new List<Car>(_opponents)) {
+            var nextOpponentCheckpoint = GetNextCheckpoint(opponent.RigidBody.GlobalPosition);
+            var removeForFallingOff = opponent.RigidBody.GlobalPosition.Y + 100 < nextOpponentCheckpoint.Origin.Y;
+            var removeForBeingFarBehind = false; // TODO do we just remove old roads and let them fall?
+            if (removeForFallingOff || removeForBeingFarBehind) {
+                _opponents.Remove(opponent);
+                RemoveChild(opponent);
+            }
+        }
+
         TrySpawnOpponent();
     }
 
@@ -66,6 +76,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         var nextPieces = GetNextCheckpoints(cameraPos, false, 0);
         // don't spawn them too close to the player
         var position = nextPieces.Skip(10).FirstOrDefault();
+        if (position == default || position == nextPieces.Last())
+            // avoid using the last checkpoint position
+            position = nextPieces.Reverse().Skip(1).FirstOrDefault();
+
         if (position == default)
             return;
 
