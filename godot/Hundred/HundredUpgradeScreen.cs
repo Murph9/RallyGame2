@@ -26,7 +26,11 @@ public partial class HundredUpgradeScreen : CenterContainer {
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/HBoxContainer/VBoxContainerOptions");
 
-        _oldCarDetails = state.CarDetails.Clone();
+        // keep the existing cardetails incase it doesn't change
+        _oldCarDetails = state.CarDetails;
+
+        // clone it so we don't modify the original
+        state.CarDetails = state.CarDetails.Clone();
         var allParts = state.CarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
 
         for (int i = 0; i < state.ShopPartCount; i++) {
