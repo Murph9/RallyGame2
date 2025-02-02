@@ -300,6 +300,8 @@ public partial class Car : Node3D {
         var car = new Car(details ?? Details, null, RigidBody.Transform);
         car.RigidBody.LinearVelocity = RigidBody.LinearVelocity;
         car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
+
+        car.DistanceTravelled = DistanceTravelled;
         // car.Engine.CurRPM = Engine.CurRPM; TODO
         return car;
     }
