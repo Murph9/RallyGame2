@@ -78,7 +78,7 @@ public partial class InfiniteWorldPieces : Node3D {
                         dir.QueueFree();
                     }
 
-                    var p = new WorldPiece(model.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), model);
+                    var p = new WorldPiece(model.Name, model, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray());
                     _pieces.Add(p);
                 } else if (c.GetType() == typeof(Node3D)) {
                     var node = c as Node3D;

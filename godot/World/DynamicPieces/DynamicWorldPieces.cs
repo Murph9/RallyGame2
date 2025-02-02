@@ -48,7 +48,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
 
-                var p = new WorldPiece(c.Name, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), c as Node3D);
+                var p = new WorldPiece(c.Name, c as Node3D, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray());
 
                 foreach (var dir in directions) {
                     c.RemoveChild(dir);
