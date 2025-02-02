@@ -38,6 +38,9 @@ public partial class HundredRacingScene : Node3D {
     }
 
     public void ReplaceCarWithState() {
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        if (_car.Details == state.CarDetails) return;
+
         Callable.From(() => {
             var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
             var newCar = _car.CloneWithNewDetails(state.CarDetails);

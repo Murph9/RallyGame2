@@ -103,7 +103,7 @@ public partial class HundredRallyGame : Node {
                 }
 
                 state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
-                // TODO spawn checkpoint there
+                // spawn checkpoint there
                 _raceFinishLine = Checkpoint.AsBox(checkpoint, Vector3.One * 20, new Color(1, 1, 1, 0.7f)); // should be invisible-ish
                 AddChild(_raceFinishLine);
                 _raceFinishLine.ThingEntered += (Node3D node) => {
@@ -134,7 +134,8 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShopTriggeredAt(Transform3D transform) {
-        var shop = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(0, 0, 0, 0.4f)); // should be invisible
+        transform.Origin += transform.Basis * new Vector3(10, 0, 10);
+        var shop = Checkpoint.AsBox(transform, Vector3.One * 8, new Color(0, 0, 0, 0.4f)); // should be invisible
         AddChild(shop);
         shop.ThingEntered += (Node3D node) => {
             if (node.GetParent() is not Car) return;
