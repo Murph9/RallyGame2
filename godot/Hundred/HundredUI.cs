@@ -27,6 +27,9 @@ public partial class HundredUI : VBoxContainer {
 
         var rivalInfo = GetNode<Label>("CenterContainer/VBoxContainer/VBoxContainerRival/Label");
         rivalInfo.Text = state.RivalRaceMessage;
+
+        var moneyInfo = GetNode<Label>("CenterContainer/VBoxContainer/VBoxContainerMoney/Label");
+        moneyInfo.Text = "$" + state.Money;
     }
 
     private static string GenerateTimeString(double time) {

@@ -13,6 +13,7 @@ namespace murph9.RallyGame2.godot;
 public partial class HundredRallyGame : Node {
 
     // The manager of the game
+    private const float RIVAL_RACE_WIN_MONEY = 1000;
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;
@@ -113,6 +114,7 @@ public partial class HundredRallyGame : Node {
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetRivalRace);
                             state.RivalRaceMessage = "Nice win";
+                            state.Money += RIVAL_RACE_WIN_MONEY;
                         }
                         if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetRivalRace);

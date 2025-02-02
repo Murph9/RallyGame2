@@ -55,3 +55,10 @@ layout_mode = 2
 [node name="Label" type="Label" parent="CenterContainer/VBoxContainer/VBoxContainerRival"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+
+[node name="VBoxContainerMoney" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/VBoxContainerMoney"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
