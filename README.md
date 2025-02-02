@@ -46,6 +46,9 @@ An infinite world
 -   fuel use
 -   body damage from collisions (which affects aero and performance somehow)
 
+-   relic that upgrades the road type
+    -   you know how peglin has 3 phases? why don't we have upgraded road types
+
 Ideas for relics:
 
 -   nos refils while idling (no accel/braking)

@@ -203,6 +203,8 @@ public partial class InfiniteWorldPieces : Node3D {
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
 
+        GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
+
         // the transform is expected to be in the direction of travel here
         EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin), piece.Name, queuedPiece);
     }
