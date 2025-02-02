@@ -67,6 +67,12 @@ public partial class InfiniteWorldPieces : Node3D {
     public override void _Ready() {
         var scene = _blenderScene.Instantiate<Node3D>();
 
+        // I have attempted mirroring pieces (and therefore only creating one model for each turn type)
+        // The scale and rotate args of all methods only modify the transform
+        // BUT we set the transform to place the piece so the above will get ignored
+        // If you do figure it out all the normals and UV mappings are quite wrong
+        // - You can also not move all the vertexes without a large perf hit, but it might be possible to make it from scratch i.e. another MeshInstance3D
+
         try {
             foreach (var c in scene.GetChildren().ToList()) {
                 if (c is MeshInstance3D model) {
