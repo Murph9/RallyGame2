@@ -3,7 +3,6 @@ using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
@@ -21,16 +20,16 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private readonly PackedScene _blenderScene;
     private readonly WorldType _pieceType;
-    private readonly List<WorldPiece> _pieces = [];
-    private readonly List<Node3D> _placedPieces = [];
-    private readonly List<WorldPiece> _queuedPieces = [];
+    private readonly List<WorldPiece> _worldPieces = [];
     private Vector3 _trafficLeftSideOffset;
 
+    private readonly List<Node3D> _placedPieces = [];
+    private readonly List<WorldPiece> _queuedPieces = [];
     private LastPlacedDetails _nextTransform;
     public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
 
     public List<string> IgnoredList { get; set; } = [];
-    // ["hill_up", "right_chicane", "left_chicane", "hill_down", "right_long", "left_long", "left_sharp", "right_sharp", "cross"];
+    // ["left_45", "right_45"];
 
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
@@ -101,11 +100,11 @@ public partial class InfiniteWorldPieces : Node3D {
                         } else {
                             GD.PrintErr($"Model name '{modelName}' doesn't contain a curve angle");
                         }
+                        GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
                     }
-                    GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
 
                     var p = new WorldPiece(model.Name, model, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), segmentCount, curveAngle);
-                    _pieces.Add(p);
+                    _worldPieces.Add(p);
                 } else if (c.GetType() == typeof(Node3D)) {
                     var node = c as Node3D;
                     if (node.Name == "TrafficLeftSide") {
@@ -121,15 +120,14 @@ public partial class InfiniteWorldPieces : Node3D {
             }
 
         } catch (Exception e) {
-            GD.Print("Failed to parse pieces for " + _pieceType);
-            GD.Print(e);
-            return;
+            GD.PrintErr("Failed to parse pieces for " + _pieceType);
+            GD.PrintErr(e);
         }
-        GD.Print("Loaded " + _pieces.Count + " pieces");
+        GD.Print("Loaded " + _worldPieces.Count + " pieces");
     }
 
     private WorldPiece PickRandom() {
-        var pieceList = _pieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
+        var pieceList = _worldPieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
         return pieceList[_rand.RandiRange(0, pieceList.Length - 1)];
     }
 
@@ -175,7 +173,7 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     public void QueuePiece(string pieceName) {
-        var piece = _pieces.FirstOrDefault(x => x.Name.Contains(pieceName));
+        var piece = _worldPieces.FirstOrDefault(x => x.Name.Contains(pieceName));
         if (piece != null)
             _queuedPieces.Add(piece);
     }
