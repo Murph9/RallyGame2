@@ -1,11 +1,11 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
-namespace murph9.RallyGame2.godot.World;
+namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
 public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 
@@ -76,15 +76,35 @@ public partial class InfiniteWorldPieces : Node3D {
         try {
             foreach (var c in scene.GetChildren().ToList()) {
                 if (c is MeshInstance3D model) {
-                    GD.Print("Loading " + model.Name + " as a road piece");
-                    var directions = model.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
+                    GD.Print("Loading '" + model.Name + "' as a road piece");
+                    var directions = model.GetChildren()
+                        .Where(x => x.GetType() == typeof(Node3D))
+                        .Select(x => x as Node3D);
 
                     foreach (var dir in directions) {
                         c.RemoveChild(dir);
                         dir.QueueFree();
                     }
 
-                    var p = new WorldPiece(model.Name, model, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray());
+                    // attempt to read curve information from the piece, which is stored in the name of a sub node
+                    float curveAngle = 0;
+                    int segmentCount = 1;
+
+                    var modelName = model.Name.ToString(); // its not a 'String'
+                    if (modelName.Contains("left", StringComparison.InvariantCultureIgnoreCase) || modelName.Contains("right", StringComparison.InvariantCultureIgnoreCase)) {
+                        if (modelName.Contains("90")) {
+                            curveAngle = 90;
+                            segmentCount = 4;
+                        } else if (modelName.Contains("45")) {
+                            curveAngle = 45;
+                            segmentCount = 2;
+                        } else {
+                            GD.PrintErr($"Model name '{modelName}' doesn't contain a curve angle");
+                        }
+                    }
+                    GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
+
+                    var p = new WorldPiece(model.Name, model, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), segmentCount, curveAngle);
                     _pieces.Add(p);
                 } else if (c.GetType() == typeof(Node3D)) {
                     var node = c as Node3D;

@@ -33,18 +33,6 @@ animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={
 "nodes": {
-"PATH:left_curve": {
-"generate/physics": true
-},
-"PATH:left_curve_quarter": {
-"generate/physics": true
-},
-"PATH:right_curve": {
-"generate/physics": true
-},
-"PATH:right_curve_quarter": {
-"generate/physics": true
-},
 "PATH:small_hill_down": {
 "generate/physics": true
 },

@@ -31,12 +31,17 @@ Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9
 An infinite world
 
 -   spawn next to the road with a goal of driving 100km
--   come across cars to race along the road
+    -   at some fixed amount 10km you will have a goal to reach:
+        -   a speed trap target
+        -   an average speed section
+        -   time trial section
+        -   ???
+    -   or start with a bad car but slowly have a minimum speed you need to hit
+-   come across cars to race along the road for $
     -   match their speed and challenge them
         -   win and get a random part (with rarity)
         -   if you lose you get nothing
     -   also get money per race
--   start with a bad car but slowly have a minimum speed you need to hit
 -   traffic
     -   but also traffic that can stay on road
 -   get money from making it distance or find along road
