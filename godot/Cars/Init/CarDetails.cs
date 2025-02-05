@@ -157,27 +157,28 @@ public class CarDetails : IHaveParts {
             }
         }
 
-
         // Output the optimal gear up change point based on the torque curve
-        int redlineOffset = 500;
+        int redlineAvoidance = 500;
         var changeTimes = new List<(int, float)>();
-        float maxTransSpeed = SpeedAtRpm(TransGearRatios.Length - 1, Engine.MaxRpm - redlineOffset);
+        float maxTransSpeed = SpeedAtRpm(TransGearRatios.Length - 1, Engine.MaxRpm - redlineAvoidance);
         for (float speed = 0; speed < maxTransSpeed; speed += 0.1f) {
             int bestGear = -1;
             float bestTorque = -1;
             for (int gear = 1; gear < TransGearRatios.Length; gear++) {
                 int rpm = RpmAtSpeed(gear, speed);
-                if (rpm > Engine.MaxRpm - redlineOffset) //just a bit off of redline because its not that smooth
+                if (rpm > Engine.MaxRpm - redlineAvoidance) //just a bit off of redline because its not that smooth
                     continue;
                 float wheelTorque = (float)Engine.CalcTorqueFor(rpm) * TransGearRatios[gear] * TransFinaldrive;
                 if (bestTorque < wheelTorque) {
                     bestTorque = wheelTorque;
                     bestGear = gear;
                 }
-                // This prints a more detailed graph: Log.p(speed * 3.6f, wheelTorque, gear);
+                // This prints a more detailed graph:
+                // GD.Print(speed * 3.6f + ", " + wheelTorque + ", " + gear);
             }
 
-            // This prints a nice graph: Log.p(speed * 3.6f, bestTorque, bestGear);
+            // This prints a nice graph:
+            // GD.Print(speed * 3.6f, bestTorque, bestGear);
             changeTimes.Add(new(bestGear, speed));
         }
 
@@ -185,7 +186,8 @@ public class CarDetails : IHaveParts {
         AutoGearDownSpeed[0] = float.MaxValue; // never change out of reverse
         AutoGearUpSpeed = new float[TransGearRatios.Length];
         AutoGearUpSpeed[0] = float.MaxValue; // never change out of reverse
-                                             // Get the first and last value for each gear
+
+        // Get the first and last value for each gear to use as the change times
         foreach (var entry in changeTimes.GroupBy(x => x.Item1)) {
             int gear = entry.Key;
             float downValue = entry.First().Item2;
