@@ -21,15 +21,14 @@ public record WorldPiece {
         Segments = segments;
         CurveAngle = curveAngle;
 
-        _subSegments.AddRange(GenerateSubCheckpoints());
+        _subSegments.AddRange(GenerateSubSegments(0));
     }
 
-    public IEnumerable<Transform3D> GenerateSubCheckpoints() {
+    public IEnumerable<Transform3D> GetSubSegments(int direction = 0) {
         return _subSegments;
     }
 
-    private IEnumerable<Transform3D> GenerateSubCheckpoints(int direction) {
-
+    private IEnumerable<Transform3D> GenerateSubSegments(int direction) {
         if (CurveAngle == 0 || Segments <= 1 || Directions.Length > 1) {
             yield return Directions[direction].Transform;
             yield break;
@@ -46,9 +45,10 @@ public record WorldPiece {
         var radius = Math.Abs(target.Origin.ToV2XZ().Length() / (2 * Mathf.Sin(Mathf.DegToRad(CurveAngle) / 2)));
 
         for (int i = 1; i < Segments; i++) {
-            var x = Mathf.Sin(i / (float)Segments * Mathf.DegToRad(CurveAngle)) * radius;
-            var z = radius - Mathf.Cos(i / (float)Segments * Mathf.DegToRad(CurveAngle)) * radius;
-            yield return new Transform3D(Basis.Identity, new Vector3(x, target.Origin.Y, z * Mathf.Sign(target.Origin.Z)));
+            var angle = i / (float)Segments * Mathf.DegToRad(CurveAngle);
+            var x = Mathf.Sin(angle) * radius;
+            var z = radius - Mathf.Cos(angle) * radius;
+            yield return new Transform3D(new Basis(Vector3.Up, -Mathf.Sign(target.Origin.Z) * angle), new Vector3(x, target.Origin.Y, z * Mathf.Sign(target.Origin.Z)));
         }
 
         yield return target;

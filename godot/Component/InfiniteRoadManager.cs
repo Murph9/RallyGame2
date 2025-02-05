@@ -129,7 +129,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return true;
     }
 
-    public Transform3D GetInitialSpawn() => _world.GetSpawn().Transform;
+    public Transform3D GetInitialSpawn() => _world.GetInitialSpawn().Transform;
 
     public Transform3D GetPassedCheckpoint(Vector3 pos) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();

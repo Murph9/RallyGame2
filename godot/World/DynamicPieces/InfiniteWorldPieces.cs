@@ -12,7 +12,7 @@ public record LastPlacedDetails(string Name, Transform3D FinalTransform);
 public partial class InfiniteWorldPieces : Node3D {
 
     private const int MAX_COUNT = 100;
-    private static readonly Transform3D STARTING_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
 
     private readonly RandomNumberGenerator _rand = new();
     private readonly float _generationRange;
@@ -24,6 +24,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private Vector3 _trafficLeftSideOffset;
 
     private readonly List<Node3D> _placedPieces = [];
+    private readonly List<Tuple<Transform3D, Node3D>> _checkpoints = [];
     private readonly List<WorldPiece> _queuedPieces = [];
     private LastPlacedDetails _nextTransform;
     public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
@@ -147,6 +148,7 @@ public partial class InfiniteWorldPieces : Node3D {
             var removal = _placedPieces.First();
 
             _placedPieces.Remove(removal);
+            _checkpoints.RemoveAll(x => x.Item2 == removal);
             RemoveChild(removal);
         }
 
@@ -216,7 +218,19 @@ public partial class InfiniteWorldPieces : Node3D {
         var toAdd = piece.Model.Duplicate() as Node3D;
         toAdd.Transform = new Transform3D(transform.Basis, transform.Origin);
 
-        // soz can only select the first one for now
+
+        AddChild(toAdd);
+        _placedPieces.Add(toAdd);
+
+        GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
+
+        foreach (var checkpoint in piece.GetSubSegments()) {
+            var checkTransform = transform * checkpoint;
+            _checkpoints.Add(new(checkTransform, toAdd));
+
+            AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
+        }
+
         var outDirection = piece.Directions.Skip(outIndex).First();
 
         // TODO there has to be a way to do this with inbuilt methods:
@@ -224,28 +238,24 @@ public partial class InfiniteWorldPieces : Node3D {
         var rot = (_nextTransform.FinalTransform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
         _nextTransform = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
-        AddChild(toAdd);
-        _placedPieces.Add(toAdd);
-
-        GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
-
         // the transform is expected to be in the direction of travel here
-        EmitSignal(SignalName.PieceAdded, new Transform3D(STARTING_OFFSET.Basis * transform.Basis, transform.Origin), piece.Name, queuedPiece);
+        EmitSignal(SignalName.PieceAdded, transform, piece.Name, queuedPiece);
     }
 
-    public InfiniteCheckpoint GetSpawn() {
+    public InfiniteCheckpoint GetInitialSpawn() {
         if (_placedPieces == null || _placedPieces.Count() == 0) {
-            return new InfiniteCheckpoint(STARTING_OFFSET, Vector3.Zero);
+            return new InfiniteCheckpoint(CAR_ROTATION_OFFSET, Vector3.Zero);
         }
 
         return GetAllCurrentCheckpoints().First();
     }
 
     public IReadOnlyCollection<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
-        return _placedPieces
-            .Select(x => x.GlobalTransform)
+        // rotate everything by CAR_ROTATION_OFFSET so its pointing the correct way for cars
+        return _checkpoints
+            .Select(x => x.Item1)
             .Append(_nextTransform.FinalTransform)
-            .Select(x => new InfiniteCheckpoint(new Transform3D(STARTING_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _trafficLeftSideOffset))
+            .Select(x => new InfiniteCheckpoint(new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _trafficLeftSideOffset))
             .ToList();
     }
 }

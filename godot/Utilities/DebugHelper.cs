@@ -18,4 +18,49 @@ public class DebugHelper {
         return o.GetType().GetInterfaces().Any(iface =>
             iface.IsGenericType && (iface.GetGenericTypeDefinition() == numType));
     }
+
+    public static Node3D GenerateArrow(Color colour, Transform3D transform, float length, float width) {
+        var node = new Node3D() {
+            Transform = transform
+        };
+
+        node.AddChild(BoxLine(colour, new Vector3(0, 0, 0), new Vector3(length, 0, 0)));
+        node.AddChild(Box(colour, new Vector3(length, 0, 0), width));
+        return node;
+    }
+
+    public static MeshInstance3D BoxLine(Color c, Vector3 start, Vector3 end, float size = 0.1f) {
+        var mat = new StandardMaterial3D() {
+            AlbedoColor = c
+        };
+        var length = (end - start).Length();
+
+        var mesh = new BoxMesh() {
+            Size = new Vector3(length, size, size),
+            Material = mat
+        };
+        var meshObj = new MeshInstance3D() {
+            Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1, 0, 0), (end - start).Normalized())), start.Lerp(end, 0.5f)),
+            Mesh = mesh
+        };
+
+        return meshObj;
+    }
+
+    public static MeshInstance3D Box(Color c, Vector3 pos, float width = 1) {
+        var mat = new StandardMaterial3D() {
+            AlbedoColor = c
+        };
+
+        var mesh = new BoxMesh() {
+            Size = new Vector3(width, width, width),
+            Material = mat
+        };
+        var meshObj = new MeshInstance3D() {
+            Transform = new Transform3D(Basis.Identity, pos),
+            Mesh = mesh
+        };
+
+        return meshObj;
+    }
 }
