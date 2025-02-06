@@ -160,9 +160,12 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShowShop() {
+        _racingScene.StopDriving();
+
         var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
         upgrade.Closed += () => {
             _racingScene.ReplaceCarWithState();
+            _racingScene.StartDriving();
 
             CallDeferred(MethodName.RemoveNode, upgrade);
         };

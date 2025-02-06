@@ -26,6 +26,9 @@ public partial class Car : Node3D {
     public float DistanceTravelled { get; private set; }
     private Vector3? _lastPos;
 
+    private Vector3 _frozenVelocity;
+    private Vector3 _frozenAngular;
+
     public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null) {
         Details = details;
         Engine = new CarEngine(this);
@@ -304,5 +307,39 @@ public partial class Car : Node3D {
         car.DistanceTravelled = DistanceTravelled;
         // car.Engine.CurRPM = Engine.CurRPM; TODO
         return car;
+    }
+
+    public void SetActive(bool active) {
+        if (active) {
+            RigidBody.Freeze = false;
+            RigidBody.LinearVelocity = _frozenVelocity;
+            RigidBody.AngularVelocity = _frozenAngular;
+            Inputs.AcceptInputs();
+        } else {
+            _frozenVelocity = RigidBody.LinearVelocity;
+            _frozenAngular = RigidBody.AngularVelocity;
+            GD.Print(_frozenAngular + "  " + _frozenVelocity);
+            Inputs.IgnoreInputs();
+            RigidBody.Freeze = true;
+        }
+
+        SetProcess(active);
+        SetPhysicsProcess(active);
+
+        RigidBody.SetProcess(active);
+        RigidBody.SetPhysicsProcess(active);
+    }
+
+    public void ResetCarTo(Transform3D? transform = null) {
+        // if given a transform teleport there, if not stop in place
+        if (transform.HasValue) {
+            RigidBody.Position = transform.Value.Origin + new Vector3(0, 0.5f, 0);
+            RigidBody.Basis = transform.Value.Basis;
+        }
+
+        RigidBody.LinearVelocity *= 0;
+        RigidBody.AngularVelocity *= 0;
+
+        // TODO rpm
     }
 }
