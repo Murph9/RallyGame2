@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Sim;
@@ -61,7 +62,20 @@ public class CarEngine {
             wheelrot = (w[2].RadSec + w[3].RadSec) / 2;
 
         CurRPM = (int)(wheelrot * curGearRatio * diffRatio * (60 / Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
-        CurRPM = Mathf.Max(CurRPM, d.Engine.IdleRPM);
+
+        // the perfect anti stall:
+        // always keep rpm above Idle
+        // at slow speeds make it higher to fake a clutch
+        var minRpm = d.Engine.IdleRPM;
+        if (CurGear == 1 && _car.Inputs.AccelCur > 0) {
+            var minRpmSpeed = d.SpeedAtRpm(1, minRpm * 3);
+
+            if (_car.RigidBody.LinearVelocity.Length() < minRpmSpeed) {
+                minRpm = (int)Mathf.Lerp(minRpm * 3, minRpm, _car.RigidBody.LinearVelocity.Length() / minRpmSpeed);
+            }
+        }
+        CurRPM = Mathf.Max(CurRPM, minRpm);
+
 
         CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * _car.Inputs.AccelCur;
         double engineDrag = 0;
