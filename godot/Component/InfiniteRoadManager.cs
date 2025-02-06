@@ -226,4 +226,13 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         return closestOpponent;
     }
+
+    public void SetPaused(bool paused) {
+        foreach (var car in _normalTraffic) {
+            car.SetActive(!paused);
+        }
+        foreach (var car in _opponents) {
+            car.SetActive(!paused);
+        }
+    }
 }
