@@ -48,7 +48,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
 
                 var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
 
-                var p = new WorldPiece(c.Name, c as Node3D, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), 1, 0);
+                var p = new WorldPiece(c.Name, c as Node3D, directions.ToDictionary(x => x.Transform, x => Enumerable.Empty<Transform3D>()));
 
                 foreach (var dir in directions) {
                     c.RemoveChild(dir);
@@ -81,7 +81,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
                 toAdd.Transform = new Transform3D(new Basis(curRot), curPos);
 
                 // soz can only select the first one for now
-                var dir = p.Directions.First().Transform;
+                var dir = p.Directions.First().FinalTransform;
                 curPos += curRot * dir.Origin;
                 curRot *= dir.Basis.GetRotationQuaternion();
                 AddChild(toAdd);
@@ -118,7 +118,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
 
             // get the point
             pointList.Add(lastOffset);
-            var localOffset = cur.Dir.Transform.Origin;
+            var localOffset = cur.Dir.FinalTransform.Origin;
 
             if (cur.Dir.Turn == WorldPieceDir.TurnType.Straight) {
                 pointList.Add(null);

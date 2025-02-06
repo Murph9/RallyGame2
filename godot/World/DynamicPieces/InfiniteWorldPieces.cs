@@ -104,7 +104,13 @@ public partial class InfiniteWorldPieces : Node3D {
                         GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
                     }
 
-                    var p = new WorldPiece(model.Name, model, directions.Select(x => WorldPieceDir.FromTransform3D(x.Transform)).ToArray(), segmentCount, curveAngle);
+                    var directionsWithSegments = directions
+                        .ToDictionary(x => x.Transform, y => y
+                            .GetChildren()
+                            .Where(x => x.GetType() == typeof(Node3D))
+                            .Select(x => y.Transform * (x as Node3D).Transform)
+                            );
+                    var p = new WorldPiece(model.Name, model, directionsWithSegments, segmentCount, curveAngle);
                     _worldPieces.Add(p);
                 } else if (c.GetType() == typeof(Node3D)) {
                     var node = c as Node3D;
@@ -182,7 +188,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private static bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {
         var outDirection = piece.Directions.Skip(outIndex).First();
-        var rot = (transform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
+        var rot = (transform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
         var angle = rot.AngleTo(Quaternion.Identity);
         if (angle > Math.PI * 1 / 2f) {
             return false;
@@ -223,19 +229,19 @@ public partial class InfiniteWorldPieces : Node3D {
         _placedPieces.Add(toAdd);
 
         GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
+        var outDirection = piece.Directions.Skip(outIndex).First();
 
-        foreach (var checkpoint in piece.GetSubSegments()) {
+        foreach (var checkpoint in outDirection.Transforms) {
             var checkTransform = transform * checkpoint;
             _checkpoints.Add(new(checkTransform, toAdd));
 
             AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
         }
 
-        var outDirection = piece.Directions.Skip(outIndex).First();
 
         // TODO there has to be a way to do this with inbuilt methods:
-        var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.Transform.Origin;
-        var rot = (_nextTransform.FinalTransform.Basis * outDirection.Transform.Basis).GetRotationQuaternion().Normalized();
+        var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Origin;
+        var rot = (_nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
         _nextTransform = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
         // the transform is expected to be in the direction of travel here

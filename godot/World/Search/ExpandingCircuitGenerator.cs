@@ -49,8 +49,8 @@ public class ElList {
             var el = _elements[i];
 
             // next position is pos + our rotation * our offset
-            el.FinalPosition = parent.FinalPosition + parent.FinalRotation * el.Piece.Dir.Transform.Origin;
-            el.FinalRotation = parent.FinalRotation * el.Piece.Dir.Transform.Basis.GetRotationQuaternion();
+            el.FinalPosition = parent.FinalPosition + parent.FinalRotation * el.Piece.Dir.FinalTransform.Origin;
+            el.FinalRotation = parent.FinalRotation * el.Piece.Dir.FinalTransform.Basis.GetRotationQuaternion();
 
             // update Aabb with the extents of the current piece
             var newExtentMin = parent.FinalPosition + parent.FinalRotation * el.Piece.ExtentMin;
@@ -110,13 +110,13 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
         // first find the most simple piece's length
         var minStraightLength = _basicPieces
             .Where(x => x.Dir.Turn == WorldPieceDir.TurnType.Straight)
-            .Select(x => x.Dir.Transform.Origin)
+            .Select(x => x.Dir.FinalTransform.Origin)
             .Min(x => x.Length());
 
-        _normalizedOffsets = _basicPieces.ToDictionary(x => x.Name, x => x.Dir.Transform.Origin / minStraightLength);
-        _transforms = _basicPieces.ToDictionary(x => x.Name, x => x.Dir.Transform.Basis.GetRotationQuaternion());
+        _normalizedOffsets = _basicPieces.ToDictionary(x => x.Name, x => x.Dir.FinalTransform.Origin / minStraightLength);
+        _transforms = _basicPieces.ToDictionary(x => x.Name, x => x.Dir.FinalTransform.Basis.GetRotationQuaternion());
 
-        var longestLeftTurn = _basicPieces.OrderByDescending(x => x.Dir.Transform.Origin.LengthSquared())
+        var longestLeftTurn = _basicPieces.OrderByDescending(x => x.Dir.FinalTransform.Origin.LengthSquared())
             .First(x => x.Dir.Turn == WorldPieceDir.TurnType.Left);
         var normalStraight = _basicPieces.First(x => x.Dir.Turn == WorldPieceDir.TurnType.Straight && x.Dir.Vert == WorldPieceDir.VertType.Level);
 

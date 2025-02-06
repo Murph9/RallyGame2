@@ -40,8 +40,8 @@ public class SearchPiece {
         Aabb = new Aabb(newExtentMin + size * AABB_BUFFER_DIFF / 2f, size * (1 - AABB_BUFFER_DIFF)).Abs(); // prevent neighbours colliding too early
 
         // next position is pos + our rotation * our offset
-        FinalPosition = Position + Rotation * piece.Dir.Transform.Origin;
-        FinalRotation = Rotation * piece.Dir.Transform.Basis.GetRotationQuaternion();
+        FinalPosition = Position + Rotation * piece.Dir.FinalTransform.Origin;
+        FinalRotation = Rotation * piece.Dir.FinalTransform.Basis.GetRotationQuaternion();
     }
 
     public double G => Math.Abs(FinalPosition.X) + Math.Abs(FinalPosition.Y) + Math.Abs(FinalPosition.Z); // manhattan distance
