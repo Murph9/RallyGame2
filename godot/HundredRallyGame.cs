@@ -126,15 +126,15 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShopTriggeredAt(Transform3D transform) {
-        transform.Origin += transform.Basis * new Vector3(10, 0, 10);
-        var shop = Checkpoint.AsBox(transform, Vector3.One * 8, new Color(0, 0, 0, 0.4f)); // should be invisible
-        AddChild(shop);
-        shop.ThingEntered += (Node3D node) => {
+        transform.Origin += transform.Basis * new Vector3(10, 0, -10);
+        var shopTrigger = Checkpoint.AsBox(transform, Vector3.One * 8, new Color(0, 0, 0, 0.4f)); // should be invisible
+        AddChild(shopTrigger);
+        shopTrigger.ThingEntered += (Node3D node) => {
             if (node.GetParent() is not Car) return;
             if (!_racingScene.IsMainCar(node)) return;
 
             GD.Print("Hit shop trigger");
-            CallDeferred(MethodName.RemoveNode, shop);
+            CallDeferred(MethodName.RemoveNode, shopTrigger);
             CallDeferred(MethodName.ShowShop);
         };
     }
