@@ -126,7 +126,7 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShopTriggeredAt(Transform3D transform) {
-        transform.Origin += transform.Basis * new Vector3(10, 0, -10);
+        transform.Origin += transform.Basis * new Vector3(30, 0, -10);
         var shopTrigger = Checkpoint.AsBox(transform, Vector3.One * 8, new Color(0, 0, 0, 0.4f)); // should be invisible
         AddChild(shopTrigger);
         shopTrigger.ThingEntered += (Node3D node) => {
