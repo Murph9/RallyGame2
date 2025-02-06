@@ -97,7 +97,9 @@ public class CarEngine {
         if (localVelocity.Z > d.GetGearUpSpeed(CurGear) && CurGear < d.TransGearRatios.Length - 1) {
             _gearChangeTime = d.AutoChangeTime;
             _gearChangeTo = CurGear + 1;
-        } else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1) {
+
+            // check the gear down is valid and the redline won't be exceeded by changing gear
+        } else if (localVelocity.Z < d.GetGearDownSpeed(CurGear) && CurGear > 1 && CurRPM * d.TransGearRatios[CurGear - 1] / d.TransGearRatios[CurGear] < d.Engine.MaxRpm) {
             _gearChangeTime = d.AutoChangeTime;
             _gearChangeTo = CurGear - 1;
         }
