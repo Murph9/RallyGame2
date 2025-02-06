@@ -71,14 +71,6 @@ public partial class HundredRallyGame : Node {
         state.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
         state.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
 
-        // minimum speed math
-        if (state.CurrentSpeedKMH < state.MinimumSpeedKMH) {
-            state.MinimumSpeedProgress += delta;
-        } else {
-            state.MinimumSpeedProgress -= delta;
-        }
-        if (state.MinimumSpeedProgress < 0) state.MinimumSpeedProgress = 0;
-
         // trigger next shop stop
         if (_racingScene.PlayerDistanceTravelled > state.NextShopDistance) {
             GD.Print("Queuing shop because of next trigger " + state.NextShopDistance);

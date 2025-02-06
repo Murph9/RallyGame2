@@ -19,12 +19,6 @@ public partial class HundredUI : VBoxContainer {
         var progressLabel = GetNode<Label>("CenterContainer/VBoxContainer/HBoxContainerDistance/Label");
         progressLabel.Text = Math.Round(value, 2) + " km";
 
-        var progressLabel2 = GetNode<Label>("CenterContainer/VBoxContainer/HBoxContainerSpeed/Label");
-        progressLabel2.Text = "Target: " + state.MinimumSpeedKMH + " km/h";
-
-        var progressBar2 = GetNode<ProgressBar>("CenterContainer/VBoxContainer/HBoxContainerSpeed/ProgressBar");
-        progressBar2.Value = state.MinimumSpeedProgress;
-
         var rivalInfo = GetNode<Label>("CenterContainer/VBoxContainer/VBoxContainerRival/Label");
         rivalInfo.Text = state.RivalRaceMessage;
 

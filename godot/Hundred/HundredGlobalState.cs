@@ -12,7 +12,6 @@ public partial class HundredGlobalState : Node {
     public readonly List<Part> PartsUpgraded = [];
 
     public float TargetDistance { get; set; }
-    public float MinimumSpeedKMH { get; set; }
 
     public float NextShopDistance { get; set; }
     public float ShopSpread { get; set; }
@@ -22,7 +21,6 @@ public partial class HundredGlobalState : Node {
     public float Money { get; set; } = 1000;
     public float DistanceTravelled { get; set; }
     public float CurrentSpeedKMH { get; set; }
-    public double MinimumSpeedProgress { get; set; }
 
     public RivalRace? RivalRaceDetails { get; set; }
     public string RivalRaceMessage { get; set; }
@@ -35,7 +33,6 @@ public partial class HundredGlobalState : Node {
 
     public void Reset() {
         TargetDistance = 100 * 1000; // m
-        MinimumSpeedKMH = 50; // km/h
 
         CarDetails = null;
         NextShopDistance = 100; // m
@@ -45,7 +42,6 @@ public partial class HundredGlobalState : Node {
         Money = 0; // $
         DistanceTravelled = 0; // m
         CurrentSpeedKMH = 0; // km/h
-        MinimumSpeedProgress = 0; // km/h
 
         RivalRaceDetails = null;
         RivalRaceMessage = null;

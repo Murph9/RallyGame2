@@ -35,20 +35,6 @@ layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="HBoxContainerSpeed" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer/HBoxContainerSpeed"]
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-max_value = 10.0
-allow_greater = true
-allow_lesser = true
-
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/HBoxContainerSpeed"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-
 [node name="VBoxContainerRival" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 
