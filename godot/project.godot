@@ -22,6 +22,7 @@ buses/default_bus_layout=""
 [autoload]
 
 DebugGui="*res://Utilities/DebugGUI/DebugGUI.cs"
+DebugShapes="*res://Utilities/DebugShapes.cs"
 GlobalState="*res://scenes/GlobalState.cs"
 BackgroundAudio="*res://scenes/BackgroundAudio.cs"
 HundredGlobalState="*res://Hundred/HundredGlobalState.cs"

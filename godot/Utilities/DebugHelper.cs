@@ -39,28 +39,48 @@ public class DebugHelper {
             Size = new Vector3(length, size, size),
             Material = mat
         };
-        var meshObj = new MeshInstance3D() {
+
+        return new MeshInstance3D() {
             Transform = new Transform3D(new Basis(new Quaternion(new Vector3(1, 0, 0), (end - start).Normalized())), start.Lerp(end, 0.5f)),
             Mesh = mesh
         };
-
-        return meshObj;
     }
 
     public static MeshInstance3D Box(Color c, Vector3 pos, float width = 1) {
         var mat = new StandardMaterial3D() {
-            AlbedoColor = c
+            AlbedoColor = c,
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled
         };
 
         var mesh = new BoxMesh() {
             Size = new Vector3(width, width, width),
             Material = mat
         };
-        var meshObj = new MeshInstance3D() {
+
+        return new MeshInstance3D() {
             Transform = new Transform3D(Basis.Identity, pos),
             Mesh = mesh
         };
+    }
 
-        return meshObj;
+    public static MeshInstance3D Sphere(Color c, Vector3 pos, float radius) {
+        var mat = new StandardMaterial3D() {
+            AlbedoColor = c,
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled
+        };
+
+        var mesh = new SphereMesh() {
+            Radius = 1,
+            Height = 1,
+            Material = mat
+        };
+
+        return new MeshInstance3D {
+            Transform = new Transform3D(Basis.Identity, pos),
+            Mesh = mesh,
+            Scale = new Vector3(radius, radius, radius)
+        };
     }
 }
