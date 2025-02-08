@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
 
@@ -22,6 +23,8 @@ public partial class CarUI : Control {
     private float SusForce3 => Car.Wheels[3].SusForce.Length();
 
     private TorqueCurveGraph _torqueCurveGraph;
+
+    private bool _debugOn;
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
@@ -102,15 +105,28 @@ public partial class CarUI : Control {
 
 
         // debug numbers
-        // rpm
-        var rpmStr = Car.Engine.CurRPM.ToString() + " rpm";
-        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize), rpmStr, width: -1, fontSize: defaultFontSize);
+        if (_debugOn) {
+            // rpm
+            var rpmStr = Car.Engine.CurRPM.ToString() + " rpm";
+            DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize), rpmStr, width: -1, fontSize: defaultFontSize);
 
-        // engine stuff
-        var engineTorqueStr = (int)Car.Engine.CurrentTorque + " Nm";
-        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 2), engineTorqueStr, width: -1, fontSize: defaultFontSize);
-        var enginekWStr = (int)EngineDetails.TorqueToKw(Car.Engine.CurrentTorque, Car.Engine.CurRPM) + " kW";
-        DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 3), enginekWStr, width: -1, fontSize: defaultFontSize);
+            // engine stuff
+            var engineTorqueStr = (int)Car.Engine.CurrentTorque + " Nm";
+            DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 2), engineTorqueStr, width: -1, fontSize: defaultFontSize);
+            var enginekWStr = (int)EngineDetails.TorqueToKw(Car.Engine.CurrentTorque, Car.Engine.CurRPM) + " kW";
+            DrawString(defaultFont, new Vector2(2, 2 + defaultFontSize * 3), enginekWStr, width: -1, fontSize: defaultFontSize);
+
+            // position and physics stuff
+            var pos = Car.RigidBody.GlobalPosition;
+            var rot = Car.RigidBody.GlobalRotation;
+
+            var vel = Car.RigidBody.LinearVelocity;
+            var ang = Car.RigidBody.AngularVelocity;
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 1), "pos: " + pos.ToRoundedString(), width: -1, fontSize: defaultFontSize);
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 2), "rot: " + rot.ToRoundedString(), width: -1, fontSize: defaultFontSize);
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 3), "vel: " + vel.ToRoundedString(), width: -1, fontSize: defaultFontSize);
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 4), "aug: " + ang.ToRoundedString(), width: -1, fontSize: defaultFontSize);
+        }
     }
 
     public override void _Process(double delta) {
@@ -133,6 +149,7 @@ public partial class CarUI : Control {
         if (Input.IsActionJustPressed("toggle_wheel_telemetry")) {
             wheels.Visible = !wheels.Visible;
             _torqueCurveGraph.Visible = !_torqueCurveGraph.Visible;
+            _debugOn = _torqueCurveGraph.Visible;
         }
     }
 

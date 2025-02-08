@@ -21,6 +21,8 @@ public partial class HundredRallyGame : Node {
 
     private Checkpoint _raceFinishLine;
 
+    private LineDebug3D _playerLineDebug3D = new();
+
     public HundredRallyGame() {
     }
 
@@ -43,6 +45,9 @@ public partial class HundredRallyGame : Node {
 
         _ui = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUI))).Instantiate<HundredUI>();
         AddChild(_ui);
+
+        _playerLineDebug3D.Colour = Colors.DarkGoldenrod;
+        AddChild(_playerLineDebug3D);
     }
 
     public override void _Process(double delta) {
@@ -58,10 +63,13 @@ public partial class HundredRallyGame : Node {
         }
 
         if (Input.IsActionJustPressed("car_reset")) {
-            // reset back to last road thing
             var pos = _roadManager.GetPassedCheckpoint(_racingScene.PlayerCarPos);
+            // reset back to last road thing
             _racingScene.ResetCarTo(pos);
         }
+
+        _playerLineDebug3D.Start = _racingScene.PlayerCarPos;
+        _playerLineDebug3D.End = _roadManager.GetNextCheckpoint(_racingScene.PlayerCarPos).Origin;
     }
 
     public override void _PhysicsProcess(double delta) {
