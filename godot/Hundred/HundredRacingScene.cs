@@ -2,7 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using System;
 
-namespace murph9.RallyGame2.godot.scenes;
+namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredRacingScene : Node3D {
     // Tracks the current driving stuff

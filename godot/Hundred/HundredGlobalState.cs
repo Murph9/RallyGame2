@@ -4,7 +4,7 @@ using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
 using System.Collections.Generic;
 
-namespace murph9.RallyGame2.godot.scenes;
+namespace murph9.RallyGame2.godot.Hundred;
 
 public readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
 
