@@ -46,9 +46,9 @@ public record WorldPieceDir(ICollection<Transform3D> Transforms, WorldPieceDir.T
         return new WorldPieceDir(subTransforms.Append(finalTransform).ToArray(), turn, offset, vert);
     }
 
-    private static IList<Transform3D> GenerateSubSegments(Transform3D target, int segments, float curveAngle) {
+    private static List<Transform3D> GenerateSubSegments(Transform3D target, int segments, float curveAngle) {
         if (curveAngle == 0 || segments <= 1) {
-            return [target];
+            return []; // no sub segments to generate
         }
 
         // TODO the curve angle could be 0 and we still want to generate segments

@@ -168,20 +168,32 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             }
         } else if (closestIndex >= checkpoints.Length - 1) {
             return [closestIndex];
+        } else if (closestIndex <= 1) {
+            return [closestIndex + 1]; // its the next one
         }
 
         var reverseOffset = inReverse ? -1 : 1;
 
-        var finalIndex = closestIndex;
-        var closestTransform = checkpoints[closestIndex];
-        var checkpoint = checkpoints[closestIndex + reverseOffset];
-        if (checkpoint.Transform.Origin.DistanceSquaredTo(pos) < closestTransform.Transform.Origin.DistanceSquaredTo(checkpoint.Transform.Origin)) {
-            finalIndex = closestIndex + reverseOffset;
+        var firstIndex = closestIndex;
+
+        // figure out we are past the current checkpoint
+        // we get fake an angle bisector of the 3 checkpoints around the closest one
+        // then figure out which side we are closer to compared with the distance bewteen the checkpoints
+        var curCheckpoint = checkpoints[closestIndex].Transform.Origin;
+        var beforeCheckpoint = checkpoints[closestIndex + reverseOffset * -1].Transform.Origin;
+        var afterCheckpoint = checkpoints[closestIndex + reverseOffset].Transform.Origin;
+
+        var beforeDistanceDiff = beforeCheckpoint.DistanceTo(curCheckpoint) - beforeCheckpoint.DistanceTo(pos);
+        var afterDistanceDiff = afterCheckpoint.DistanceTo(curCheckpoint) - afterCheckpoint.DistanceTo(pos);
+
+        if (beforeDistanceDiff < afterDistanceDiff) {
+            // this means that we have passed the closest checkpoint and need to return the next one
+            firstIndex = closestIndex + reverseOffset;
         }
 
-        var result = Enumerable.Range(finalIndex, checkpoints.Length - finalIndex).ToArray();
+        var result = Enumerable.Range(firstIndex, checkpoints.Length - firstIndex).ToArray();
         if (inReverse) {
-            result = Enumerable.Range(0, finalIndex + 1).Reverse().ToArray();
+            result = Enumerable.Range(0, firstIndex + 1).Reverse().ToArray();
         }
         if (result.Length < 1) {
             GD.PushError("No checkpoints in result");

@@ -61,6 +61,9 @@ public partial class InfiniteWorldPieces : Node3D {
         AddChild(boxBody);
 
         _nextTransform = new LastPlacedDetails(null, Transform3D.Identity);
+
+        // use the base location as the first checkpoint
+        _checkpoints.Add(new(Transform3D.Identity, null));
     }
 
 
