@@ -78,4 +78,41 @@ public abstract partial class CarAi : Node3D, ICarInputs {
         // in a drift
         return Car.DriftAngle > Car.Details.MinDriftAngle;
     }
+
+    protected bool IsTooFastForWall(Vector3 wallStart, Vector3 wallDir) {
+        // Similar to the point version but to avoid a wall
+
+        var pos = Car.RigidBody.GlobalPosition.ToV2XZ();
+        var vel = Car.RigidBody.LinearVelocity.ToV2XZ();
+
+        var currentMaxTurnRadius = (float)CarRoughCalc.BestRadiusAtSpeed(Car.Details, vel.Length()); // should this use the 2d or 3d version of velocity?
+
+        var circleOffsetPos = new Vector2(vel.Y, -vel.X).Normalized() * currentMaxTurnRadius;
+
+        var leftCircleCenter = pos + circleOffsetPos;
+        var rightCircleCenter = pos - circleOffsetPos;
+
+        var leftDistance = DistanceToRay(wallStart.ToV2XZ(), wallDir.ToV2XZ().Normalized(), leftCircleCenter);
+        var rightDistance = DistanceToRay(wallStart.ToV2XZ(), wallDir.ToV2XZ().Normalized(), rightCircleCenter);
+
+        // var rightVectorToObject = rightCircleCenter - wallStart.ToV2XZ();
+        // var rightDistance = wallDir.ToV2XZ().Normalized().Dot(rightVectorToObject);
+
+        return currentMaxTurnRadius > Mathf.Max(leftDistance, rightDistance);
+    }
+
+    private static float DistanceToRay(Vector2 wallStart, Vector2 wallDirNormalized, Vector2 point) {
+
+        var vectorToObject = point - wallStart;
+        var dotted = wallDirNormalized.Normalized().Dot(vectorToObject);
+
+        // use the origin as its the closest point
+        var closest = wallStart;
+        if (dotted > 0) {
+            // find the projected point along the ray
+            closest = wallStart + wallDirNormalized * dotted;
+        }
+
+        return (closest - point).Length();
+    }
 }

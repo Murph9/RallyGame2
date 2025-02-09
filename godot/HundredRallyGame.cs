@@ -25,6 +25,9 @@ public partial class HundredRallyGame : Node {
     private LineDebug3D _playerLineDebug3D = new();
 
     public HundredRallyGame() {
+#if DEBUG
+        DisplayServer.WindowSetMode(DisplayServer.WindowMode.Maximized);
+#endif
     }
 
     public override void _Ready() {
@@ -131,8 +134,8 @@ public partial class HundredRallyGame : Node {
                 state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
                 state.RivalRaceMessage = "Rival race started, dist: " + state.RivalRaceDetails.Value.RaceDistance + "m";
 
-                var newAi = new TrafficAiInputs(_roadManager, false) {
-                    TargetSpeed = 150
+                var newAi = new RacingAiInputs(_roadManager) {
+                    RoadWidth = 10
                 };
                 closestRival.ChangeInputsTo(newAi);
             }
