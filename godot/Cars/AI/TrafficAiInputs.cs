@@ -35,13 +35,24 @@ public partial class TrafficAiInputs : CarAi {
 
         DriveAt(nextCheckPoints.First());
 
+        var tooSlowForTarget = IsTooSlowForPoint(nextCheckPoints.First());
+        var isDrifting = IsDrifting();
+        var targetInfront = true;
+        if (tooSlowForTarget && targetInfront) {
+            AccelCur = 1f;
+            BrakingCur = 0;
+            if (isDrifting) {
+                AccelCur = 0;
+            }
+        } else {
+            BrakingCur = 0.3f;
+            AccelCur = 0;
+        }
+
         // if going too fast slow down a little
         if (Car.RigidBody.LinearVelocity.Length() > TargetSpeed) {
             BrakingCur = 0.3f;
             AccelCur = 0;
-        } else {
-            BrakingCur = 0f;
-            AccelCur = 0.2f;
         }
     }
 }

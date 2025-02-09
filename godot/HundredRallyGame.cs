@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
@@ -129,6 +130,11 @@ public partial class HundredRallyGame : Node {
                 GD.Print("Challenged rival");
                 state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
                 state.RivalRaceMessage = "Rival race started, dist: " + state.RivalRaceDetails.Value.RaceDistance + "m";
+
+                var newAi = new TrafficAiInputs(_roadManager, false) {
+                    TargetSpeed = 150
+                };
+                closestRival.ChangeInputsTo(newAi);
             }
         }
     }
@@ -154,6 +160,9 @@ public partial class HundredRallyGame : Node {
         _raceFinishLine = null;
 
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+
+        // change back to a nothing AI
+        state.RivalRaceDetails.Value.Rival.ChangeInputsTo(new StopAiInputs(_roadManager));
         state.RivalRaceDetails = null;
 
         // no need to delete the rival, its not like it should disappear

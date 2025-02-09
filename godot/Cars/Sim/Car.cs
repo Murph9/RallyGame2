@@ -14,7 +14,7 @@ public partial class Car : Node3D {
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
 
-    public ICarInputs Inputs { get; }
+    public ICarInputs Inputs { get; private set; }
 
     public float DriftAngle { get; private set; }
 
@@ -318,7 +318,6 @@ public partial class Car : Node3D {
         } else {
             _frozenVelocity = RigidBody.LinearVelocity;
             _frozenAngular = RigidBody.AngularVelocity;
-            GD.Print(_frozenAngular + "  " + _frozenVelocity);
             Inputs.IgnoreInputs();
             RigidBody.Freeze = true;
         }
@@ -340,6 +339,14 @@ public partial class Car : Node3D {
         RigidBody.LinearVelocity *= 0;
         RigidBody.AngularVelocity *= 0;
 
-        // TODO rpm
+        // TODO rpm and wheel rad/s
+    }
+
+    public void ChangeInputsTo(ICarInputs carInputs) {
+        RemoveChild(Inputs as Node3D);
+
+        Inputs = carInputs;
+        Inputs.Car = this;
+        AddChild(Inputs as Node3D);
     }
 }
