@@ -8,6 +8,8 @@ namespace murph9.RallyGame2.godot.Cars.AI;
 
 public abstract partial class CarAi : Node3D, ICarInputs {
 
+    private const float POINT_TARGET_BUFFER = 3; // car width used in TooFast calc
+
     protected readonly IRoadManager _roadManager;
 
     public Car Car { get; set; }
@@ -57,7 +59,7 @@ public abstract partial class CarAi : Node3D, ICarInputs {
 
         // generate a 2d sloped cone zone forwards using 2 circles on both sides
         // the space in the middle is where we can go
-        var circleOffsetPos = new Vector2(vel.Y, -vel.X).Normalized() * currentMaxTurnRadius;
+        var circleOffsetPos = new Vector2(vel.Y, -vel.X).Normalized() * (currentMaxTurnRadius + POINT_TARGET_BUFFER);
 
         var leftCircleCenter = pos + circleOffsetPos;
         var targetDistanceToLeftCenter = (target - leftCircleCenter).Length();

@@ -7,7 +7,9 @@ using murph9.RallyGame2.godot.Hundred;
 using murph9.RallyGame2.godot.scenes;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace murph9.RallyGame2.godot;
 
@@ -164,11 +166,17 @@ public partial class HundredRallyGame : Node {
 
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        // change back to a nothing AI
+        // change ai to stop then revert to the current one so they still exist
+        RevertRivalAi(state.RivalRaceDetails.Value.Rival, state.RivalRaceDetails.Value.Rival.Inputs);
         state.RivalRaceDetails.Value.Rival.ChangeInputsTo(new StopAiInputs(_roadManager));
+
         state.RivalRaceDetails = null;
 
         // no need to delete the rival, its not like it should disappear
+    }
+    private static async void RevertRivalAi(Car rival, ICarInputs oldAi) {
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        rival.ChangeInputsTo(oldAi);
     }
 
     private void ShowShop() {

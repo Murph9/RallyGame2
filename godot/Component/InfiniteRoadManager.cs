@@ -91,7 +91,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         }
 
         // give them basic ai for now
-        var ai = new StopAiInputs(this);
+        var ai = new TrafficAiInputs(this, false);
+        ai.TargetSpeed += 10; // a little more than the default AI
         var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position);
         car.RigidBody.LinearVelocity = position.Basis * Vector3.Back * 10; // TODO
 
