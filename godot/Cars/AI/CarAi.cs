@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.Debug3D;
 using System;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
@@ -34,8 +35,8 @@ public abstract partial class CarAi : Node3D, ICarInputs {
     public void IgnoreInputs() => _listeningToInputs = false;
     public void ReadInputs() { }
 
-    protected void DriveAt(Transform3D pos) => DriveAt(pos.Origin);
-    protected void DriveAt(Vector3 pos) {
+    protected void SteerAt(Transform3D pos) => SteerAt(pos.Origin);
+    protected void SteerAt(Vector3 pos) {
         var curPos = Car.RigidBody.GlobalPosition;
         var curDir = Car.RigidBody.GlobalTransform.Basis * Vector3.Back;
 
@@ -83,8 +84,11 @@ public abstract partial class CarAi : Node3D, ICarInputs {
 
     protected bool IsTooFastForWall(Vector3 wallStart, Vector3 wallDir) {
         // Similar to the point version but to avoid a wall
+        var wallStartXZ = wallStart.ToV2XZ();
+        var wallDirXZ = wallDir.ToV2XZ();
 
         var pos = Car.RigidBody.GlobalPosition.ToV2XZ();
+        var posY = Car.RigidBody.GlobalPosition.Y;
         var vel = Car.RigidBody.LinearVelocity.ToV2XZ();
 
         var currentMaxTurnRadius = (float)CarRoughCalc.BestRadiusAtSpeed(Car.Details, vel.Length()); // should this use the 2d or 3d version of velocity?
@@ -94,23 +98,29 @@ public abstract partial class CarAi : Node3D, ICarInputs {
         var leftCircleCenter = pos + circleOffsetPos;
         var rightCircleCenter = pos - circleOffsetPos;
 
-        var leftDistance = DistanceToRay(wallStart.ToV2XZ(), wallDir.ToV2XZ().Normalized(), leftCircleCenter);
-        var rightDistance = DistanceToRay(wallStart.ToV2XZ(), wallDir.ToV2XZ().Normalized(), rightCircleCenter);
+        var leftDistance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, leftCircleCenter);
+        var rightDistance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, rightCircleCenter);
 
-        // var rightVectorToObject = rightCircleCenter - wallStart.ToV2XZ();
-        // var rightDistance = wallDir.ToV2XZ().Normalized().Dot(rightVectorToObject);
-
-        return currentMaxTurnRadius > Mathf.Max(leftDistance, rightDistance);
+        var tooFast = currentMaxTurnRadius > Mathf.Max(leftDistance, rightDistance);
+        if (tooFast) {
+            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "leftcircle", leftCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 64, leftDistance > rightDistance ? Colors.Purple : Colors.Transparent);
+            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "rightcircle", rightCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 64, rightDistance > leftDistance ? Colors.Purple : Colors.Transparent);
+        }
+        return tooFast;
     }
 
-    private static float DistanceToRay(Vector2 wallStart, Vector2 wallDirNormalized, Vector2 point) {
+    private static float DistanceToRay(Vector2 wallStart, Vector2 wallEnd, Vector2 point) {
 
         var vectorToObject = point - wallStart;
-        var dotted = wallDirNormalized.Normalized().Dot(vectorToObject);
+        var wallDirNormalized = (wallEnd - wallStart).Normalized();
+        var dotted = wallDirNormalized.Dot(vectorToObject);
 
         // use the origin as its the closest point
         var closest = wallStart;
-        if (dotted > 0) {
+        if (dotted > (wallEnd - wallStart).Length()) {
+            // then its the end of the wall
+            closest = wallEnd;
+        } else if (dotted > 0) {
             // find the projected point along the ray
             closest = wallStart + wallDirNormalized * dotted;
         }

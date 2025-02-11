@@ -1,7 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
-using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.Debug3D;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
@@ -9,8 +9,6 @@ namespace murph9.RallyGame2.godot.Cars.AI;
 public partial class TrafficAiInputs : CarAi {
 
     private const float BASE_TARGET_SPEED = 50 / 3.6f; //km/h to m/s
-
-    private LineDebug3D _lineDebug3D = new();
 
     public float TargetSpeed { get; set; } = BASE_TARGET_SPEED;
 
@@ -20,20 +18,14 @@ public partial class TrafficAiInputs : CarAi {
         InReverse = inReverse;
     }
 
-    public override void _Ready() {
-        AddChild(_lineDebug3D);
-    }
-
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
         var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, InReverse, InReverse ? -1 : 1);
 
-        _lineDebug3D.Start = Car.RigidBody.GlobalPosition;
-        _lineDebug3D.End = nextCheckPoints.First().Origin;
-        _lineDebug3D.Colour = InReverse ? Colors.Blue : Colors.Green;
+        DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "target", Car.RigidBody.GlobalPosition, nextCheckPoints.First().Origin, InReverse ? Colors.Blue : Colors.Green);
 
-        DriveAt(nextCheckPoints.First());
+        SteerAt(nextCheckPoints.First());
 
         var tooSlowForTarget = IsTooSlowForPoint(nextCheckPoints.First());
         var isDrifting = IsDrifting();

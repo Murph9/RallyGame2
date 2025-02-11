@@ -1,27 +1,24 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
-using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.Debug3D;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
 public partial class RacingAiInputs : CarAi {
 
-    public float RoadWidth { get; set; } = 3;
-    private LineDebug3D _lineDebug3D = new();
-    public RacingAiInputs(IRoadManager roadManager) : base(roadManager) {
-    }
-    public override void _Ready() {
-        AddChild(_lineDebug3D);
-    }
+    public float RoadWidth { get; set; } = 5;
+    public RacingAiInputs(IRoadManager roadManager) : base(roadManager) { }
 
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
         var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition).ToArray();
 
-        DriveAt(nextCheckPoints.First());
+        SteerAt(nextCheckPoints.First());
+
+        DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "checkpoint target", nextCheckPoints.First().Origin, Car.RigidBody.GlobalPosition, Colors.Blue);
 
         AccelCur = 1;
         BrakingCur = 0;
@@ -29,6 +26,12 @@ public partial class RacingAiInputs : CarAi {
         if (TooFastForNextCheckpoints(nextCheckPoints.Take(3).ToArray())) {
             BrakingCur = 1;
             AccelCur = 0;
+        }
+
+        var isDrifting = IsDrifting();
+        if (isDrifting) {
+            AccelCur = 0;
+            Steering = 0;
         }
     }
 
@@ -54,13 +57,10 @@ public partial class RacingAiInputs : CarAi {
             var wall = GetOuterWallFromCheckpoints(nextCheckpoints[i].Origin, nextCheckpoints[i + 1].Origin);
             var tooFast = IsTooFastForWall(wall.Item1, wall.Item2);
             if (tooFast) {
-                _lineDebug3D.Start = wall.Item1;
-                _lineDebug3D.End = wall.Item1 + wall.Item2;
-                _lineDebug3D.Colour = Colors.Red;
+                DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "wall", wall.Item1, wall.Item1 + wall.Item2, Colors.Red);
                 return true;
             }
         }
-        _lineDebug3D.Colour = Colors.Transparent;
         return false;
     }
 }

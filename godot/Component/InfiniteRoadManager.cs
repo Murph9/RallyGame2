@@ -90,6 +90,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             }
         }
 
+        // make sure they don't spawn in the ground
+        position.Origin += new Vector3(0, 0.5f, 0);
+
         // give them basic ai for now
         var ai = new TrafficAiInputs(this, false);
         ai.TargetSpeed += 10; // a little more than the default AI
