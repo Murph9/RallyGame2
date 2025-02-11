@@ -1,5 +1,4 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.Sim;
@@ -117,5 +116,10 @@ public class CarEngine {
             _gearChangeTime = d.AutoChangeTime;
             _gearChangeTo = CurGear - 1;
         }
+    }
+
+    public void CloneExistingState(CarEngine engine) {
+        CurGear = engine.CurGear;
+        CurRPM = engine.CurRPM;
     }
 }

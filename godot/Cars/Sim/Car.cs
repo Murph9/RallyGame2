@@ -305,7 +305,12 @@ public partial class Car : Node3D {
         car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
 
         car.DistanceTravelled = DistanceTravelled;
-        // car.Engine.CurRPM = Engine.CurRPM; TODO
+        car.Engine.CloneExistingState(Engine);
+
+        for (var i = 0; i < Wheels.Length; i++) {
+            car.Wheels[i].RadSec = Wheels[i].RadSec;
+        }
+
         return car;
     }
 
