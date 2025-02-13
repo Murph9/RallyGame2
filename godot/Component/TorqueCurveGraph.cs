@@ -4,10 +4,13 @@ using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Component;
 
-public partial class TorqueCurveGraph(CarDetails details, CarDetails compareTo = null) : HBoxContainer {
+public partial class TorqueCurveGraph(CarDetails details, Color? oldColour = null, CarDetails compareTo = null, Color? compareColour = null) : HBoxContainer {
 
     private readonly CarDetails _details = details;
     private readonly CarDetails _compareTo = compareTo;
+
+    private readonly Color _oldColor = oldColour ?? Colors.LightBlue;
+    private readonly Color _compareColour = compareColour ?? Colors.Green;
 
     public override void _Ready() {
         var peakRPM = _details.Engine.MaxRpm;
@@ -16,16 +19,16 @@ public partial class TorqueCurveGraph(CarDetails details, CarDetails compareTo =
         }
 
         var datasetTorque = new Graph.Dataset("Torque", 200, max: 500) {
-            Color = Colors.Green
+            Color = _oldColor
         };
         var datasetKw = new Graph.Dataset("kW", 200, max: 500) {
-            Color = Colors.Green * 0.8f
+            Color = _oldColor * 0.8f
         };
         var datasetTorqueCompare = new Graph.Dataset("Torque 2", 200, max: 500) {
-            Color = Colors.Blue
+            Color = _compareColour
         };
         var datasetKwCompare = new Graph.Dataset("kW 2", 200, max: 500) {
-            Color = Colors.Blue * 0.8f
+            Color = _compareColour * 0.8f
         };
         for (int i = 0; i < 200; i++) {
             if (i * 50 <= peakRPM) {

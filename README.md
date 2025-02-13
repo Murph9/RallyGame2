@@ -43,7 +43,6 @@ An infinite world
         -   if you lose you get nothing
     -   also get money per race
 -   traffic
-    -   but also traffic that can stay on road
 -   get money from making it distance or find along road
 -   shops spawn along route
 -   nos doesn't come back by default

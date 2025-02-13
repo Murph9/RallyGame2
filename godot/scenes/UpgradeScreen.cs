@@ -130,7 +130,7 @@ public partial class UpgradeScreen : CenterContainer, IScene {
         stats.Pop();
         stats.Pop();
 
-        var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, _oldCarDetails);
+        var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, null, _oldCarDetails, null);
         statsBox.AddChild(torqueCurveGraph);
     }
 }
