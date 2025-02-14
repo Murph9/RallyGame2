@@ -13,7 +13,14 @@ public abstract partial class CarAi : Node3D, ICarInputs {
 
     protected readonly IRoadManager _roadManager;
 
-    public Car Car { get; set; }
+    private Car _car;
+    public Car Car {
+        get { return _car; }
+        set {
+            value.Details.TractionControl = true; // my ai is not good enough to ignore traction control
+            _car = value;
+        }
+    }
 
     public bool IsAi => true;
 

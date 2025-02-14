@@ -8,9 +8,9 @@ namespace murph9.RallyGame2.godot.Cars.AI;
 
 public partial class TrafficAiInputs : CarAi {
 
-    private const float BASE_TARGET_SPEED = 50 / 3.6f; //km/h to m/s
+    private const float BASE_TARGET_SPEED_MS = 30 / 3.6f; //km/h to m/s
 
-    public float TargetSpeed { get; set; } = BASE_TARGET_SPEED;
+    public float TargetSpeedMs { get; set; } = BASE_TARGET_SPEED_MS;
 
     public bool InReverse { get; init; }
 
@@ -42,8 +42,7 @@ public partial class TrafficAiInputs : CarAi {
         }
 
         // if going too fast slow down a little
-        if (Car.RigidBody.LinearVelocity.Length() > TargetSpeed) {
-            BrakingCur = 0.3f;
+        if (Car.RigidBody.LinearVelocity.Length() > TargetSpeedMs) {
             AccelCur = 0;
         }
     }

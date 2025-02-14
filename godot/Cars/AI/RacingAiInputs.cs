@@ -31,7 +31,7 @@ public partial class RacingAiInputs : CarAi {
         var isDrifting = IsDrifting();
         if (isDrifting) {
             AccelCur = 0;
-            Steering = 0;
+            Steering /= 2f; // turn less than wanted
         }
     }
 
