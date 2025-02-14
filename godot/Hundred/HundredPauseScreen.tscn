@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://ch7o1wchqjvkr"]
+
+[ext_resource type="Script" path="res://Hundred/HundredPauseScreen.cs" id="1_jb31w"]
+
+[node name="HundredPauseScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jb31w")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="HeadingLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Resume"
+
+[node name="QuitButton" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Quit"
+
+[connection signal="pressed" from="PanelContainer/VBoxContainer/ResumeButton" to="." method="ResumeButton_Pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/QuitButton" to="." method="QuitButton_Pressed"]
