@@ -24,10 +24,9 @@ public partial class InfiniteWorldPieces : Node3D {
     private Vector3 _trafficLeftSideOffset;
 
     private readonly List<Node3D> _placedPieces = [];
-    private readonly List<Tuple<Transform3D, Node3D>> _checkpoints = [];
+    private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
     private readonly List<WorldPiece> _queuedPieces = [];
     private LastPlacedDetails _nextTransform;
-    public Transform3D NextPieceTransform => _nextTransform.FinalTransform;
 
     public List<string> IgnoredList { get; set; } = [];
     // ["left_45", "right_45"];
@@ -63,7 +62,7 @@ public partial class InfiniteWorldPieces : Node3D {
         _nextTransform = new LastPlacedDetails(null, Transform3D.Identity);
 
         // use the base location as the first checkpoint
-        _checkpoints.Add(new(Transform3D.Identity, null));
+        _checkpoints.Add(new(Transform3D.Identity, null, 0));
     }
 
 
@@ -227,16 +226,18 @@ public partial class InfiniteWorldPieces : Node3D {
         var toAdd = piece.Model.Duplicate() as Node3D;
         toAdd.Transform = new Transform3D(transform.Basis, transform.Origin);
 
-
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
 
         GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
         var outDirection = piece.Directions.Skip(outIndex).First();
 
+        var checkpointDistance = _checkpoints.Last().Item3;
+        checkpointDistance += outDirection.FinalTransform.Origin.Length();
+
         foreach (var checkpoint in outDirection.Transforms) {
             var checkTransform = transform * checkpoint;
-            _checkpoints.Add(new(checkTransform, toAdd));
+            _checkpoints.Add(new(checkTransform, toAdd, checkpointDistance));
 
             AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
         }
@@ -266,6 +267,14 @@ public partial class InfiniteWorldPieces : Node3D {
             .Append(_nextTransform.FinalTransform)
             .Select(x => new InfiniteCheckpoint(new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _trafficLeftSideOffset))
             .ToList();
+    }
+
+    public float TotalDistanceWithCheckpoint(Vector3 position) {
+        var checkpointTuple = _checkpoints.SingleOrDefault(x => x.Item1.Origin.IsEqualApprox(position));
+        if (checkpointTuple != null) {
+            return checkpointTuple.Item3;
+        }
+        return -1;
     }
 }
 

@@ -251,4 +251,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             car.SetActive(!paused);
         }
     }
+
+    public float TotalDistanceWithCheckpoint(Vector3 position) {
+        return _world.TotalDistanceWithCheckpoint(position);
+    }
 }

@@ -76,13 +76,15 @@ public partial class HundredRallyGame : Node {
 
         _playerLineDebug3D.Start = _racingScene.PlayerCarPos;
         _playerLineDebug3D.End = _roadManager.GetNextCheckpoint(_racingScene.PlayerCarPos).Origin;
+
+        var newDistanceTravelled = _roadManager.TotalDistanceWithCheckpoint(_playerLineDebug3D.End);
+        state.DistanceTravelled = Mathf.Max(state.DistanceTravelled, newDistanceTravelled); // please no negative progress
     }
 
     public override void _PhysicsProcess(double delta) {
         // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        state.DistanceTravelled = _racingScene.PlayerDistanceTravelled;
         state.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
 
         // trigger next shop stop
