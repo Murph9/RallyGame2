@@ -17,8 +17,7 @@ public partial class Car : Node3D {
     public ICarInputs Inputs { get; private set; }
 
     public float DriftAngle { get; private set; }
-
-    public Vector3 DragForce;
+    public Vector3 DragForce { get; private set; }
 
     public double EngineTorque => Engine.CurrentTorque;
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
@@ -305,6 +304,7 @@ public partial class Car : Node3D {
         car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
 
         car.DistanceTravelled = DistanceTravelled;
+        car._lastPos = _lastPos;
         car.Engine.CloneExistingState(Engine);
 
         for (var i = 0; i < Wheels.Length; i++) {
