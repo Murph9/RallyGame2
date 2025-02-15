@@ -214,7 +214,7 @@ public partial class Car : Node3D {
             w.ABSControlTimeOut -= delta;
         } else if (brakeCurrent > 0 && Mathf.Abs(w.RadSec - predictedRadSecDiff) > 10) {
             brakeCurrent = 0f;
-            w.ABSControlTimeOut = 0.02f;
+            w.ABSControlTimeOut = Details.BrakeAbsTimeout;
         }
 
         // add the wheel force after merging the forces

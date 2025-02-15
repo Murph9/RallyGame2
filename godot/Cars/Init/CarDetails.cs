@@ -79,6 +79,8 @@ public class CarDetails : IHaveParts {
 
     [PartField(0f, HowToApply.Set)]
     public float BrakeMaxTorque;
+    [PartField(0f, HowToApply.Set, HigherIs.Bad)]
+    public float BrakeAbsTimeout;
 
     [JsonIgnore]
     private PartReader PartReader { get; init; }

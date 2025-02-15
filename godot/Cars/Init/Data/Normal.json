@@ -51,9 +51,7 @@
       "color": "#e6194B",
       "name": "Brakes",
       "levelCost": [0],
-      "levels": [
-        {"BrakeMaxTorque": 4000}
-      ]
+      "levels": [{ "BrakeMaxTorque": 4000, "BrakeAbsTimeout": 0.1 }]
     },
     {
       "color": "#ffe119",
@@ -71,42 +69,38 @@
       "color": "#f032e6",
       "name": "Flywheel and Clutch",
       "levelCost": [0],
-      "levels": [
-        {"AutoChangeTime": 0.25}
-      ]
+      "levels": [{ "AutoChangeTime": 0.25 }]
     },
     {
       "color": "#3cb44b",
       "name": "Nitro",
       "levelCost": [0],
       "levels": [
-        {"NitroForce": 0, "NitroMax": 0, "NitroEnabled": false, "NitroRate": 0}
+        {
+          "NitroForce": 0,
+          "NitroMax": 0,
+          "NitroEnabled": false,
+          "NitroRate": 0
+        }
       ]
     },
     {
       "color": "#ffffdd",
       "name": "Chassis and Weight Reduction",
       "levelCost": [0],
-      "levels": [
-        {"AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1200}
-      ]
+      "levels": [{ "AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1200 }]
     },
     {
       "color": "#42d4f4",
       "name": "Rear Spoiler",
       "levelCost": [0],
-      "levels": [
-        {"AeroDownforce": 0, "AeroDrag": 0}
-      ]
+      "levels": [{ "AeroDownforce": 0, "AeroDrag": 0 }]
     },
     {
       "color": "#911eb4",
       "name": "Front Bumper",
       "levelCost": [0],
-      "levels": [
-        {"AeroDownforce": 0, "AeroDrag": 0}
-      ]
+      "levels": [{ "AeroDownforce": 0, "AeroDrag": 0 }]
     }
   ]
 }
-  

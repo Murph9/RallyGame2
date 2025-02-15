@@ -52,10 +52,10 @@
       "name": "Brakes",
       "levelCost": [0, 300, 500, 1000],
       "levels": [
-        { "BrakeMaxTorque": 500 },
-        { "BrakeMaxTorque": 1000 },
-        { "BrakeMaxTorque": 1500 },
-        { "BrakeMaxTorque": 3000 }
+        { "BrakeMaxTorque": 500, "BrakeAbsTimeout": 0.1 },
+        { "BrakeMaxTorque": 1000, "BrakeAbsTimeout": 0.07 },
+        { "BrakeMaxTorque": 1500, "BrakeAbsTimeout": 0.04 },
+        { "BrakeMaxTorque": 3000, "BrakeAbsTimeout": 0.03 }
       ]
     },
     {
