@@ -183,58 +183,10 @@ public partial class Car : Node3D {
         var objectRelVelocity = (w.ContactRigidBody?.LinearVelocity ?? new Vector3()) * RigidBody.GlobalBasis;
         var groundVelocity = localVel - objectRelVelocity;
 
-        w.SlipRatio = (w.RadSec * w.Details.Radius - groundVelocity.Z) / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
-
-        if (Inputs.HandbrakeCur && w.Details.Id >= 2) // rearwheels only
-            w.RadSec = 0;
-
-        var steering = Inputs.Steering;
-        if (groundVelocity.Z < 0) { // to flip the steering on moving in reverse
-            steering *= -1;
-        }
-
-        // slip angle (player.car.length * player.car.yawrate (in rad/sec))
-        var slipAngleTop = groundVelocity.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
-        w.SlipAngle = Mathf.Atan2(slipAngleTop, Mathf.Abs(groundVelocity.Z));
-        DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear angle amount
-        if (w.Details.Id < 2) {
-            // front wheels also steer
-            w.SlipAngle -= steering;
-        }
-
-        // merging the forces into a traction circle
-        // normalise based on their independant max values
-        var ratiofract = Mathf.Abs(w.SlipRatio / (float)Details.TractionDetails.LongMaxSlip);
-        var anglefract = Mathf.Abs(w.SlipAngle / (float)Details.TractionDetails.LatMaxSlip);
-        var p = Mathf.Sqrt(ratiofract * ratiofract + anglefract * anglefract);
-        w.SkidFraction = p;
-        if (p == 0) {
-            // if p is zero then both anglefract and ratiofract are 0. So to prevent a 'div by 0' we just make the denominator 1
-            p = 1;
-            w.SkidFraction = 0;
-        }
-
-        // only apply the merging when the forces are over the peak
-        ratiofract /= p;
-        anglefract /= p;
-        if (Mathf.Abs(p) < 1) {
-            ratiofract = Mathf.Sign(ratiofract);
-            anglefract = Mathf.Sign(anglefract);
-        }
-
-        var td = Details.TractionDetails;
-
-        w.AppliedForces = new Vector3() {
-            // calc the longitudinal force from the slip ratio
-            Z = ratiofract * (float)CalcWheelTraction.Calc(w.SlipRatio, td.LongMaxSlip, td.LongGripMax, td.LongPeakLength, td.LongPeakDecay) * w.SusForce.Length(),
-            // calc the latitudinal force from the slip angle
-            X = -anglefract * (float)CalcWheelTraction.Calc(w.SlipAngle, td.LatMaxSlip, td.LatGripMax, td.LatPeakLength, td.LongPeakDecay) * w.SusForce.Length()
-        };
-
         // braking section
         var brakeCurrent = Inputs.BrakingCur;
         // calculate traction control
-        if (Details.TractionControl && groundVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > td.LatMaxSlip * 1.5f) {
+        if (Details.TractionControl && groundVelocity.LengthSquared() > 15 && Math.Abs(Mathf.DegToRad(DriftAngle)) > Details.TractionDetails.LatMaxSlip * 1.5f) {
             // but only do it on the outer side
             if (w.TractionControlTimeOut > 0) {
                 w.TractionControlTimeOut -= delta;
@@ -275,10 +227,64 @@ public partial class Car : Node3D {
         else
             w.RadSec += (float)delta * totalLongForceTorque; // so the radSec can be used next frame, to calculate slip ratio
 
-        if (w.AppliedForces.LengthSquared() > 0)
+        if (Inputs.HandbrakeCur && w.Details.Id >= 2) // rearwheels only
+            w.RadSec = 0;
+
+        var steering = Inputs.Steering;
+        if (groundVelocity.Z < 0) { // to flip the steering on moving in reverse
+            steering *= -1;
+        }
+
+        // calculate the slip ratio and slip angles
+
+        w.SlipRatio = (w.RadSec * w.Details.Radius - groundVelocity.Z) / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
+
+        // slip angle (player.car.length * player.car.yawrate (in rad/sec))
+        var slipAngleTop = groundVelocity.X - objectRelVelocity.X + w.Details.Position.Z * RigidBody.AngularVelocity.Y;
+        w.SlipAngle = Mathf.Atan2(slipAngleTop, Mathf.Abs(groundVelocity.Z));
+        DriftAngle = Mathf.RadToDeg(w.SlipAngle); // set drift angle as the rear angle amount
+        if (w.Details.Id < 2) {
+            // front wheels also steer
+            w.SlipAngle -= steering;
+        }
+
+        // merging the forces into a traction circle
+        // normalise based on their independant max values
+        var ratiofract = Mathf.Abs(w.SlipRatio / (float)Details.TractionDetails.LongMaxSlip);
+        var anglefract = Mathf.Abs(w.SlipAngle / (float)Details.TractionDetails.LatMaxSlip);
+        var p = Mathf.Sqrt(ratiofract * ratiofract + anglefract * anglefract);
+        w.SkidFraction = p;
+        if (p == 0) {
+            // if p is zero then both anglefract and ratiofract are 0. So to prevent a 'div by 0' we just make the denominator 1
+            p = 1;
+            w.SkidFraction = 0;
+        }
+
+        // only apply the merging when the forces are over the peak
+        ratiofract /= p;
+        anglefract /= p;
+        if (Mathf.Abs(p) < 1) {
+            ratiofract = Mathf.Sign(ratiofract);
+            anglefract = Mathf.Sign(anglefract);
+        }
+
+        var td = Details.TractionDetails;
+        w.AppliedForces = new Vector3() {
+            // calc the longitudinal force from the slip ratio
+            Z = ratiofract * (float)CalcWheelTraction.Calc(w.SlipRatio, td.LongMaxSlip, td.LongGripMax, td.LongPeakLength, td.LongPeakDecay) * w.SusForce.Length(),
+            // calc the latitudinal force from the slip angle
+            X = -anglefract * (float)CalcWheelTraction.Calc(w.SlipAngle, td.LatMaxSlip, td.LatGripMax, td.LatPeakLength, td.LongPeakDecay) * w.SusForce.Length()
+        };
+
+        if (w.AppliedForces.LengthSquared() > 0) {
+            // Apply the physics to the car
             RigidBody.ApplyForce(RigidBody.Basis * w.AppliedForces, w.ContactPointGlobal - RigidBody.GlobalPosition);
-        if (w.ContactRigidBody != null)
+        }
+
+        if (w.ContactRigidBody != null) {
+            // Apply a force to the other object
             RigidBody.ApplyForce(w.ContactRigidBody.Basis * w.AppliedForces, w.ContactPointGlobal - w.ContactRigidBody.GlobalPosition);
+        }
     }
 
     private void ApplyWheelDrag(Wheel w) {
