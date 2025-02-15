@@ -39,8 +39,14 @@ public partial class HundredUpgradeScreen : CenterContainer {
 
             var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
             allParts.Remove(part);
-            var optionButton = new Button() {
+
+            var container = new HBoxContainer();
+            container.AddChild(new Label() {
                 Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
+            });
+            var optionButton = new Button() {
+                Text = "Choose",
+                Disabled = part.LevelCost[part.CurrentLevel + 1] > state.Money
             };
             optionButton.Pressed += () => {
                 if (_appliedPart == part)
@@ -54,13 +60,16 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 _appliedPart = part;
                 LoadStats(state);
             };
-            optionsBox.AddChild(optionButton);
+            container.AddChild(optionButton);
+
+            optionsBox.AddChild(container);
         }
 
         var saveButton = new Button() {
             Text = "Buy"
         };
         saveButton.Pressed += () => {
+            state.Money -= (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
             EmitSignal(SignalName.Closed);
         };
         optionsBox.AddChild(saveButton);
