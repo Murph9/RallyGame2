@@ -78,44 +78,8 @@ public partial class InfiniteWorldPieces : Node3D {
         try {
             foreach (var c in scene.GetChildren().ToList()) {
                 if (c is MeshInstance3D model) {
-                    GD.Print("Loading '" + model.Name + "' as a road piece");
-                    var directions = model.GetChildren()
-                        .Where(x => x.GetType() == typeof(Node3D))
-                        .Select(x => x as Node3D);
-
-                    foreach (var dir in directions) {
-                        c.RemoveChild(dir);
-                        dir.QueueFree();
-                    }
-
-                    // attempt to read curve information from the piece, which is stored in the name of a sub node
-                    float curveAngle = 0;
-                    int segmentCount = 1;
-
-                    var modelName = model.Name.ToString(); // its not a 'String'
-                    if (modelName.Contains("left", StringComparison.InvariantCultureIgnoreCase) || modelName.Contains("right", StringComparison.InvariantCultureIgnoreCase)) {
-                        if (modelName.Contains("90")) {
-                            curveAngle = 90;
-                            segmentCount = 4;
-                        } else if (modelName.Contains("45")) {
-                            curveAngle = 45;
-                            segmentCount = 2;
-                        } else {
-                            GD.PrintErr($"Model name '{modelName}' doesn't contain a curve angle");
-                        }
-                        GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
-                    }
-
-                    var directionsWithSegments = directions
-                        .ToDictionary(x => x.Transform, y => y
-                            .GetChildren()
-                            .Where(x => x.GetType() == typeof(Node3D))
-                            .Select(x => y.Transform * (x as Node3D).Transform)
-                            );
-                    var p = new WorldPiece(model.Name, model, directionsWithSegments, segmentCount, curveAngle);
-                    _worldPieces.Add(p);
-                } else if (c.GetType() == typeof(Node3D)) {
-                    var node = c as Node3D;
+                    _worldPieces.Add(WorldPiece.LoadFrom(model));
+                } else if (c is Node3D node) {
                     if (node.Name == "TrafficLeftSide") {
                         GD.Print("Loading " + node.Name + " as a traffic offset value");
                         _trafficLeftSideOffset = node.Transform.Origin;

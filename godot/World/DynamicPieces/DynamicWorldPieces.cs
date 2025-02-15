@@ -46,15 +46,7 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
             foreach (var c in scene.GetChildren().ToList()) {
                 scene.RemoveChild(c);
 
-                var directions = c.GetChildren().Where(x => x.GetType() == typeof(Node3D)).Select(x => x as Node3D);
-
-                var p = new WorldPiece(c.Name, c as Node3D, directions.ToDictionary(x => x.Transform, x => Enumerable.Empty<Transform3D>()));
-
-                foreach (var dir in directions) {
-                    c.RemoveChild(dir);
-                    dir.QueueFree();
-                }
-
+                var p = WorldPiece.LoadFrom(c as MeshInstance3D);
                 _pieces.Add(p);
             }
         } catch (Exception e) {
