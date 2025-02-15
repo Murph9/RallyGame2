@@ -3,10 +3,10 @@
     {
       "color": "#4363d8",
       "name": "Tyres",
-      "levelCost": [0,1000],
+      "levelCost": [0, 1000],
       "levels": [
         {
-          "LatMaxSlip": 0.2,
+          "LatMaxSlip": 0.1,
           "LatGripMax": 1.5,
           "LatPeakLength": 0.2,
           "LatPeakDecay": 3,
@@ -16,7 +16,7 @@
           "LongPeakDecay": 2
         },
         {
-          "LatMaxSlip": 0.18,
+          "LatMaxSlip": 0.07,
           "LatGripMax": 1.6,
           "LatPeakLength": 0.2,
           "LatPeakDecay": 3,
