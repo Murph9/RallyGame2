@@ -206,6 +206,7 @@ public partial class InfiniteWorldPieces : Node3D {
             AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
         }
 
+        PlaceObjectsForPiece(toAdd, piece);
 
         // TODO there has to be a way to do this with inbuilt methods:
         var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Origin;
@@ -239,6 +240,25 @@ public partial class InfiniteWorldPieces : Node3D {
             return checkpointTuple.Item3;
         }
         return -1;
+    }
+
+    private void PlaceObjectsForPiece(Node3D root, WorldPiece piece) {
+        foreach (var objLocation in piece.ObjectLocations) {
+            var mat = new StandardMaterial3D() {
+                AlbedoColor = Colors.GreenYellow
+            };
+
+            var mesh = new BoxMesh() {
+                Size = new Vector3(_rand.RandfRange(1.5f, 8), _rand.RandfRange(1.5f, 8), _rand.RandfRange(1.5f, 8)),
+                Material = mat
+            };
+
+            var instance = new MeshInstance3D() {
+                Transform = new Transform3D(Basis.Identity, objLocation),
+                Mesh = mesh
+            };
+            root.AddChild(instance);
+        }
     }
 }
 
