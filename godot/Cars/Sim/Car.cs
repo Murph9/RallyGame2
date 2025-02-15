@@ -186,8 +186,7 @@ public partial class Car : Node3D {
         var objectRelVelocity = (w.ContactRigidBody?.LinearVelocity ?? new Vector3()) * RigidBody.GlobalBasis;
         var groundVelocity = localVel - objectRelVelocity;
 
-        var slipr = w.RadSec * w.Details.Radius - groundVelocity.Z;
-        w.SlipRatio = slipr / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
+        w.SlipRatio = (w.RadSec * w.Details.Radius - groundVelocity.Z) / Mathf.Abs(groundVelocity.Z == 0 ? 0.0001f : groundVelocity.Z);
 
         if (Inputs.HandbrakeCur && w.Details.Id >= 2) // rearwheels only
             w.RadSec = 0;
@@ -272,7 +271,7 @@ public partial class Car : Node3D {
         if (brakeCurrent2 != 0 && Mathf.Sign(w.RadSec) != Mathf.Sign(w.RadSec + totalLongForceTorque))
             w.RadSec = 0; // maxed out the forces with braking, so prevent wheels from moving
         else
-            w.RadSec += (float)delta * totalLongForceTorque; // so the radSec can be used next frame, to calculate slip ratio
+            w.RadSec += (float)delta * totalLongForceTorque * 0.95f; // so the radSec can be used next frame, to calculate slip ratio
 
         w.GripDir = wheel_force / (float)w.Car.Details.TotalMass;
         if (wheel_force.LengthSquared() > 0)
@@ -344,7 +343,9 @@ public partial class Car : Node3D {
         RigidBody.LinearVelocity *= 0;
         RigidBody.AngularVelocity *= 0;
 
-        // TODO rpm and wheel rad/s
+        for (var i = 0; i < Wheels.Length; i++) {
+            Wheels[i].RadSec = 0;
+        }
     }
 
     public void ChangeInputsTo(ICarInputs carInputs) {
