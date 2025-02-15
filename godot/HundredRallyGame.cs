@@ -43,7 +43,7 @@ public partial class HundredRallyGame : Node {
         }
         state.CarDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
 
-        _roadManager = new InfiniteRoadManager(100);
+        _roadManager = new InfiniteRoadManager(300);
         _roadManager.ShopPlaced += ShopTriggeredAt;
         AddChild(_roadManager);
 

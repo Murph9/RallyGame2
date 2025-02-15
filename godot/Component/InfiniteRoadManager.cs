@@ -45,9 +45,15 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public override void _Process(double delta) {
+        // calculate the player pos
+        var cameraPos = GetViewport().GetCamera3D().Position;
+
         foreach (var traffic in new List<Car>(_normalTraffic)) {
             // find cars which are greatly below their next checkpoint to kill them
             if (traffic.RigidBody.GlobalPosition.Y + 100 < GetNextCheckpoint(traffic.RigidBody.GlobalPosition).Origin.Y) {
+                _normalTraffic.Remove(traffic);
+                RemoveChild(traffic);
+            } else if ((traffic.RigidBody.GlobalPosition - cameraPos).Length() > 250) {
                 _normalTraffic.Remove(traffic);
                 RemoveChild(traffic);
             }
@@ -56,7 +62,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         foreach (var opponent in new List<Car>(_opponents)) {
             var nextOpponentCheckpoint = GetNextCheckpoint(opponent.RigidBody.GlobalPosition);
             var removeForFallingOff = opponent.RigidBody.GlobalPosition.Y + 100 < nextOpponentCheckpoint.Origin.Y;
-            var removeForBeingFarBehind = false; // TODO do we just remove old roads and let them fall?
+            var removeForBeingFarBehind = (opponent.RigidBody.GlobalPosition - cameraPos).Length() > 250;
             if (removeForFallingOff || removeForBeingFarBehind) {
                 _opponents.Remove(opponent);
                 RemoveChild(opponent);

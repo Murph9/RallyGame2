@@ -36,7 +36,7 @@ public partial class HundredGlobalState : Node {
 
         CarDetails = null;
         NextShopDistance = 100; // m
-        ShopSpread = 100; // m
+        ShopSpread = 500; // m
 
         TotalTimePassed = 0; // s
         Money = 0; // $
