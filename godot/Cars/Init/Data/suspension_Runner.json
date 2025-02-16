@@ -3,6 +3,7 @@
     {
       "color": "#dcbeff",
       "name": "Suspension",
+      "icon": "suspension.png",
       "levelCost": [0],
       "levels": [
         {

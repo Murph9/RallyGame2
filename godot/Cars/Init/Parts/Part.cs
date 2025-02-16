@@ -10,16 +10,13 @@ namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 public class Part {
     public string Name { get; set; }
     public string Color { get; set; }
-    [JsonIgnore]
-    public Color PartColour { get; set; }
     public int CurrentLevel { get; set; }
     public double[] LevelCost { get; set; }
+    public string Icon { get; set; }
+    [JsonIgnore]
+    public Texture2D IconImage { get; private set; }
 
     public Dictionary<string, object>[] Levels { get; set; }
-
-    public Part() {
-        PartColour = Godot.Color.FromHtml(Color);
-    }
 
     public Dictionary<string, object> GetLevel() => GetAllValues()[CurrentLevel];
     public Dictionary<string, object>[] GetAllValues() => Levels;
@@ -33,6 +30,11 @@ public class Part {
             throw new Exception($"Part {Name}: Level {Levels.Length} has different amount to LevelCost {LevelCost.Length}");
         if (!Godot.Color.HtmlIsValid(Color))
             throw new Exception($"Part {Name}: no colour set");
+        if (string.IsNullOrWhiteSpace(Icon))
+            throw new Exception("Every part needs an icon png set");
+
+        IconImage = ResourceLoader.Load<Texture2D>("res://assets/images/upgrades/" + Icon);
+        IconImage ??= ResourceLoader.Load<Texture2D>("res://icon.svg");
 
         foreach (var props in Levels) {
             foreach (var field in props) {

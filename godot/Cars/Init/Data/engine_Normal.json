@@ -8,6 +8,7 @@
     {
       "color": "#010101",
       "name": "base engine",
+      "icon": "engine.png",
       "levelCost": [0],
       "levels": [
         {

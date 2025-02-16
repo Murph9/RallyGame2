@@ -41,6 +41,12 @@ public partial class HundredUpgradeScreen : CenterContainer {
             allParts.Remove(part);
 
             var container = new HBoxContainer();
+            container.AddChild(new TextureRect() {
+                Texture = part.IconImage,
+                CustomMinimumSize = new Vector2(100, 100),
+                ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+            });
             container.AddChild(new Label() {
                 Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
             });
@@ -69,7 +75,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
             Text = "Buy"
         };
         saveButton.Pressed += () => {
-            state.Money -= (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
+            if (_appliedPart != null)
+                state.Money -= (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
             EmitSignal(SignalName.Closed);
         };
         optionsBox.AddChild(saveButton);
