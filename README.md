@@ -70,6 +70,8 @@ Ideas for relics:
 -   increased money per race won
 -   reduction in tyre wear
 -   reduction in fuel use
+-   that need distance travelled to get better
+-   based on the amount of a brand of parts you have
 
 ---
 

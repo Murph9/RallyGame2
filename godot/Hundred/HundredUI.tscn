@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Hundred/HundredUI.cs" id="1_nui4w"]
 
-[node name="HundredUI" type="VBoxContainer"]
+[node name="HundredUI" type="HBoxContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,39 +12,65 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_nui4w")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-
-[node name="HBoxContainerTime" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/HBoxContainerTime"]
-layout_mode = 2
-
-[node name="HBoxContainerDistance" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer/HBoxContainerDistance"]
+[node name="VBoxContainerLeft" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/HBoxContainerDistance"]
+[node name="VBoxContainerState" type="VBoxContainer" parent="VBoxContainerLeft"]
+layout_mode = 2
+
+[node name="HBoxContainerTime" type="HBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerState/HBoxContainerTime"]
+layout_mode = 2
+
+[node name="HBoxContainerDistance" type="HBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
+layout_mode = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainerLeft/VBoxContainerState/HBoxContainerDistance"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+allow_greater = true
+
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerState/HBoxContainerDistance"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="VBoxContainerRival" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="VBoxContainerRival" type="VBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/VBoxContainerRival"]
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerState/VBoxContainerRival"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="VBoxContainerMoney" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="VBoxContainerMoney" type="VBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/VBoxContainerMoney"]
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerState/VBoxContainerMoney"]
 custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+
+[node name="VBoxContainerRelics" type="VBoxContainer" parent="VBoxContainerLeft"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerRelics"]
+layout_mode = 2
+text = "Relics
+
+"
+
+[node name="VBoxContainerParts" type="VBoxContainer" parent="VBoxContainerLeft"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerParts"]
+layout_mode = 2
+text = "Parts"
+
+[node name="CenterContainerBuffer" type="CenterContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainerRight" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
