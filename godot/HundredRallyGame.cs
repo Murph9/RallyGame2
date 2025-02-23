@@ -22,8 +22,6 @@ public partial class HundredRallyGame : Node {
     private HundredRacingScene _racingScene;
     private HundredUI _ui;
 
-    private Checkpoint _raceFinishLine;
-
     private LineDebug3D _playerLineDebug3D = new();
 
     private bool _paused = false;
@@ -45,6 +43,7 @@ public partial class HundredRallyGame : Node {
 
         _roadManager = new InfiniteRoadManager(300);
         _roadManager.ShopPlaced += ShopTriggeredAt;
+        _roadManager.RoadNextPoint += RoadPlacedAt;
         AddChild(_roadManager);
 
         _racingScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRacingScene))).Instantiate<HundredRacingScene>();
@@ -79,7 +78,7 @@ public partial class HundredRallyGame : Node {
         _playerLineDebug3D.Start = _racingScene.PlayerCarPos;
         _playerLineDebug3D.End = _roadManager.GetNextCheckpoint(_racingScene.PlayerCarPos).Origin;
 
-        var newDistanceTravelled = _roadManager.TotalDistanceWithCheckpoint(_playerLineDebug3D.End);
+        var newDistanceTravelled = _roadManager.TotalDistanceFromCheckpoint(_playerLineDebug3D.End);
         state.DistanceTravelled = Mathf.Max(state.DistanceTravelled, newDistanceTravelled); // please no negative progress
     }
 
@@ -105,6 +104,7 @@ public partial class HundredRallyGame : Node {
         if (state.RivalRaceDetails.HasValue) {
             var rival = state.RivalRaceDetails;
             if (!rival.Value.CheckpointSent && rival.Value.StartDistance + rival.Value.RaceDistance < _racingScene.PlayerDistanceTravelled) {
+                // TODO trigger the race end from the road placed event so its as close to the total distance as possible
                 GD.Print("Triggering race end because: " + (rival.Value.StartDistance + rival.Value.RaceDistance) + "<" + _racingScene.PlayerDistanceTravelled);
                 var checkpoints = _roadManager.GetNextCheckpoints(_racingScene.PlayerCarPos, false, 0);
                 var checkpoint = checkpoints.Skip(10).FirstOrDefault();
@@ -114,24 +114,22 @@ public partial class HundredRallyGame : Node {
 
                 state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
                 // spawn checkpoint there
-                _raceFinishLine = Checkpoint.AsBox(checkpoint, Vector3.One * 20, new Color(1, 1, 1, 0.7f)); // should be invisible-ish
-                AddChild(_raceFinishLine);
-                _raceFinishLine.ThingEntered += (Node3D node) => {
-                    if (node.GetParent() is not Car) return;
-
+                CreateCheckpoint(checkpoint, node => {
                     if (state.RivalRaceDetails != null) {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetRivalRace);
                             state.RivalRaceMessage = "Nice win";
                             state.Money += RIVAL_RACE_WIN_MONEY;
-                        }
-                        if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
+                            return true;
+                        } else if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetRivalRace);
                             state.RivalRaceMessage = "You lost";
+                            return true;
                         }
                     }
-                };
+                    return false;
+                });
             }
         } else {
             var closestRival = _roadManager.GetClosestOpponent(_racingScene.PlayerCarPos);
@@ -150,27 +148,50 @@ public partial class HundredRallyGame : Node {
 
     private void ShopTriggeredAt(Transform3D transform) {
         transform.Origin += transform.Basis * new Vector3(30, 0, -10);
-        var shopTrigger = Checkpoint.AsBox(transform, Vector3.One * 8, new Color(0, 0, 0, 0.4f)); // should be invisible
-        AddChild(shopTrigger);
-        shopTrigger.ThingEntered += (Node3D node) => {
-            if (node.GetParent() is not Car) return;
-            if (!_racingScene.IsMainCar(node)) return;
+
+        CreateCheckpoint(transform, node => {
+            if (!_racingScene.IsMainCar(node)) return false;
 
             GD.Print("Hit shop trigger");
-            CallDeferred(MethodName.ResumeFromNode, shopTrigger);
+            _paused = false;
             CallDeferred(MethodName.ShowShop);
-        };
+            return true;
+        });
     }
-
     private void ResumeFromNode(Node node) {
         _paused = false;
+        RemoveCheckpoint(node);
+    }
+    private void RemoveCheckpoint(Node node) {
         RemoveChild(node);
     }
 
-    private void ResetRivalRace() {
-        RemoveChild(_raceFinishLine);
-        _raceFinishLine = null;
+    private void RoadPlacedAt(float distanceAtPos, Transform3D transform) {
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
+        if (state.Goal.StartDistance < distanceAtPos) {
+            GD.Print("Starting the goal: " + state.Goal.Type);
+            state.GoalActive = true;
+
+        } else if (state.GoalActive && state.Goal.EndDistance < distanceAtPos) {
+            GD.Print("Creating end trigger for the goal: " + state.Goal.Type);
+            switch (state.Goal.Type) {
+                case GoalType.SpeedTrap:
+                    break;
+                case GoalType.AverageSpeedSection:
+                case GoalType.TimeTrial:
+                    break;
+                default:
+                    throw new Exception("Unknown goal type: " + state.Goal.Type);
+            }
+            CreateCheckpoint(transform, (car) => {
+                //  TODO
+                return true;
+            });
+        }
+    }
+
+    private void ResetRivalRace() {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
         // change ai to stop then revert to the current one so they still exist
@@ -215,9 +236,18 @@ public partial class HundredRallyGame : Node {
             CallDeferred(MethodName.ResumeFromNode, pauseScreen);
         };
         pauseScreen.Quit += () => {
-            // TODO actually pause
             GetTree().ChangeSceneToFile("res://Main.tscn");
         };
         AddChild(pauseScreen);
+    }
+
+    private void CreateCheckpoint(Transform3D transform, Func<Node3D, bool> action) {
+        var checkpoint = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(1, 1, 1, 0.7f)); // should be invisible-ish
+        AddChild(checkpoint);
+        checkpoint.ThingEntered += node => {
+            if (node.GetParent() is not Car) return;
+            if (action(node))
+                CallDeferred(MethodName.RemoveCheckpoint, checkpoint);
+        };
     }
 }

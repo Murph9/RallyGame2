@@ -1,16 +1,19 @@
+using System;
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
-using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
-using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
 public readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
 
-public partial class HundredGlobalState : Node {
-    public readonly List<Part> PartsUpgraded = [];
+public readonly record struct GoalState(GoalType Type, float StartDistance, float EndDistance);
 
+public enum GoalType {
+    SpeedTrap, AverageSpeedSection, TimeTrial
+}
+
+public partial class HundredGlobalState : Node {
     public float TargetDistance { get; set; }
 
     public float NextShopDistance { get; set; }
@@ -18,7 +21,7 @@ public partial class HundredGlobalState : Node {
 
     public CarDetails CarDetails { get; set; }
     public double TotalTimePassed { get; set; }
-    public float Money { get; set; } = 1000;
+    public float Money { get; set; }
     public float DistanceTravelled { get; set; }
     public float CurrentSpeedKMH { get; set; }
 
@@ -26,6 +29,10 @@ public partial class HundredGlobalState : Node {
     public string RivalRaceMessage { get; set; }
 
     public int ShopPartCount { get; set; }
+
+    public float GoalSpread { get; set; }
+    public GoalState Goal { get; set; }
+    public bool GoalActive { get; set; }
 
     public HundredGlobalState() {
         Reset();
@@ -48,6 +55,13 @@ public partial class HundredGlobalState : Node {
 
         ShopPartCount = 3;
 
-        PartsUpgraded.Clear();
+        GoalSpread = 5000;
+        Goal = new(CalcGoalType(), GoalSpread, GoalSpread + 500);
+    }
+
+    private static GoalType CalcGoalType() {
+        var options = Enum.GetValues(typeof(GoalType));
+        var index = new RandomNumberGenerator().RandiRange(0, options.Length - 1);
+        return (GoalType)options.GetValue(index);
     }
 }

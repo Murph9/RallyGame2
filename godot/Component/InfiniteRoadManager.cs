@@ -28,6 +28,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public delegate void LoadedEventHandler();
     [Signal]
     public delegate void ShopPlacedEventHandler(Transform3D transform);
+    [Signal]
+    public delegate void RoadNextPointEventHandler(float totalDistance, Transform3D transform);
 
     private readonly InfiniteWorldPieces _world;
     private readonly List<Car> _normalTraffic = [];
@@ -114,6 +116,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private void PiecePlacedListener(Transform3D checkpointTransform, string name, bool queuedPiece) {
         TryGenerateTrafficCarNow(checkpointTransform);
 
+        EmitSignal(SignalName.RoadNextPoint, _world.TotalDistanceFromCheckpoint(checkpointTransform.Origin), checkpointTransform);
         if (queuedPiece) {
             EmitSignal(SignalName.ShopPlaced, checkpointTransform);
         }
@@ -258,7 +261,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         }
     }
 
-    public float TotalDistanceWithCheckpoint(Vector3 position) {
-        return _world.TotalDistanceWithCheckpoint(position);
+    public float TotalDistanceFromCheckpoint(Vector3 position) {
+        return _world.TotalDistanceFromCheckpoint(position);
     }
 }

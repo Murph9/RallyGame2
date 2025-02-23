@@ -26,7 +26,7 @@ Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9
 
 ---
 
-100km Distance Game Idea:
+## 100km Distance Game Idea:
 
 An infinite world
 
@@ -52,6 +52,7 @@ An infinite world
 -   a top speed/accel/handling estimate performance
 -   relic that upgrades the road type
     -   you know how peglin has 3 phases? why don't we have upgraded road types
+    -   or road types are a part of the challenge, pick directions and it may slowly get there
 
 Ideas for relics:
 
@@ -60,7 +61,7 @@ Ideas for relics:
 -   money for continually accelerating
 -   reduced damage from collisions
 -   money for near misses
--   a big helpful fun
+-   a big helpful fan
 -   hopping ability
 -   super bouncy
 -   drift points (with no benefit)
@@ -75,7 +76,7 @@ Ideas for relics:
 
 ---
 
-Circuit game idea:
+## Circuit game idea:
 
 -   You are a test track driver
 -   And have to select parts to make your car go faster around the fixed track
@@ -115,6 +116,8 @@ Some way to calculate the starting time to beat
 -   maybe get AI to drive it in the future
 
 ---
+
+## Misc
 
 /_
 Unused property colours:
