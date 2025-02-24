@@ -60,6 +60,15 @@ public partial class HundredUI : HBoxContainer {
             var uiPart = partMappings[part.Name];
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
         }
+
+        var goalInfo = GetNode<Label>("VBoxContainerCenter/LabelGoal");
+        if (!state.Goal.InProgress) {
+            goalInfo.Text = $"Goal {state.Goal.Type} starts at {state.Goal.StartDistance}";
+            if (state.Goal.RealStartingDistance > state.Goal.StartDistance) // its set show the distance left
+                goalInfo.Text += $" in {state.Goal.RealStartingDistance - state.DistanceTravelled}m";
+        } else {
+            goalInfo.Text = " some math with FinishedMessage";
+        }
     }
 
     private static string GenerateTimeString(double time) {

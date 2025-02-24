@@ -56,6 +56,8 @@ An infinite world
 
 Ideas for relics:
 
+-   relics get unlocked by having certain parts (and maybe not others?)
+
 -   nos refils while idling (no accel/braking)
 -   nos refills based on speed
 -   money for continually accelerating

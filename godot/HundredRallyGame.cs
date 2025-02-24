@@ -169,23 +169,26 @@ public partial class HundredRallyGame : Node {
     private void RoadPlacedAt(float distanceAtPos, Transform3D transform) {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        if (state.Goal.StartDistance < distanceAtPos) {
+        // ready, not already triggered and we generated the start of the event
+        if (state.Goal.Ready && state.Goal.RealStartingDistance < state.Goal.StartDistance && state.Goal.StartDistance < distanceAtPos) {
             GD.Print("Starting the goal: " + state.Goal.Type);
-            state.GoalActive = true;
+            state.Goal.StartDistanceIs(distanceAtPos);
 
-        } else if (state.GoalActive && state.Goal.EndDistance < distanceAtPos) {
+            CreateCheckpoint(transform, (node) => {
+                if (!_racingScene.IsMainCar(node)) return false;
+
+                state.Goal.StartHitAt(state.TotalTimePassed);
+                return true;
+            });
+        }
+
+        if (state.Goal.Ready && !state.Goal.EndPlaced && state.Goal.EndDistance < distanceAtPos) {
             GD.Print("Creating end trigger for the goal: " + state.Goal.Type);
-            switch (state.Goal.Type) {
-                case GoalType.SpeedTrap:
-                    break;
-                case GoalType.AverageSpeedSection:
-                case GoalType.TimeTrial:
-                    break;
-                default:
-                    throw new Exception("Unknown goal type: " + state.Goal.Type);
-            }
-            CreateCheckpoint(transform, (car) => {
-                //  TODO
+            state.Goal.EndPlaced = true;
+            CreateCheckpoint(transform, (node) => {
+                if (!_racingScene.IsMainCar(node)) return false;
+
+                state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos);
                 return true;
             });
         }

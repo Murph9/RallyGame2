@@ -7,12 +7,6 @@ namespace murph9.RallyGame2.godot.Hundred;
 
 public readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
 
-public readonly record struct GoalState(GoalType Type, float StartDistance, float EndDistance);
-
-public enum GoalType {
-    SpeedTrap, AverageSpeedSection, TimeTrial
-}
-
 public partial class HundredGlobalState : Node {
     public float TargetDistance { get; set; }
 
@@ -32,7 +26,6 @@ public partial class HundredGlobalState : Node {
 
     public float GoalSpread { get; set; }
     public GoalState Goal { get; set; }
-    public bool GoalActive { get; set; }
 
     public HundredGlobalState() {
         Reset();
