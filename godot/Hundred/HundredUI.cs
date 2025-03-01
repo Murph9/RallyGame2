@@ -62,13 +62,7 @@ public partial class HundredUI : HBoxContainer {
         }
 
         var goalInfo = GetNode<Label>("VBoxContainerCenter/LabelGoal");
-        if (!state.Goal.InProgress) {
-            goalInfo.Text = $"Goal {state.Goal.Type} starts at {state.Goal.StartDistance}";
-            if (state.Goal.RealStartingDistance > state.Goal.StartDistance) // its set show the distance left
-                goalInfo.Text += $" in {state.Goal.RealStartingDistance - state.DistanceTravelled}m";
-        } else {
-            goalInfo.Text = " some math with FinishedMessage";
-        }
+        goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled);
     }
 
     private static string GenerateTimeString(double time) {

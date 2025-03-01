@@ -48,7 +48,7 @@ public partial class HundredGlobalState : Node {
 
         ShopPartCount = 3;
 
-        GoalSpread = 5000;
+        GoalSpread = 1000;
         Goal = new(CalcGoalType(), GoalSpread, GoalSpread + 500);
     }
 

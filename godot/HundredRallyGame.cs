@@ -170,7 +170,7 @@ public partial class HundredRallyGame : Node {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
         // ready, not already triggered and we generated the start of the event
-        if (state.Goal.Ready && state.Goal.RealStartingDistance < state.Goal.StartDistance && state.Goal.StartDistance < distanceAtPos) {
+        if (state.Goal.Ready && state.Goal.ZoneStartDistance < state.Goal.TriggerDistance && state.Goal.TriggerDistance < distanceAtPos) {
             GD.Print("Starting the goal: " + state.Goal.Type);
             state.Goal.StartDistanceIs(distanceAtPos);
 
@@ -188,7 +188,7 @@ public partial class HundredRallyGame : Node {
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
 
-                state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos);
+                state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
                 return true;
             });
         }
