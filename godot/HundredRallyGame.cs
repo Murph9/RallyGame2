@@ -189,6 +189,10 @@ public partial class HundredRallyGame : Node {
                 if (!_racingScene.IsMainCar(node)) return false;
 
                 state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
+
+                // TODO show goal success screen (and select relic)
+
+                state.GenerateNewGoal();
                 return true;
             });
         }

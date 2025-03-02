@@ -49,12 +49,16 @@ public partial class HundredGlobalState : Node {
         ShopPartCount = 3;
 
         GoalSpread = 1000;
-        Goal = new(CalcGoalType(), GoalSpread, GoalSpread + 500);
+        Goal = new(CalcGoalType(), GoalSpread, 500);
     }
 
     private static GoalType CalcGoalType() {
         var options = Enum.GetValues(typeof(GoalType));
         var index = new RandomNumberGenerator().RandiRange(0, options.Length - 1);
         return (GoalType)options.GetValue(index);
+    }
+
+    public void GenerateNewGoal() {
+        Goal = new(CalcGoalType(), Goal.TriggerDistance + GoalSpread, 500);
     }
 }

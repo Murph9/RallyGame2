@@ -4,18 +4,20 @@ using System;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) {
-    public GoalType Type { get; } = Type;
-    public float TriggerDistance { get; } = TriggerDistance;
-    public float EndDistance { get; } = EndDistance;
+public class GoalState(GoalType type, float triggerDistance, float goalLength) {
+    public GoalType Type { get; } = type;
+    public float TriggerDistance { get; } = triggerDistance;
+    public float Length { get; } = goalLength;
 
     public float ZoneStartDistance { get; set; }
-    public double GoalStartTime { get; set; }
+    public double StartTime { get; set; }
 
     public bool Ready { get; set; } = true;
     public bool EndPlaced { get; set; }
     public bool InProgress { get; set; }
     public bool? IsSuccessful { get; private set; } = null;
+
+    public float EndDistance => TriggerDistance + Length;
 
     public void StartDistanceIs(float distanceAtPos) {
         ZoneStartDistance = distanceAtPos;
@@ -23,7 +25,7 @@ public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) 
 
     public void StartHitAt(double totalTimePassed) {
         InProgress = true;
-        GoalStartTime = totalTimePassed;
+        StartTime = totalTimePassed;
     }
 
     public void EndedAt(double gameTime, float endDistance, Vector3 carLinearVelocity) {
@@ -45,22 +47,25 @@ public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) 
         }
 
         if (!InProgress) {
-            var text = $"Goal {Type} starts at {TriggerDistance}";
+            var text = $"Goal {Type} starts at {Math.Round(TriggerDistance / 1000f, 1)} km";
             if (ZoneStartDistance > TriggerDistance) // its set show the distance left
                 text += $" in {Math.Round(ZoneStartDistance - distance)}m";
             return text;
         }
 
+        var remainingDistance = Math.Round(EndDistance - distance) / 1000;
+
         switch (Type) {
             case GoalType.SpeedTrap:
                 var targetSpeed = SpeedTrapTargetMs(gameTime, ZoneStartDistance);
-                return $"SpeedTrap: Hit {targetSpeed} km/h in {Math.Round(EndDistance - distance)}m";
+                return $"SpeedTrap: Hit {Math.Round(MyMath.MsToKmh(targetSpeed))} km/h in {remainingDistance} km";
             case GoalType.AverageSpeedSection:
                 var targetAvgSpeed = SpeedTrapTargetMs(gameTime, ZoneStartDistance);
-                return $"AverageSpeed: Target {targetAvgSpeed}km/h, current: {Math.Round(MyMath.MsToKmh(distance / gameTime), 1)}";
+                return $"AverageSpeed: Target {Math.Round(MyMath.MsToKmh(targetAvgSpeed))}km/h, current: {Math.Round(MyMath.MsToKmh(distance / gameTime), 1)}";
             case GoalType.TimeTrial:
                 var targetTime = TimeTrialTargetSec(gameTime, ZoneStartDistance);
-                return $"Target {Math.Round(targetTime)} sec, remaining: {Math.Round(targetTime - gameTime, 2)} sec, distance remaining {EndDistance} m";
+                var timeDiff = gameTime - StartTime;
+                return $"Target {Math.Round(targetTime)} sec, remaining: {Math.Round(targetTime - timeDiff, 2)} sec, distance remaining {remainingDistance} km";
         }
 
         return null;
@@ -73,9 +78,7 @@ public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) 
     // formula: start at 60msec/(50km/h) -> 100/sec
     private float TimeTrialTargetSec(double gameTime, float distance) {
         var distancePerKm = 1 / AverageSpeedTargetMs(gameTime, distance);
-        var goalDistance = EndDistance - ZoneStartDistance;
-
-        return goalDistance * distancePerKm;
+        return Length * distancePerKm;
     }
 
     private bool SpeedTrapWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
@@ -84,9 +87,9 @@ public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) 
     }
 
     private bool AverageSpeedWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
-        var timeDiff = gameTime - GoalStartTime;
+        var timeDiff = gameTime - StartTime;
         var targetSpeed = AverageSpeedTargetMs(gameTime, ZoneStartDistance);
-        var goalDistance = EndDistance - ZoneStartDistance;
+        var goalDistance = Length - ZoneStartDistance;
 
         return targetSpeed < goalDistance / timeDiff;
     }
@@ -94,7 +97,7 @@ public class GoalState(GoalType Type, float TriggerDistance, float EndDistance) 
     private bool TimeTrialWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
         var targetTime = TimeTrialTargetSec(gameTime, ZoneStartDistance);
 
-        var timeDiff = gameTime - GoalStartTime;
+        var timeDiff = gameTime - StartTime;
         return targetTime > timeDiff;
     }
 };
