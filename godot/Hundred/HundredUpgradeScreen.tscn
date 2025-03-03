@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dry2dah6uqdvx"]
 
-[ext_resource type="Script" path="res://Hundred/HundredUpgradeScreen.cs" id="1_cn23i"]
+[ext_resource type="Script" uid="uid://y623a424iaix" path="res://Hundred/HundredUpgradeScreen.cs" id="1_cn23i"]
 
 [node name="HundredUpgradeScreen" type="CenterContainer"]
 anchors_preset = 15

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://ch7o1wchqjvkr"]
 
-[ext_resource type="Script" path="res://Hundred/HundredPauseScreen.cs" id="1_jb31w"]
+[ext_resource type="Script" uid="uid://dunc8wxt3pjcs" path="res://Hundred/HundredPauseScreen.cs" id="1_jb31w"]
 
 [node name="HundredPauseScreen" type="CenterContainer"]
 anchors_preset = 15

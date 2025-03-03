@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bfhd2uhvxt3yw"]
 
-[ext_resource type="Script" path="res://scenes/ReadyScreen.cs" id="1_vds57"]
+[ext_resource type="Script" uid="uid://de2uvoiut3fub" path="res://scenes/ReadyScreen.cs" id="1_vds57"]
 
 [node name="ReadyScreen" type="CenterContainer"]
 anchors_preset = 15

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cj0y8rpxk2ajo"]
+[gd_scene load_steps=2 format=3 uid="uid://cj0y8rpxk2ajw"]
 
-[ext_resource type="Script" path="res://scenes/UpgradeScreen.cs" id="1_cn23i"]
+[ext_resource type="Script" uid="uid://3ul16npml3ja" path="res://scenes/UpgradeScreen.cs" id="1_cn23i"]
 
 [node name="UpgradeScreen" type="CenterContainer"]
 anchors_preset = 15

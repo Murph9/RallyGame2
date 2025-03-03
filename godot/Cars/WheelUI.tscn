@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://csuejkh1rm4lq"]
 
-[ext_resource type="Script" path="res://Cars/WheelUI.cs" id="1_agt2h"]
+[ext_resource type="Script" uid="uid://d2mh7y0rlxuje" path="res://Cars/WheelUI.cs" id="1_agt2h"]
 
 [node name="WheelUi" type="VBoxContainer"]
 anchors_preset = 15

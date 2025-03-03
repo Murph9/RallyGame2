@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://b5ybap008f1wt"]
 
-[ext_resource type="Script" path="res://Utilities/WorldText.cs" id="1_ahpmw"]
+[ext_resource type="Script" uid="uid://dvvo0ky6sdkcg" path="res://Utilities/WorldText.cs" id="1_ahpmw"]
 
 [sub_resource type="ViewportTexture" id="ViewportTexture_p2bxh"]
 viewport_path = NodePath("SubViewport")

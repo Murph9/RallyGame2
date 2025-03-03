@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://byxwuhltg5ddb"]
 
-[ext_resource type="Script" path="res://Hundred/HundredUI.cs" id="1_nui4w"]
+[ext_resource type="Script" uid="uid://ctp8sewgk840n" path="res://Hundred/HundredUI.cs" id="1_nui4w"]
 
 [node name="HundredUI" type="HBoxContainer"]
 anchors_preset = 15

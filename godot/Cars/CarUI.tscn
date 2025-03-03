@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cjs71c50pp0kp"]
 
-[ext_resource type="Script" path="res://Cars/CarUI.cs" id="1_ujtt8"]
+[ext_resource type="Script" uid="uid://b2m3vmei3gwy4" path="res://Cars/CarUI.cs" id="1_ujtt8"]
 [ext_resource type="PackedScene" uid="uid://csuejkh1rm4lq" path="res://Cars/WheelUI.tscn" id="2_2ghiq"]
 
 [node name="CarUi" type="Control"]

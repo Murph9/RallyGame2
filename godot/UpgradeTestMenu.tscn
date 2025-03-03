@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dre1tg2gto5lf"]
 
-[ext_resource type="Script" path="res://UpgradeTestMenu.cs" id="1_00xkc"]
+[ext_resource type="Script" uid="uid://burl2i5im2w5a" path="res://UpgradeTestMenu.cs" id="1_00xkc"]
 
 [node name="UpgradeTestMenu" type="CenterContainer"]
 anchors_preset = 15

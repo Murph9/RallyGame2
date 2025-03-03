@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://ccadqvl0aaybv"]
 
-[ext_resource type="Script" path="res://CircuitGame.cs" id="1_t1d5r"]
+[ext_resource type="Script" uid="uid://dkk1lpipgstrp" path="res://CircuitGame.cs" id="1_t1d5r"]
 
 [node name="CircuitGame" type="Node"]
 script = ExtResource("1_t1d5r")

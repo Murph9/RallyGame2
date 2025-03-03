@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cj0y8rpxk2ajo"]
 
-[ext_resource type="Script" path="res://scenes/IntroScreen.cs" id="1_cn23i"]
+[ext_resource type="Script" uid="uid://eoi6akb6i8xt" path="res://scenes/IntroScreen.cs" id="1_cn23i"]
 
 [node name="IntroScreen" type="CenterContainer"]
 anchors_preset = 15

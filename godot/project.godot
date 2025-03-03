@@ -12,7 +12,7 @@ config_version=5
 
 config/name="RallyGame2"
 run/main_scene="res://Main.tscn"
-config/features=PackedStringArray("4.3", "C#", "Forward Plus")
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [audio]
@@ -105,7 +105,7 @@ toggle_wheel_telemetry={
 [physics]
 
 common/physics_ticks_per_second=120
-3d/physics_engine="JoltPhysics3D"
+3d/physics_engine="Jolt Physics"
 3d/default_linear_damp=0.0
 3d/default_angular_damp=0.0
 jolt_3d/solver/bounce_velocity_threshold=25.0

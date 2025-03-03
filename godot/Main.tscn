@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://iurxxw5eajhl"]
 
-[ext_resource type="Script" path="res://Main.cs" id="1_rty62"]
+[ext_resource type="Script" uid="uid://jj5lsq80ikh2" path="res://Main.cs" id="1_rty62"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_0kera"]
 
