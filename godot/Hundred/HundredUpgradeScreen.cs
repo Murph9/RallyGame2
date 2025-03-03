@@ -12,7 +12,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
     [Signal]
     public delegate void ClosedEventHandler();
 
-    private CarDetails _oldCarDetails;
+    private CarDetails _newCarDetails;
     private Part _appliedPart;
 
     public override void _Ready() {
@@ -25,12 +25,10 @@ public partial class HundredUpgradeScreen : CenterContainer {
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
 
-        // keep the existing cardetails incase it doesn't change
-        _oldCarDetails = state.CarDetails;
-
         // clone it so we don't modify the original
-        state.CarDetails = state.CarDetails.Clone();
-        var allParts = state.CarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
+        _newCarDetails = state.CarDetails.Clone();
+
+        var allParts = _newCarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
 
         for (int i = 0; i < state.ShopPartCount; i++) {
             if (allParts.Count <= 0) {
@@ -62,7 +60,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 }
 
                 part.CurrentLevel++;
-                state.CarDetails.LoadSelf(Main.DEFAULT_GRAVITY);
+                _newCarDetails.LoadSelf(Main.DEFAULT_GRAVITY);
                 _appliedPart = part;
                 LoadStats(state);
             };
@@ -75,8 +73,10 @@ public partial class HundredUpgradeScreen : CenterContainer {
             Text = "Buy"
         };
         saveButton.Pressed += () => {
-            if (_appliedPart != null)
-                state.Money -= (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
+            if (_appliedPart != null) {
+                state.UpdateCarDetails(_newCarDetails);
+                state.AddMoney(-(float)_appliedPart.LevelCost[_appliedPart.CurrentLevel]);
+            }
             EmitSignal(SignalName.Closed);
         };
         optionsBox.AddChild(saveButton);
@@ -85,7 +85,6 @@ public partial class HundredUpgradeScreen : CenterContainer {
             Text = "Leave"
         };
         chooseNothing.Pressed += () => {
-            state.CarDetails = _oldCarDetails;
             EmitSignal(SignalName.Closed);
         };
         optionsBox.AddChild(chooseNothing);
@@ -111,8 +110,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
 
         stats.PushColor(Colors.White);
         stats.PushTable(3);
-        var prevDetails = _oldCarDetails.GetResultsInTree();
-        var details = state.CarDetails.GetResultsInTree();
+        var prevDetails = state.CarDetails.GetResultsInTree();
+        var details = _newCarDetails.GetResultsInTree();
 
         stats.PushCell();
         stats.Pop();
@@ -123,8 +122,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
         stats.AppendText("New  ");
         stats.Pop();
 
-        var maxTorque = state.CarDetails.Engine.MaxTorque();
-        var maxTorquePrev = _oldCarDetails.Engine.MaxTorque();
+        var maxTorquePrev = state.CarDetails.Engine.MaxTorque();
+        var maxTorque = _newCarDetails.Engine.MaxTorque();
         stats.PushCell();
         stats.AppendText($"Max Torque (Nm):");
         stats.Pop();
@@ -137,8 +136,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
         }
         stats.Pop();
 
-        var maxKw = state.CarDetails.Engine.MaxKw();
-        var maxKwPrev = _oldCarDetails.Engine.MaxKw();
+        var maxKwPrev = state.CarDetails.Engine.MaxKw();
+        var maxKw = _newCarDetails.Engine.MaxKw();
         stats.PushCell();
         stats.AppendText("Max Power (kW):");
         stats.Pop();
@@ -184,7 +183,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         stats.Pop();
         stats.Pop();
 
-        var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, null, _oldCarDetails, null);
+        var torqueCurveGraph = new TorqueCurveGraph(_newCarDetails, null, state.CarDetails, null);
         statsBox.AddChild(torqueCurveGraph);
     }
 

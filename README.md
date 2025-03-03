@@ -49,7 +49,7 @@ An infinite world
 -   tyre wear
 -   fuel use
 -   body damage from collisions (which affects aero and performance somehow)
--   a top speed/accel/handling estimate performance
+-   a top speed/accel/handling estimate performance numbers
 -   relic that upgrades the road type
     -   you know how peglin has 3 phases? why don't we have upgraded road types
     -   or road types are a part of the challenge, pick directions and it may slowly get there
@@ -67,14 +67,14 @@ Ideas for relics:
 -   hopping ability
 -   super bouncy
 -   drift points (with no benefit)
--   money from style points
+-   money from style points (making the drift points relic useful)
 -   money per car flip
 -   money per second spent in races
 -   increased money per race won
 -   reduction in tyre wear
 -   reduction in fuel use
--   that need distance travelled to get better
--   based on the amount of a brand of parts you have
+-   relics that need distance travelled to get better
+-   improve based on part branding based on the amount of a brand of parts you have
 
 ---
 

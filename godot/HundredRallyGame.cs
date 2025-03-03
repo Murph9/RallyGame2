@@ -39,7 +39,7 @@ public partial class HundredRallyGame : Node {
         if (state.CarDetails != null) {
             state.Reset(); // reset if its not been set
         }
-        state.CarDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
+        state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
         _roadManager = new InfiniteRoadManager(300);
         _roadManager.ShopPlaced += ShopTriggeredAt;
@@ -62,7 +62,7 @@ public partial class HundredRallyGame : Node {
 
         // update state
         if (!_paused) {
-            state.TotalTimePassed += delta;
+            state.AddTotalTimePassed(delta);
 
             if (Input.IsActionJustPressed("menu_back")) {
                 Pause();
@@ -79,22 +79,22 @@ public partial class HundredRallyGame : Node {
         _playerLineDebug3D.End = _roadManager.GetNextCheckpoint(_racingScene.PlayerCarPos).Origin;
 
         var newDistanceTravelled = _roadManager.TotalDistanceFromCheckpoint(_playerLineDebug3D.End);
-        state.DistanceTravelled = Mathf.Max(state.DistanceTravelled, newDistanceTravelled); // please no negative progress
+        state.SetDistanceTravelled(newDistanceTravelled);
     }
 
     public override void _PhysicsProcess(double delta) {
         // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        state.CurrentSpeedKMH = _racingScene.PlayerCarLinearVelocity.Length() * 3.6f;
+        state.SetCurrentSpeedMs(_racingScene.PlayerCarLinearVelocity.Length());
 
         // trigger next shop stop
         if (_racingScene.PlayerDistanceTravelled > state.NextShopDistance) {
             GD.Print("Queuing shop because of next trigger " + state.NextShopDistance);
             if (state.NextShopDistance < state.ShopSpread) {
-                state.NextShopDistance = state.ShopSpread; // the first one is much closer than normal
+                state.SetNextShopDistance(state.ShopSpread); // the first one is much closer than normal
             } else {
-                state.NextShopDistance += state.ShopSpread;
+                state.SetNextShopDistance(state.NextShopDistance + state.ShopSpread);
             }
 
             _roadManager.TriggerShop();
@@ -112,19 +112,18 @@ public partial class HundredRallyGame : Node {
                     checkpoint = checkpoints.Last();
                 }
 
-                state.RivalRaceDetails = rival.Value with { CheckpointSent = true };
+                state.RivalCheckpointSet();
                 // spawn checkpoint there
                 CreateCheckpoint(checkpoint, node => {
                     if (state.RivalRaceDetails != null) {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetRivalRace);
-                            state.RivalRaceMessage = "Nice win";
-                            state.Money += RIVAL_RACE_WIN_MONEY;
+                            state.RivalRaceFinished(true, "Nice win", RIVAL_RACE_WIN_MONEY);
                             return true;
                         } else if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetRivalRace);
-                            state.RivalRaceMessage = "You lost";
+                            state.RivalRaceFinished(false, "You Lost", 0);
                             return true;
                         }
                     }
@@ -135,8 +134,8 @@ public partial class HundredRallyGame : Node {
             var closestRival = _roadManager.GetClosestOpponent(_racingScene.PlayerCarPos);
             if (closestRival != null && closestRival.RigidBody.GlobalPosition.DistanceTo(_racingScene.PlayerCarPos) < 10 && (closestRival.RigidBody.LinearVelocity - _racingScene.PlayerCarLinearVelocity).Length() < 3) {
                 GD.Print("Challenged rival");
-                state.RivalRaceDetails = new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false);
-                state.RivalRaceMessage = "Rival race started, dist: " + state.RivalRaceDetails.Value.RaceDistance + "m";
+                // TODO 100
+                state.RivalStarted(new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, 100, false), "Rival race started, dist: " + 100 + "m");
 
                 var newAi = new RacingAiInputs(_roadManager) {
                     RoadWidth = 10
@@ -205,7 +204,7 @@ public partial class HundredRallyGame : Node {
         RevertRivalAi(state.RivalRaceDetails.Value.Rival, state.RivalRaceDetails.Value.Rival.Inputs);
         state.RivalRaceDetails.Value.Rival.ChangeInputsTo(new StopAiInputs(_roadManager));
 
-        state.RivalRaceDetails = null;
+        state.RivalStopped();
 
         // no need to delete the rival, its not like it should disappear
     }
