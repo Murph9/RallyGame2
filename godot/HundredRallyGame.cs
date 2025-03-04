@@ -151,8 +151,6 @@ public partial class HundredRallyGame : Node {
         CreateCheckpoint(transform, node => {
             if (!_racingScene.IsMainCar(node)) return false;
 
-            GD.Print("Hit shop trigger");
-            _paused = false;
             CallDeferred(MethodName.ShowShop);
             return true;
         });
@@ -214,7 +212,15 @@ public partial class HundredRallyGame : Node {
         SetPauseState(true);
 
         var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
-        upgrade.Closed += () => {
+        upgrade.Closed += (carChanged) => {
+            if (carChanged) {
+                var changeDetails = upgrade.GetChangedDetails();
+
+                var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+                state.SetCarDetails(changeDetails.Item1);
+                state.AddMoney(-changeDetails.Item2);
+            }
+
             SetPauseState(false);
             _racingScene.ReplaceCarWithState();
             CallDeferred(MethodName.RemoveNode, upgrade);

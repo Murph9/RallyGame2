@@ -9,11 +9,14 @@ namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredUpgradeScreen : CenterContainer {
 
+    // Note this event handler doesn't output the changed CarDetails object
+    // This is because event handlers only support godot types
     [Signal]
-    public delegate void ClosedEventHandler();
+    public delegate void ClosedEventHandler(bool carChanged);
 
     private CarDetails _newCarDetails;
     private Part _appliedPart;
+    private float _moneyPaid;
 
     public override void _Ready() {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
@@ -21,6 +24,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
         LoadOptions(state);
         LoadStats(state);
     }
+
+    public (CarDetails, float) GetChangedDetails() => (_newCarDetails, _moneyPaid);
 
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
@@ -74,10 +79,9 @@ public partial class HundredUpgradeScreen : CenterContainer {
         };
         saveButton.Pressed += () => {
             if (_appliedPart != null) {
-                state.SetCarDetails(_newCarDetails);
-                state.AddMoney(-(float)_appliedPart.LevelCost[_appliedPart.CurrentLevel]);
+                _moneyPaid = (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
             }
-            EmitSignal(SignalName.Closed);
+            EmitSignal(SignalName.Closed, _appliedPart != null);
         };
         optionsBox.AddChild(saveButton);
 
@@ -85,7 +89,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
             Text = "Leave"
         };
         chooseNothing.Pressed += () => {
-            EmitSignal(SignalName.Closed);
+            EmitSignal(SignalName.Closed, false);
         };
         optionsBox.AddChild(chooseNothing);
     }
