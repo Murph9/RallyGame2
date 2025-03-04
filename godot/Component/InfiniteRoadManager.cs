@@ -235,7 +235,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return closestIndex;
     }
 
-    public void TriggerShop() {
+    public void TriggerShopPiece() {
         _world.QueuePiece("station");
     }
 

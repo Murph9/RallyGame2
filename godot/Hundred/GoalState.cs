@@ -28,7 +28,7 @@ public class GoalState(GoalType type, float triggerDistance, float goalLength) {
         StartTime = totalTimePassed;
     }
 
-    public void EndedAt(double gameTime, float endDistance, Vector3 carLinearVelocity) {
+    public bool EndedAt(double gameTime, float endDistance, Vector3 carLinearVelocity) {
         InProgress = false;
         Ready = false;
 
@@ -38,6 +38,8 @@ public class GoalState(GoalType type, float triggerDistance, float goalLength) {
             GoalType.TimeTrial => (bool?)TimeTrialWasSuccessful(gameTime, carLinearVelocity),
             _ => throw new Exception("Unknown type " + Type),
         };
+
+        return IsSuccessful ?? false;
     }
 
     public string ProgressString(double gameTime, float distance) {

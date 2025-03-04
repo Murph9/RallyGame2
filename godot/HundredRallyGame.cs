@@ -97,7 +97,7 @@ public partial class HundredRallyGame : Node {
                 state.SetNextShopDistance(state.NextShopDistance + state.ShopSpread);
             }
 
-            _roadManager.TriggerShop();
+            _roadManager.TriggerShopPiece();
         }
 
         // check the current race state
@@ -157,11 +157,7 @@ public partial class HundredRallyGame : Node {
             return true;
         });
     }
-    private void ResumeFromNode(Node node) {
-        _paused = false;
-        RemoveCheckpoint(node);
-    }
-    private void RemoveCheckpoint(Node node) {
+    private void RemoveNode(Node node) {
         RemoveChild(node);
     }
 
@@ -187,9 +183,10 @@ public partial class HundredRallyGame : Node {
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
 
-                state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
+                var successful = state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
 
                 // TODO show goal success screen (and select relic)
+
 
                 state.GenerateNewGoal();
                 return true;
@@ -214,32 +211,33 @@ public partial class HundredRallyGame : Node {
     }
 
     private void ShowShop() {
-        _racingScene.StopDriving();
-        _roadManager.SetPaused(true);
+        SetPauseState(true);
 
         var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
         upgrade.Closed += () => {
-            _roadManager.SetPaused(false);
+            SetPauseState(false);
             _racingScene.ReplaceCarWithState();
-            _racingScene.StartDriving();
-
-            CallDeferred(MethodName.ResumeFromNode, upgrade);
+            CallDeferred(MethodName.RemoveNode, upgrade);
         };
         AddChild(upgrade);
     }
 
+    private void SetPauseState(bool paused) {
+        _paused = paused;
+        if (paused)
+            _racingScene.StopDriving();
+        else
+            _racingScene.StartDriving();
+        _roadManager.SetPaused(paused);
+    }
+
     private void Pause() {
-        _paused = true;
-        _racingScene.StopDriving();
-        _roadManager.SetPaused(true);
+        SetPauseState(true);
 
         var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredPauseScreen))).Instantiate<HundredPauseScreen>();
         pauseScreen.Resume += () => {
-            _roadManager.SetPaused(false);
-            _racingScene.ReplaceCarWithState();
-            _racingScene.StartDriving();
-
-            CallDeferred(MethodName.ResumeFromNode, pauseScreen);
+            SetPauseState(false);
+            CallDeferred(MethodName.RemoveNode, pauseScreen);
         };
         pauseScreen.Quit += () => {
             GetTree().ChangeSceneToFile("res://Main.tscn");
@@ -253,7 +251,7 @@ public partial class HundredRallyGame : Node {
         checkpoint.ThingEntered += node => {
             if (node.GetParent() is not Car) return;
             if (action(node))
-                CallDeferred(MethodName.RemoveCheckpoint, checkpoint);
+                CallDeferred(MethodName.RemoveNode, checkpoint);
         };
     }
 }
