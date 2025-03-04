@@ -11,6 +11,23 @@ public readonly record struct RivalRace(Car Rival, float StartDistance, float Ra
 
 public partial class HundredGlobalState : Node {
 
+    [Signal]
+    public delegate void MoneyIncreasedEventHandler(float amount);
+    [Signal]
+    public delegate void MoneyDecreasedEventHandler(float amount);
+    [Signal]
+    public delegate void CarDetailsChangedEventHandler();
+    [Signal]
+    public delegate void SecondPassedEventHandler(int totalTime);
+    [Signal]
+    public delegate void RivalRaceStartedEventHandler();
+    [Signal]
+    public delegate void RivalRaceResetEventHandler();
+    [Signal]
+    public delegate void RivalRaceWonEventHandler();
+    [Signal]
+    public delegate void RivalRaceLostEventHandler();
+
     public RelicManager RelicManager { get; private set; }
 
     public float TargetDistance { get; private set; }
@@ -78,11 +95,22 @@ public partial class HundredGlobalState : Node {
 
     public void AddMoney(float delta) {
         Money += delta;
+
+        if (delta > 0)
+            EmitSignal(SignalName.MoneyIncreased, Math.Abs(delta));
+        if (delta < 0)
+            EmitSignal(SignalName.MoneyDecreased, Math.Abs(delta));
     }
 
-    public void SetCarDetails(CarDetails carDetails) => CarDetails = carDetails;
+    public void SetCarDetails(CarDetails carDetails) {
+        CarDetails = carDetails;
+        EmitSignal(SignalName.CarDetailsChanged);
+    }
     public void AddTotalTimePassed(double delta) {
         TotalTimePassed += delta;
+
+        if (Math.Floor(TotalTimePassed - delta) != Math.Floor(TotalTimePassed))
+            EmitSignal(SignalName.SecondPassed, Math.Floor(TotalTimePassed));
     }
     public void SetDistanceTravelled(float newDistanceTravelled) {
         DistanceTravelled = Mathf.Max(DistanceTravelled, newDistanceTravelled); // please no negative progress
@@ -99,10 +127,14 @@ public partial class HundredGlobalState : Node {
     public void RivalStarted(RivalRace race, string message) {
         RivalRaceDetails = race;
         RivalRaceMessage = message;
+
+        EmitSignal(SignalName.RivalRaceStarted);
     }
 
     public void RivalStopped() {
         RivalRaceDetails = null;
+
+        EmitSignal(SignalName.RivalRaceReset);
     }
 
     public void RivalCheckpointSet() {
@@ -112,13 +144,17 @@ public partial class HundredGlobalState : Node {
 
     public void RivalRaceFinished(bool playerWon, string message, float moneyDiff) {
         RivalRaceMessage = message;
+        if (playerWon)
+            EmitSignal(SignalName.RivalRaceWon);
+        else
+            EmitSignal(SignalName.RivalRaceLost);
 
         AddMoney(moneyDiff);
     }
 
-    public void UpdateCarDetails(CarDetails newCarDetails) {
-        CarDetails = newCarDetails;
-    }
+    // and a list of events so we can track them here
+    [Signal]
+    public delegate void TrafficCollisionEventHandler(Car trafficCar); // TODO this might need some other data
+    public void CollisionWithTraffic(Car trafficCar) => EmitSignal(SignalName.TrafficCollision, trafficCar);
 
-    // TODO events based on this
 }

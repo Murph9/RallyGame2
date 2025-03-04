@@ -74,7 +74,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         };
         saveButton.Pressed += () => {
             if (_appliedPart != null) {
-                state.UpdateCarDetails(_newCarDetails);
+                state.SetCarDetails(_newCarDetails);
                 state.AddMoney(-(float)_appliedPart.LevelCost[_appliedPart.CurrentLevel]);
             }
             EmitSignal(SignalName.Closed);

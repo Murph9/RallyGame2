@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Sim;
 using System;
 using System.Collections.Generic;
 
@@ -13,15 +14,19 @@ public partial class RelicManager : Node {
     public RelicManager(HundredGlobalState hundredGlobalState) {
         _hundredGlobalState = hundredGlobalState;
 
-        // _hundredGlobalState.Onaaaa += () => { };
+        _hundredGlobalState.TrafficCollision += (node) => {
+            // TODO relic stuff
+        };
     }
 
-    public void AddRelic<T>() where T : Relic, new() {
-        _relics.Add(new T());
+    public void AddRelic<T>(float strength = 1) where T : Relic, new() {
+        _relics.Add(new T() { Strength = strength });
     }
 }
 
-public abstract class Relic { }
+public abstract class Relic(float strength) {
+    public float Strength { get; init; } = strength;
+}
 
 public interface IOnEventRelic {
 
@@ -35,6 +40,12 @@ public interface IModifyRelic {
 
 }
 
-public class BouncyRelic : Relic, IOnPurchaseRelic {
+public interface ITrafficCollisionRelic {
+    void TrafficCollision(Car otherCar);
+}
 
+public class BouncyRelic(float strength) : Relic(strength), ITrafficCollisionRelic {
+    public void TrafficCollision(Car otherCar) {
+        otherCar.RigidBody.ApplyCentralImpulse(new Vector3(0, 10000, 0));
+    }
 }

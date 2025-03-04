@@ -24,6 +24,13 @@ public partial class HundredRacingScene : Node3D {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         _car = new Car(state.CarDetails, null, InitialPosition);
         AddChild(_car);
+
+        _car.RigidBody.BodyEntered += (node) => {
+            var car = node.GetParentOrNull<Car>();
+            if (car == null)
+                return;
+            state.CollisionWithTraffic(car);
+        };
     }
 
     public override void _Process(double delta) {
