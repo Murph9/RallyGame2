@@ -33,20 +33,7 @@ animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={
-"nodes": {
-"PATH:small_hill_down": {
-"generate/physics": true
-},
-"PATH:small_hill_up": {
-"generate/physics": true
-},
-"PATH:small_straight": {
-"generate/physics": true
-},
-"PATH:station": {
-"generate/physics": true
-}
-}
+"nodes": {}
 }
 blender/nodes/visible=0
 blender/nodes/active_collection_only=false

@@ -4,11 +4,9 @@
 
 Download godot, setup the .vscode launch.json script to point to its location
 
-Godotjolt is already downloaded in the repo as a zip in the guid folder /godot/9bb...
-
 ## How TOs
 
-### Adding a model with physics
+### Adding a model with jolt physics
 
 1. make model thats ready to import into godot
 1. append `-col` to the model name

@@ -4,6 +4,3 @@
 # See readme
 */addons
 *.blend1
-
-# some jolt generated dlls
-~*
