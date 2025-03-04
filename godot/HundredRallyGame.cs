@@ -65,7 +65,7 @@ public partial class HundredRallyGame : Node {
             state.AddTotalTimePassed(delta);
 
             if (Input.IsActionJustPressed("menu_back")) {
-                Pause();
+                ShowPause();
             }
 
             if (Input.IsActionJustPressed("car_reset")) {
@@ -231,7 +231,7 @@ public partial class HundredRallyGame : Node {
         _roadManager.SetPaused(paused);
     }
 
-    private void Pause() {
+    private void ShowPause() {
         SetPauseState(true);
 
         var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredPauseScreen))).Instantiate<HundredPauseScreen>();
