@@ -11,8 +11,10 @@ public partial class Car : Node3D {
     public CarDetails Details { get; }
     public CarEngine Engine { get; }
 
+
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
+    private readonly AudioStreamPlayer _engineAudio;
 
     public ICarInputs Inputs { get; private set; }
 
@@ -77,13 +79,13 @@ public partial class Car : Node3D {
         if (!Inputs.IsAi) {
             // add audio
             var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
-            var engine = new AudioStreamPlayer() {
+            _engineAudio = new AudioStreamPlayer() {
                 Stream = stream,
                 Autoplay = true,
                 Name = "engineAudioPlayer",
                 VolumeDb = Mathf.LinearToDb(0.25f)
             };
-            AddChild(engine);
+            AddChild(_engineAudio);
         }
     }
 
@@ -333,6 +335,10 @@ public partial class Car : Node3D {
             _frozenAngular = RigidBody.AngularVelocity;
             Inputs.IgnoreInputs();
             RigidBody.Freeze = true;
+        }
+
+        if (_engineAudio != null) {
+            _engineAudio.Playing = active;
         }
 
         SetProcess(active);
