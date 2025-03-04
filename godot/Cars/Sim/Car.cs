@@ -55,6 +55,8 @@ public partial class Car : Node3D {
         parent.RemoveChild(RigidBody); // remove the scene parent
         parent.QueueFree();
         RigidBody.Owner = null;
+        RigidBody.ContactMonitor = true;
+        RigidBody.MaxContactsReported = 2;
 
         // set values from the details
         RigidBody.Mass = (float)Details.TotalMass;
