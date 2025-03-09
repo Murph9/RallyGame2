@@ -8,6 +8,6 @@ public static class Vector3Extensions {
     public static string ToRoundedString(this Vector3 vec, int places = 2) {
         var sigFig = Mathf.Pow(10, places);
         vec *= sigFig;
-        return $"({Mathf.Round(vec.X) / sigFig},{Mathf.Round(vec.Y) / sigFig},{Mathf.Round(vec.Y) / sigFig})";
+        return $"({Mathf.Round(vec.X) / sigFig},{Mathf.Round(vec.Y) / sigFig},{Mathf.Round(vec.Z) / sigFig})";
     }
 }
