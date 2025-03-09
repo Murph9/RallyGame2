@@ -35,6 +35,7 @@ public partial class HundredGlobalState : Node {
     public float NextShopDistance { get; private set; }
     public float ShopSpread { get; private set; }
 
+    public Car Car { get; private set; }
     public CarDetails CarDetails { get; private set; }
     public double TotalTimePassed { get; private set; }
     public float Money { get; private set; }
@@ -63,6 +64,7 @@ public partial class HundredGlobalState : Node {
 
         TargetDistance = 100 * 1000; // m
 
+        Car = null;
         CarDetails = null;
         NextShopDistance = 100; // m
         ShopSpread = 500; // m
@@ -104,6 +106,10 @@ public partial class HundredGlobalState : Node {
             EmitSignal(SignalName.MoneyDecreased, Math.Abs(delta));
     }
 
+    public void SetCar(Car car) {
+        Car = car;
+        // not sure if this needs an event, its an internal detail
+    }
     public void SetCarDetails(CarDetails carDetails) {
         CarDetails = carDetails;
         EmitSignal(SignalName.CarDetailsChanged);

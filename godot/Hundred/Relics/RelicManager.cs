@@ -23,9 +23,11 @@ public partial class RelicManager : Node {
     public void AddRelic(RelicType type, float strength = 1) {
         if (type == RelicType.BOUNCY) {
             _relics.Add(new BouncyRelic(strength));
-            return;
+        } else if (type == RelicType.JUMP) {
+            _relics.Add(new JumpRelic(strength));
+        } else {
+            throw new Exception("Unknown relic type: " + type);
         }
-        throw new Exception("Unknown relic type: " + type);
     }
 
     public List<Relic> GetRelics() => _relics;
@@ -35,6 +37,33 @@ public partial class RelicManager : Node {
             if (relic is ITrafficCollisionRelic t) {
                 t.TrafficCollision(otherCar);
             }
+        }
+    }
+
+    private void ActionPressed(string action) {
+        foreach (var relic in _relics) {
+            if (relic is IOnKeyRelic key) {
+                key.ActionPressed(_hundredGlobalState.Car, action);
+            }
+        }
+    }
+
+    public override void _Process(double delta) {
+        if (Input.IsActionJustPressed("car_action_1")) {
+            ActionPressed("car_action_1");
+        }
+        if (Input.IsActionJustPressed("car_action_2")) {
+            ActionPressed("car_action_2");
+        }
+        if (Input.IsActionJustPressed("car_action_3")) {
+            ActionPressed("car_action_3");
+        }
+        if (Input.IsActionJustPressed("car_action_4")) {
+            ActionPressed("car_action_4");
+        }
+
+        foreach (var relic in _relics) {
+            relic._Process(delta);
         }
     }
 

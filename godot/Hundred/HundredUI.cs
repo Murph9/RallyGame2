@@ -83,6 +83,9 @@ public partial class HundredUI : HBoxContainer {
                 Color = Colors.Aqua,
                 CustomMinimumSize = new Vector2(50, 50),
             });
+            hbox.AddChild(new Label() {
+                Text = relic.Delay > 0 ? Math.Round(relic.Delay, 1).ToString() : ""
+            });
 
             relicContainer.AddChild(hbox);
         }

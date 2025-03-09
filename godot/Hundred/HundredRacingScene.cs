@@ -23,9 +23,8 @@ public partial class HundredRacingScene : Node3D {
         // load from global state
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         _car = new Car(state.CarDetails, null, InitialPosition);
-        AddChild(_car);
 
-        AddCollisionListener(state);
+        UpdateWithNewCar(state);
     }
 
     public override void _Process(double delta) {
@@ -41,11 +40,9 @@ public partial class HundredRacingScene : Node3D {
             var newCar = _car.CloneWithNewDetails(state.CarDetails);
             RemoveChild(_car);
             _car.QueueFree();
-
             _car = newCar;
-            AddChild(_car);
 
-            AddCollisionListener(state);
+            UpdateWithNewCar(state);
         }).CallDeferred();
     }
 
@@ -63,17 +60,18 @@ public partial class HundredRacingScene : Node3D {
 
     public void StartDriving() {
         _car.SetActive(true);
-
     }
 
     public bool IsMainCar(Node3D node) => _car.RigidBody == node;
 
-    private void AddCollisionListener(HundredGlobalState state) {
+    private void UpdateWithNewCar(HundredGlobalState state) {
+        AddChild(_car);
         _car.RigidBody.BodyEntered += (node) => {
             var car = node.GetParentOrNull<Car>();
             if (car == null)
                 return;
             state.CollisionWithTraffic(car);
         };
+        state.SetCar(_car);
     }
 }
