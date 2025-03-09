@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -63,6 +64,19 @@ public partial class HundredUI : HBoxContainer {
 
         var goalInfo = GetNode<Label>("VBoxContainerCenter/LabelGoal");
         goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled);
+
+        // update relic view
+        var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");
+        foreach (var relicView in relicContainer.GetChildren().ToArray()) {
+            relicContainer.RemoveChild(relicView);
+        }
+
+        // TODO perf
+        foreach (var relic in state.RelicManager.GetRelics()) {
+            relicContainer.AddChild(new Label() {
+                Text = relic.GetType().Name
+            });
+        }
     }
 
     private static string GenerateTimeString(double time) {

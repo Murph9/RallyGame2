@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://b31lt63xa7fmy"]
+
+[ext_resource type="Script" uid="uid://y623a424iaig" path="res://Hundred/HundredRelicScreen.cs" id="1_cn23i"]
+
+[node name="HundredRelicScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cn23i")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="HeadingLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Shop"
+horizontal_alignment = 1
+
+[node name="IntroLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainerOptions" type="VBoxContainer" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainerStats" type="VBoxContainer" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2

@@ -183,8 +183,7 @@ public partial class HundredRallyGame : Node {
 
                 var successful = state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
 
-                // TODO show goal success screen (and select relic)
-
+                CallDeferred(MethodName.ShowRelicShop);
 
                 state.GenerateNewGoal();
                 return true;
@@ -206,6 +205,17 @@ public partial class HundredRallyGame : Node {
     private static async void RevertRivalAi(Car rival, ICarInputs oldAi) {
         await Task.Delay(TimeSpan.FromSeconds(5));
         rival.ChangeInputsTo(oldAi);
+    }
+
+    private void ShowRelicShop() {
+        SetPauseState(true);
+
+        var relics = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRelicScreen))).Instantiate<HundredRelicScreen>();
+        relics.Closed += () => {
+            SetPauseState(false);
+            CallDeferred(MethodName.RemoveNode, relics);
+        };
+        AddChild(relics);
     }
 
     private void ShowShop() {

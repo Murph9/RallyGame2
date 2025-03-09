@@ -73,6 +73,8 @@ Ideas for relics:
 -   reduction in fuel use
 -   relics that need distance travelled to get better
 -   improve based on part branding based on the amount of a brand of parts you have
+-   every 5 minutes your power/grip/drag gets randomized in some range
+-   temporarily upgrades your car for a limited amount of time
 
 ---
 

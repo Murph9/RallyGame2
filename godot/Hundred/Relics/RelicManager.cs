@@ -2,11 +2,11 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
 public partial class RelicManager : Node {
-
     private readonly HundredGlobalState _hundredGlobalState;
 
     private readonly List<Relic> _relics = [];
@@ -14,38 +14,31 @@ public partial class RelicManager : Node {
     public RelicManager(HundredGlobalState hundredGlobalState) {
         _hundredGlobalState = hundredGlobalState;
 
-        _hundredGlobalState.TrafficCollision += (node) => {
-            // TODO relic stuff
-        };
+        _hundredGlobalState.TrafficCollision += TrafficCollision;
     }
 
     public void AddRelic<T>(float strength = 1) where T : Relic, new() {
         _relics.Add(new T() { Strength = strength });
     }
-}
+    public void AddRelic(RelicType type, float strength = 1) {
+        if (type == RelicType.BOUNCY) {
+            _relics.Add(new BouncyRelic(strength));
+            return;
+        }
+        throw new Exception("Unknown relic type: " + type);
+    }
 
-public abstract class Relic(float strength) {
-    public float Strength { get; init; } = strength;
-}
+    public List<Relic> GetRelics() => _relics;
 
-public interface IOnEventRelic {
+    private void TrafficCollision(Car otherCar) {
+        foreach (var relic in _relics) {
+            if (relic is ITrafficCollisionRelic t) {
+                t.TrafficCollision(otherCar);
+            }
+        }
+    }
 
-}
-
-public interface IOnPurchaseRelic {
-
-}
-
-public interface IModifyRelic {
-
-}
-
-public interface ITrafficCollisionRelic {
-    void TrafficCollision(Car otherCar);
-}
-
-public class BouncyRelic(float strength) : Relic(strength), ITrafficCollisionRelic {
-    public void TrafficCollision(Car otherCar) {
-        otherCar.RigidBody.ApplyCentralImpulse(new Vector3(0, 10000, 0));
+    public List<RelicType> GetValidRelics() {
+        return RelicType.ALL_RELIC_TYPES.Except(_relics.Select(x => x.Type)).ToList();
     }
 }

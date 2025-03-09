@@ -47,6 +47,7 @@ public partial class HundredGlobalState : Node {
     public string RivalRaceMessage { get; private set; }
 
     public int ShopPartCount { get; private set; }
+    public int ShopRelicCount { get; private set; }
 
     public float GoalSpread { get; private set; }
     public GoalState Goal { get; private set; }
@@ -75,6 +76,7 @@ public partial class HundredGlobalState : Node {
         RivalRaceMessage = null;
 
         ShopPartCount = 3;
+        ShopRelicCount = 2;
 
         GoalSpread = 1000;
         Goal = new(CalcGoalType(), GoalSpread, 500);
