@@ -53,4 +53,7 @@ public partial class Main : Node {
     public void _on_circuitstart_button_pressed() {
         GetTree().ChangeSceneToFile("res://CircuitGame.tscn");
     }
+    public void _on_test_button_pressed() {
+        GetTree().ChangeSceneToFile("res://TestGame.tscn");
+    }
 }

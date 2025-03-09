@@ -22,6 +22,8 @@ public partial class CarCamera : Node3D {
         if (cam != null) {
             cam.LookAt(_car.RigidBody.GlobalPosition + _lookAt);
             cam.Position = _car.RigidBody.Position + _car.RigidBody.GlobalBasis * _offset;
+        } else {
+            GD.PushError(nameof(CarCamera) + ": No camera found");
         }
     }
 }
