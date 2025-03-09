@@ -26,11 +26,9 @@ public partial class HundredRelicScreen : CenterContainer {
             allRelics.Remove(relic);
 
             var container = new HBoxContainer();
-            container.AddChild(new TextureRect() {
-                // Texture = relic.GetType().Name,
-                CustomMinimumSize = new Vector2(100, 100),
-                ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
-                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+            container.AddChild(new ColorRect() {
+                Color = Colors.Aqua,
+                CustomMinimumSize = new Vector2(50, 50),
             });
             container.AddChild(new Label() {
                 Text = $"{relic.Name}"

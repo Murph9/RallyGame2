@@ -73,6 +73,12 @@ public partial class HundredRallyGame : Node {
                 // reset back to last road thing
                 _racingScene.ResetCarTo(pos);
             }
+
+#if DEBUG
+            if (Input.IsKeyPressed(Key.Key9)) {
+                CallDeferred(MethodName.ShowRelicShop);
+            }
+#endif
         }
 
         _playerLineDebug3D.Start = _racingScene.PlayerCarPos;

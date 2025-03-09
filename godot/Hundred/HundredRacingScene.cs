@@ -25,12 +25,7 @@ public partial class HundredRacingScene : Node3D {
         _car = new Car(state.CarDetails, null, InitialPosition);
         AddChild(_car);
 
-        _car.RigidBody.BodyEntered += (node) => {
-            var car = node.GetParentOrNull<Car>();
-            if (car == null)
-                return;
-            state.CollisionWithTraffic(car);
-        };
+        AddCollisionListener(state);
     }
 
     public override void _Process(double delta) {
@@ -49,6 +44,8 @@ public partial class HundredRacingScene : Node3D {
 
             _car = newCar;
             AddChild(_car);
+
+            AddCollisionListener(state);
         }).CallDeferred();
     }
 
@@ -70,4 +67,13 @@ public partial class HundredRacingScene : Node3D {
     }
 
     public bool IsMainCar(Node3D node) => _car.RigidBody == node;
+
+    private void AddCollisionListener(HundredGlobalState state) {
+        _car.RigidBody.BodyEntered += (node) => {
+            var car = node.GetParentOrNull<Car>();
+            if (car == null)
+                return;
+            state.CollisionWithTraffic(car);
+        };
+    }
 }

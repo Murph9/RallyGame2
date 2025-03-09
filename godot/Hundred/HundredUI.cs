@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,15 +68,23 @@ public partial class HundredUI : HBoxContainer {
 
         // update relic view
         var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");
-        foreach (var relicView in relicContainer.GetChildren().ToArray()) {
+        // TODO perf
+        foreach (var relicView in relicContainer.GetAllChildrenOfType<HBoxContainer>().ToArray()) {
             relicContainer.RemoveChild(relicView);
         }
 
-        // TODO perf
         foreach (var relic in state.RelicManager.GetRelics()) {
-            relicContainer.AddChild(new Label() {
+            var hbox = new HBoxContainer();
+
+            hbox.AddChild(new Label() {
                 Text = relic.GetType().Name
             });
+            hbox.AddChild(new ColorRect() {
+                Color = Colors.Aqua,
+                CustomMinimumSize = new Vector2(50, 50),
+            });
+
+            relicContainer.AddChild(hbox);
         }
     }
 
