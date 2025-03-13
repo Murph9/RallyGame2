@@ -17,14 +17,6 @@ public partial class RelicManager : Node {
         _hundredGlobalState.TrafficCollision += TrafficCollision;
     }
 
-    public override void _PhysicsProcess(double delta) {
-        foreach (var relic in _relics) {
-            if (relic is IOnPhysicsProcessRelic t) {
-                t.PhysicsProcess(_hundredGlobalState.Car, delta);
-            }
-        }
-    }
-
     public void AddRelic<T>(float strength = 1) where T : Relic, new() {
         _relics.Add(new T() { InputStrength = strength });
     }
@@ -43,6 +35,8 @@ public partial class RelicManager : Node {
     public List<Relic> GetRelics() => _relics;
 
     private void TrafficCollision(Car otherCar) {
+        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+
         foreach (var relic in _relics) {
             if (relic is IOnTrafficCollisionRelic t) {
                 t.TrafficCollision(_hundredGlobalState.Car, otherCar);
@@ -51,6 +45,8 @@ public partial class RelicManager : Node {
     }
 
     private void ActionPressed(string action) {
+        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+
         foreach (var relic in _relics) {
             if (relic is IOnKeyRelic key) {
                 key.ActionPressed(_hundredGlobalState.Car, action);
@@ -59,6 +55,8 @@ public partial class RelicManager : Node {
     }
 
     public override void _Process(double delta) {
+        if (_hundredGlobalState.Car?.RigidBody.Freeze ?? true) return;
+
         if (Input.IsActionJustPressed("car_action_1")) {
             ActionPressed("car_action_1");
         }
@@ -73,7 +71,15 @@ public partial class RelicManager : Node {
         }
 
         foreach (var relic in _relics) {
-            relic._Process(delta);
+            relic._Process(_hundredGlobalState.Car, delta);
+        }
+    }
+
+    public override void _PhysicsProcess(double delta) {
+        if (_hundredGlobalState.Car?.RigidBody.Freeze ?? true) return;
+
+        foreach (var relic in _relics) {
+            relic._PhysicsProcess(_hundredGlobalState.Car, delta);
         }
     }
 

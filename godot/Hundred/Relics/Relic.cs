@@ -10,20 +10,22 @@ public abstract class Relic(float inputStrength) {
     public float OutputStrength { get; protected set; }
     public abstract RelicType Type { get; }
 
-    // would love to use entity system here
+    // would love to use an entity system here
     public double DelaySeconds { get; init; }
     public double Delay { get; set; }
 
-    public void _Process(double delta) {
+    public virtual void _Process(Car self, double delta) {
         if (Delay > 0) Delay -= delta;
     }
+
+    public virtual void _PhysicsProcess(Car self, double delta) { }
 }
 
 public interface IOnPurchaseRelic {
 
 }
 
-public interface IOnModifyRelic {
+public interface IOnCarChangeRelic {
 
 }
 
@@ -33,10 +35,6 @@ public interface IOnKeyRelic {
 
 public interface IOnTrafficCollisionRelic {
     void TrafficCollision(Car self, Car otherCar);
-}
-
-public interface IOnPhysicsProcessRelic {
-    void PhysicsProcess(Car self, double delta);
 }
 
 public class BouncyRelic(float strength) : Relic(strength), IOnTrafficCollisionRelic {
@@ -66,13 +64,15 @@ public class JumpRelic : Relic, IOnKeyRelic {
     }
 }
 
-public class BigFanRelic : Relic, IOnPhysicsProcessRelic {
+public class BigFanRelic : Relic {
     public override RelicType Type => RelicType.BIGFAN;
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
     public BigFanRelic(float strength) : base(strength) { }
 
-    public void PhysicsProcess(Car self, double delta) {
+    public override void _PhysicsProcess(Car self, double delta) {
+        base._PhysicsProcess(self, delta);
+
         var dir = self.RigidBody.Basis * Vector3.Forward;
         var mass = self.Details.TotalMass;
 
