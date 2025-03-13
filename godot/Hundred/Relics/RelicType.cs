@@ -6,6 +6,7 @@ namespace murph9.RallyGame2.godot.Hundred.Relics;
 public record RelicType(string Name) {
     public static readonly RelicType BOUNCY = typeof(BouncyRelic).Name;
     public static readonly RelicType JUMP = typeof(JumpRelic).Name;
+    public static readonly RelicType BIGFAN = typeof(BigFanRelic).Name;
 
     public static implicit operator string(RelicType r) => r?.Name;
     public static implicit operator RelicType(string s) => new(s);

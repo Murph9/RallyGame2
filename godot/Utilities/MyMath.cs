@@ -3,10 +3,10 @@ using Godot;
 namespace murph9.RallyGame2.godot.Utilities;
 
 public class MyMath {
-    public static float MsToKmh(float speed) => (float)MsToKmh((double)speed);
-    public static double MsToKmh(double speed) {
-        return speed * 3.6f;
-    }
+    public static float MsToKmh(float speed) => speed * 3.6f;
+    public static double MsToKmh(double speed) => speed * 3.6f;
+    public static float KmhToMs(float speed) => speed / 3.6f;
+    public static double KmhToMs(double speed) => speed / 3.6f;
 
     public static double GetCircleCenterFrom(Vector3 p1, Vector3 p2, Vector3 p3) {
         // https://stackoverflow.com/a/68502665/9353639
