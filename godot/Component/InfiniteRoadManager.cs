@@ -23,7 +23,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public const int MAX_TRAFFIC_COUNT = 10;
     public const int RIVAL_MAX_COUNT = 3;
     public const float OPPONENT_SPAWN_BUFFER_DISTANCE = 250;
-    public const float TRAFFIC_SPAWN_BUFFER_DISTANCE = 10;
+    public const float TRAFFIC_SPAWN_BUFFER_DISTANCE = 25;
     public const float TRAFFIC_SPAWN_PLAYER_DISTANCE = 100;
 
     [Signal]
@@ -109,7 +109,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         // give them basic ai for now
         var ai = new TrafficAiInputs(this, false);
         ai.TargetSpeedMs += 10; // a little more than the default AI
-        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position);
+        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position, GetRandColour());
         car.RigidBody.LinearVelocity = position.Basis * Vector3.Back * 10; // TODO
 
         AddChild(car);
@@ -146,7 +146,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
         }
-        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition);
+        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, GetRandColour());
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeedMs;
 
         AddChild(car);
@@ -276,5 +276,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public float TotalDistanceFromCheckpoint(Vector3 position) {
         return _world.TotalDistanceFromCheckpoint(position);
+    }
+
+    private Color GetRandColour() {
+        return Color.FromHsv(_rand.Randf(), 0.8f, 0.8f);
     }
 }

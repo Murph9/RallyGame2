@@ -30,7 +30,7 @@ public partial class Car : Node3D {
     private Vector3 _frozenVelocity;
     private Vector3 _frozenAngular;
 
-    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null) {
+    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null, Color? initialColor = null) {
         Details = details;
         Engine = new CarEngine(this);
 
@@ -51,14 +51,30 @@ public partial class Car : Node3D {
         }
 
         var scene = GD.Load<PackedScene>("res://assets/car/" + Details.CarModel);
-        var carModel = scene.Instantiate<Node3D>();
-        RigidBody = carModel.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
+        var carScene = scene.Instantiate<Node3D>();
+        RigidBody = carScene.GetChildren().Single(x => x is RigidBody3D) as RigidBody3D;
         var parent = RigidBody.GetParent();
         parent.RemoveChild(RigidBody); // remove the scene parent
         parent.QueueFree();
         RigidBody.Owner = null;
         RigidBody.ContactMonitor = true;
         RigidBody.MaxContactsReported = 2;
+
+        // update the car colour if required
+        if (initialColor.HasValue) {
+            var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);
+            foreach (var carModel in carModels.Cast<MeshInstance3D>()) {
+                for (var i = 0; i < carModel.Mesh.GetSurfaceCount(); i++) {
+                    var material = carModel.GetActiveMaterial(i).Duplicate();
+                    if (material.ResourceName.Contains("[primary]") && material is StandardMaterial3D mat3D) {
+                        // clone the material and use it to set an override because the mesh instance is shared between all cars
+                        var newMat3D = (StandardMaterial3D)mat3D.Duplicate();
+                        newMat3D.AlbedoColor = initialColor.Value;
+                        carModel.SetSurfaceOverrideMaterial(i, newMat3D);
+                    }
+                }
+            }
+        }
 
         // set values from the details
         RigidBody.Mass = (float)Details.TotalMass;
