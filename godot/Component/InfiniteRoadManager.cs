@@ -23,6 +23,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public const int MAX_TRAFFIC_COUNT = 10;
     public const int RIVAL_MAX_COUNT = 3;
     public const float OPPONENT_SPAWN_BUFFER_DISTANCE = 250;
+    public const float TRAFFIC_SPAWN_BUFFER_DISTANCE = 10;
+    public const float TRAFFIC_SPAWN_PLAYER_DISTANCE = 100;
 
     [Signal]
     public delegate void LoadedEventHandler();
@@ -55,7 +57,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             if (traffic.RigidBody.GlobalPosition.Y + 100 < GetNextCheckpoint(traffic.RigidBody.GlobalPosition).Origin.Y) {
                 _normalTraffic.Remove(traffic);
                 RemoveChild(traffic);
-            } else if ((traffic.RigidBody.GlobalPosition - cameraPos).Length() > 250) {
+
+            } else if ((traffic.RigidBody.GlobalPosition - cameraPos).Length() > 350) {
+                // remove any cars too far away
                 _normalTraffic.Remove(traffic);
                 RemoveChild(traffic);
             }
@@ -71,6 +75,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
             }
         }
 
+        TrySpawnTraffic();
         TrySpawnOpponent();
     }
 
@@ -109,31 +114,39 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         AddChild(car);
         _opponents.Add(car);
-
-        GD.Print("Spawned rival at " + position);
     }
 
     private void PiecePlacedListener(Transform3D checkpointTransform, string name, bool queuedPiece) {
-        TryGenerateTrafficCarNow(checkpointTransform);
-
         EmitSignal(SignalName.RoadNextPoint, _world.TotalDistanceFromCheckpoint(checkpointTransform.Origin), checkpointTransform);
         if (queuedPiece) {
             EmitSignal(SignalName.ShopPlaced, checkpointTransform);
         }
     }
 
-    private bool TryGenerateTrafficCarNow(Transform3D spawnTransform) {
+    private bool TrySpawnTraffic() {
         if (_normalTraffic.Count >= MAX_TRAFFIC_COUNT) return false;
+
+        var cameraPos = GetViewport().GetCamera3D().Position;
+
+        var nextPieces = GetNextCheckpoints(cameraPos, false, 0);
+        // don't spawn them too close to the player
+        var aFewRoadPositionsAway = nextPieces.FirstOrDefault(x => x.Origin.DistanceTo(cameraPos) > TRAFFIC_SPAWN_PLAYER_DISTANCE);
+
+        // check if its too close to an existing traffic car
+        foreach (var opp in _normalTraffic) {
+            if (aFewRoadPositionsAway.Origin.DistanceTo(opp.RigidBody.GlobalPosition) < TRAFFIC_SPAWN_BUFFER_DISTANCE) {
+                return false;
+            }
+        }
 
         var isReverse = _rand.Randf() > 0.5f;
         var ai = new TrafficAiInputs(this, isReverse);
 
-        var realPosition = GetNextCheckpoint(spawnTransform.Origin, isReverse, isReverse ? -1 : 1);
+        var realPosition = GetNextCheckpoint(aFewRoadPositionsAway.Origin, isReverse, isReverse ? -1 : 1);
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
         }
         var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition);
-        // car.RigidBody.Transform = realPosition;
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeedMs;
 
         AddChild(car);

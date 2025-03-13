@@ -193,7 +193,7 @@ public partial class InfiniteWorldPieces : Node3D {
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
 
-        GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
+        // GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
         var outDirection = piece.Directions.Skip(outIndex).First();
 
         var checkpointDistance = _checkpoints.Last().Item3;
