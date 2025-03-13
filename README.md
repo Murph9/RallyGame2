@@ -71,10 +71,14 @@ Ideas for relics:
 -   increased money per race won
 -   reduction in tyre wear
 -   reduction in fuel use
+
+Some relic categories:
+
 -   relics that need distance travelled to get better
 -   improve based on part branding based on the amount of a brand of parts you have
 -   every 5 minutes your power/grip/drag gets randomized in some range
 -   temporarily upgrades your car for a limited amount of time
+-   parts that break after certain time
 
 ---
 

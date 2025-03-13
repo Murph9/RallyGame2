@@ -13,6 +13,8 @@ public partial class Wheel : Node3D {
 
     public Node3D WheelModel;
 
+    public bool Active;
+
     // simulation values
     public bool InContact;
     public RigidBody3D ContactRigidBody;
@@ -46,6 +48,8 @@ public partial class Wheel : Node3D {
     }
 
     public override void _Ready() {
+        Active = true;
+
         var scene = GD.Load<PackedScene>("res://assets/car/" + Details.ModelName);
         WheelModel = scene.Instantiate<Node3D>();
         // rotate the wheel for each side of the car
@@ -57,6 +61,8 @@ public partial class Wheel : Node3D {
     }
 
     public override void _Process(double delta) {
+        if (!Active) return;
+
         // rotate the model based on the rad/sec of the wheel
         WheelModel.Position = RayDirLocal - RayDirLocal.Normalized() * (Details.Radius + SusTravelDistance);
         WheelModel.Rotate(Vector3.Right, RadSec * (float)delta);

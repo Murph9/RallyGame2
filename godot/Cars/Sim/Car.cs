@@ -330,11 +330,17 @@ public partial class Car : Node3D {
             RigidBody.LinearVelocity = _frozenVelocity;
             RigidBody.AngularVelocity = _frozenAngular;
             Inputs.AcceptInputs();
+            foreach (var w in Wheels) {
+                w.Active = active;
+            }
         } else {
             _frozenVelocity = RigidBody.LinearVelocity;
             _frozenAngular = RigidBody.AngularVelocity;
             Inputs.IgnoreInputs();
             RigidBody.Freeze = true;
+            foreach (var w in Wheels) {
+                w.Active = active;
+            }
         }
 
         if (_engineAudio != null) {
