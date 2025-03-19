@@ -15,6 +15,7 @@ public partial class Car : Node3D {
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
     private readonly AudioStreamPlayer _engineAudio;
+    public readonly Color _colour;
 
     public ICarInputs Inputs { get; private set; }
 
@@ -33,6 +34,7 @@ public partial class Car : Node3D {
     public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null, Color? initialColor = null) {
         Details = details;
         Engine = new CarEngine(this);
+        _colour = initialColor ?? new Color(0.8f, 0.8f, 0.8f, 1);
 
         Inputs = inputs ?? new HumanCarInputs();
         Inputs.Car = this;
@@ -60,18 +62,16 @@ public partial class Car : Node3D {
         RigidBody.ContactMonitor = true;
         RigidBody.MaxContactsReported = 2;
 
-        // update the car colour if required
-        if (initialColor.HasValue) {
-            var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);
-            foreach (var carModel in carModels.Cast<MeshInstance3D>()) {
-                for (var i = 0; i < carModel.Mesh.GetSurfaceCount(); i++) {
-                    var material = carModel.GetActiveMaterial(i).Duplicate();
-                    if (material.ResourceName.Contains("[primary]") && material is StandardMaterial3D mat3D) {
-                        // clone the material and use it to set an override because the mesh instance is shared between all cars
-                        var newMat3D = (StandardMaterial3D)mat3D.Duplicate();
-                        newMat3D.AlbedoColor = initialColor.Value;
-                        carModel.SetSurfaceOverrideMaterial(i, newMat3D);
-                    }
+        // update the car colour
+        var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);
+        foreach (var carModel in carModels.Cast<MeshInstance3D>()) {
+            for (var i = 0; i < carModel.Mesh.GetSurfaceCount(); i++) {
+                var material = carModel.GetActiveMaterial(i).Duplicate();
+                if (material.ResourceName.Contains("[primary]") && material is StandardMaterial3D mat3D) {
+                    // clone the material and use it to set an override because the mesh instance is shared between all cars
+                    var newMat3D = (StandardMaterial3D)mat3D.Duplicate();
+                    newMat3D.AlbedoColor = _colour;
+                    carModel.SetSurfaceOverrideMaterial(i, newMat3D);
                 }
             }
         }
@@ -325,7 +325,7 @@ public partial class Car : Node3D {
 
     public Car CloneWithNewDetails(CarDetails details = null) {
         // clone into new car
-        var car = new Car(details ?? Details, null, RigidBody.Transform);
+        var car = new Car(details ?? Details, null, RigidBody.Transform, _colour);
         car.RigidBody.LinearVelocity = RigidBody.LinearVelocity;
         car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
 
