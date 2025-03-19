@@ -15,6 +15,7 @@ public class CarEngine {
     public float[] WheelEngineTorque { get; }
 
     private double _gearChangeTime;
+    private bool _changingGear => _gearChangeTime > 0;
     private int _gearChangeTo;
 
     public CarEngine(Car car) {
@@ -62,11 +63,14 @@ public class CarEngine {
 
         CurRPM = (int)(wheelrot * curGearRatio * diffRatio * (60 / Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
 
+        // ignore acceleration while changing gear
+        var realAccel = _changingGear ? 0 : _car.Inputs.AccelCur;
+
         // the perfect anti stall:
         // always keep rpm above Idle
         // at slow speeds make it higher to fake a clutch
         var minRpm = d.Engine.IdleRPM;
-        if (CurGear == 1 && _car.Inputs.AccelCur > 0) {
+        if (CurGear == 1 && realAccel > 0) {
             var minRpmSpeed = d.SpeedAtRpm(1, minRpm * 3);
 
             if (_car.RigidBody.LinearVelocity.Length() < minRpmSpeed) {
@@ -75,10 +79,10 @@ public class CarEngine {
         }
         CurRPM = Mathf.Max(CurRPM, minRpm);
 
+        CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * realAccel;
 
-        CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * _car.Inputs.AccelCur;
         double engineDrag = 0;
-        if (_car.Inputs.AccelCur < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
+        if (realAccel < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
             engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); //reverse goes the other way
 
         double engineOutTorque;
@@ -86,6 +90,8 @@ public class CarEngine {
             engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
         else //normal path
             engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.Engine.TransmissionEfficiency - engineDrag;
+
+        // TODO disconnect the engine to the wheels while changing gear
 
         return (float)engineOutTorque;
     }
