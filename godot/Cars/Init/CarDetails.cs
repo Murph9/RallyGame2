@@ -73,14 +73,13 @@ public class CarDetails : IHaveParts {
     [PartField(float.MinValue, HowToApply.Set)]
     public float NitroMax;
 
-    public bool FuelEnabled;
-    public float FuelMax = 80;
-    public float FuelRpmRate = 0.00003f;
-
     [PartField(0f, HowToApply.Set)]
     public float BrakeMaxTorque;
     [PartField(0f, HowToApply.Set, HigherIs.Bad)]
     public float BrakeAbsTimeout;
+
+    [PartField(45, HowToApply.Set)]
+    public float FuelMax; // L
 
     [JsonIgnore]
     private PartReader PartReader { get; init; }
@@ -92,7 +91,6 @@ public class CarDetails : IHaveParts {
 
     // no idea category
     public float MinDriftAngle;
-    public Vector3 JUMP_FORCE;
 
     public CarDetails() {
         PartReader = new PartReader(this);

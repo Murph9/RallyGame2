@@ -50,6 +50,10 @@ public class EngineDetails : IHaveParts {
     [PartField(double.MaxValue, HowToApply.Min)]
     public double CoolingRate; // K / min
 
+    public bool FuelEnabled;
+    [PartField(0f, HowToApply.Add, HigherIs.Bad)]
+    public float FuelByRpmRate; // L/s
+
     [JsonIgnore]
     private PartReader PartReader { get; init; }
     public List<Part> Parts { get; init; } = [];

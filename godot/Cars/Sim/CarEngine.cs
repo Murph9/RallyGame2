@@ -14,6 +14,9 @@ public class CarEngine {
     public double CurrentTorque { get; private set; }
     public float[] WheelEngineTorque { get; }
 
+    public float CurrentFuel { get; private set; }
+    public float CurrentFuelRate { get; private set; }
+
     private double _gearChangeTime;
     private bool _changingGear => _gearChangeTime > 0;
     private int _gearChangeTo;
@@ -21,11 +24,12 @@ public class CarEngine {
     public CarEngine(Car car) {
         _car = car;
         CurGear = 1;
+        CurrentFuel = car.Details.FuelMax;
         WheelEngineTorque = new float[car.Details.WheelDetails.Length];
     }
 
     public void _PhysicsProcess(double delta) {
-        var engineTorque = SetEngineTorque();
+        var engineTorque = SetEngineTorque(delta);
 
         var d = _car.Details;
         var wheelRadius = d.DriveWheelRadius();
@@ -42,12 +46,15 @@ public class CarEngine {
         SimulateAutoTransmission(delta, localVelocity);
     }
 
-    private float SetEngineTorque() {
+    private float SetEngineTorque(double delta) {
         var d = _car.Details;
         var w = _car.Wheels;
 
         if (!d.DriveFront && !d.DriveRear)
             return 0;
+
+        // ignore acceleration while changing gear
+        var realAccel = _changingGear ? 0 : _car.Inputs.AccelCur;
 
         float curGearRatio = d.TransGearRatios[CurGear];
         float diffRatio = d.TransFinaldrive;
@@ -63,8 +70,11 @@ public class CarEngine {
 
         CurRPM = (int)(wheelrot * curGearRatio * diffRatio * (60 / Mathf.Tau)); //rad/(m*sec) to rad/min and the drive ratios to engine
 
-        // ignore acceleration while changing gear
-        var realAccel = _changingGear ? 0 : _car.Inputs.AccelCur;
+        // TODO disconnect the engine to the wheels while changing gear
+        // by reducing the rpm down to where the next gear wants it
+
+        if (CurRPM > d.Engine.MaxRpm)
+            realAccel = 0; // also no accel while above max rpm
 
         // the perfect anti stall:
         // always keep rpm above Idle
@@ -79,19 +89,27 @@ public class CarEngine {
         }
         CurRPM = Mathf.Max(CurRPM, minRpm);
 
+
+        CurrentFuelRate = (float)(_car.Details.Engine.FuelByRpmRate * (_car.Engine.CurRPM / 1000f) * delta * realAccel);
+        CurrentFuel -= CurrentFuelRate;
+
+        if (CurrentFuel < 0 && _car.Details.Engine.FuelEnabled) {
+            CurrentFuel = 0;
+            realAccel = 0;
+        }
+
         CurrentTorque = d.Engine.CalcTorqueFor(CurRPM) * realAccel;
 
         double engineDrag = 0;
-        if (realAccel < 0.01f || CurRPM > d.Engine.MaxRpm) // so compression only happens on no accel
-            engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); //reverse goes the other way
+        if (realAccel < 0.01f) {// so compression only happens with no acceleration
+            engineDrag = (CurRPM - d.Engine.IdleRPM) * d.Engine.IdleDrag * Mathf.Sign(wheelrot); // reverse goes the other way
+        }
 
         double engineOutTorque;
         if (Mathf.Abs(CurRPM) > d.Engine.MaxRpm)
             engineOutTorque = -engineDrag; //kill engine if greater than redline, and only apply compression
         else //normal path
             engineOutTorque = CurrentTorque * curGearRatio * diffRatio * d.Engine.TransmissionEfficiency - engineDrag;
-
-        // TODO disconnect the engine to the wheels while changing gear
 
         return (float)engineOutTorque;
     }
@@ -127,5 +145,6 @@ public class CarEngine {
     public void CloneExistingState(CarEngine engine) {
         CurGear = engine.CurGear;
         CurRPM = engine.CurRPM;
+        CurrentFuel = engine.CurrentFuel;
     }
 }

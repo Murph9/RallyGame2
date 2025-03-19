@@ -25,7 +25,8 @@
           "StrokeLength": 0.1,
           "TransmissionEfficiency": 0.9,
           "TurboAirMult": 1,
-          "TurboAirStartRPM": 0
+          "TurboAirStartRPM": 0,
+          "FuelByRpmRate": 0.004
         }
       ]
     }

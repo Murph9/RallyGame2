@@ -1,9 +1,4 @@
 {
-  "JUMP_FORCE": {
-    "x": 0,
-    "y": 1100,
-    "z": 0
-  },
   "aeroCrossSection": 0.3,
   "areoLinearDrag": 0.012,
   "camLookAtHeight": 1.3,
