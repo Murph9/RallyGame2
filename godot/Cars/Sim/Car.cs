@@ -60,7 +60,7 @@ public partial class Car : Node3D {
         parent.QueueFree();
         RigidBody.Owner = null;
         RigidBody.ContactMonitor = true;
-        RigidBody.MaxContactsReported = 2; // TODO perf
+        RigidBody.MaxContactsReported = 2;
 
         // update the car colour
         var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);
@@ -289,9 +289,11 @@ public partial class Car : Node3D {
         }
 
         // calculate wear on the tyre based on ratiofract
-        if (groundVelocity.LengthSquared() > 4) {
-            // traction formula is unstable
-            w.TyreWear = Mathf.Max(0, w.TyreWear - w.Details.TyreWearRate * (float)delta * p);
+        if (w.InContact && groundVelocity.LengthSquared() > 4) {
+            // traction formula is unstable so we ignore it below 2 m/s completely
+            // keep the p value above 0 so we don't gain tyre wear
+            var amount = Mathf.Clamp(p - 1, 0, 3);
+            w.TyreWear = Mathf.Max(0, w.TyreWear - w.Details.TyreWearRate * (float)delta * amount);
         }
 
         var td = Details.TractionDetails;
