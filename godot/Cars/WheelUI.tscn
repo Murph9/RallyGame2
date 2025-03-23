@@ -3,28 +3,31 @@
 [ext_resource type="Script" uid="uid://d2mh7y0rlxuje" path="res://Cars/WheelUI.cs" id="1_agt2h"]
 
 [node name="WheelUi" type="VBoxContainer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = -1002.0
-offset_bottom = -463.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 214.0
+offset_bottom = 88.0
 script = ExtResource("1_agt2h")
 
-[node name="Label" type="Label" parent="."]
+[node name="WheelLabel" type="Label" parent="."]
 layout_mode = 2
 text = "W"
 
-[node name="ProgressBar" type="ProgressBar" parent="."]
-custom_minimum_size = Vector2(150, 0)
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
-max_value = 1.0
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="HBoxContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="."]
+[node name="SuspensionTravel" type="ProgressBar" parent="HBoxContainer"]
+custom_minimum_size = Vector2(20, 100)
+layout_mode = 2
+max_value = 1.0
+fill_mode = 3
+show_percentage = false
+
+[node name="DebugVBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="DebugVBoxContainer"]
 layout_mode = 2
 columns = 2

@@ -5,37 +5,42 @@
 
 [node name="CarUi" type="Control"]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_ujtt8")
 
-[node name="WheelGridContainer" type="GridContainer" parent="."]
-visible = false
-layout_mode = 0
-offset_right = 304.0
-offset_bottom = 374.0
-columns = 2
-
-[node name="WheelUi0" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
-layout_mode = 2
-
-[node name="WheelUi1" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
-layout_mode = 2
-
-[node name="WheelUi2" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
-layout_mode = 2
-
-[node name="WheelUi3" parent="WheelGridContainer" instance=ExtResource("2_2ghiq")]
-layout_mode = 2
-
-[node name="SpeedoReferenceRect" type="ReferenceRect" parent="."]
-custom_minimum_size = Vector2(360, 360)
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -150.0
+offset_left = -360.0
+offset_top = -360.0
 grow_horizontal = 0
 grow_vertical = 0
+
+[node name="WheelGridContainer" type="GridContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+columns = 2
+
+[node name="WheelUi0" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi1" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi2" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="WheelUi3" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+layout_mode = 2
+
+[node name="SpeedoReferenceRect" type="ReferenceRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 2

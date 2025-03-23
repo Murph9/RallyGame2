@@ -29,8 +29,9 @@ public partial class CarUI : Control {
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
-            var node = GetNode<WheelUI>("WheelGridContainer/WheelUi" + i);
+            var node = GetNode<WheelUI>("HBoxContainer/WheelGridContainer/WheelUi" + i);
             node.Wheel = Car.Wheels[i];
+            node.Debug = false;
         }
 
         GetTree().Root.SizeChanged += WindowSizeChanged;
@@ -45,7 +46,7 @@ public partial class CarUI : Control {
 
     private void WindowSizeChanged() {
         const float REFERENCE_SIZE = (360f - 20f) / 1080f;
-        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
+        var speedoRect = GetNode<ReferenceRect>("HBoxContainer/SpeedoReferenceRect");
         speedoRect.CustomMinimumSize = new Vector2(1, 1) * REFERENCE_SIZE * GetViewportRect().End.Y;
     }
 
@@ -54,7 +55,7 @@ public partial class CarUI : Control {
         var defaultFont = ThemeDB.FallbackFont;
         int defaultFontSize = ThemeDB.FallbackFontSize;
 
-        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
+        var speedoRect = GetNode<ReferenceRect>("HBoxContainer/SpeedoReferenceRect");
         DrawSetTransform(speedoRect.GlobalPosition);
         var middle = speedoRect.Size / 2;
 
@@ -143,22 +144,18 @@ public partial class CarUI : Control {
 
         QueueRedraw();
 
-        // force the wheel outputs to the top left
-        var wheels = GetNode<GridContainer>("WheelGridContainer");
-        wheels.Position = new Vector2(GetViewportRect().End.X - wheels.Size.X, 0);
-
-        // force the speedo to the bottom right
-        var speedoRect = GetNode<ReferenceRect>("SpeedoReferenceRect");
-        speedoRect.Position = GetViewportRect().End - speedoRect.Size;
+        var wheels = GetNode<GridContainer>("HBoxContainer/WheelGridContainer");
 
         // force the torque outputs to the bottom left
         var torqueGraph = GetNode<TorqueCurveGraph>("TorqueCurveGraph");
         torqueGraph.Position = new Vector2(0, GetViewportRect().End.Y - torqueGraph.Size.Y);
 
         if (Input.IsActionJustPressed("toggle_wheel_telemetry")) {
-            wheels.Visible = !wheels.Visible;
             _torqueCurveGraph.Visible = !_torqueCurveGraph.Visible;
             _debugOn = _torqueCurveGraph.Visible;
+            foreach (var wheelUi in wheels.GetAllChildrenOfType<WheelUI>()) {
+                wheelUi.Debug = _debugOn;
+            }
         }
     }
 
