@@ -15,11 +15,9 @@ public partial class RelicManager : Node {
         _hundredGlobalState = hundredGlobalState;
 
         _hundredGlobalState.TrafficCollision += TrafficCollision;
+        _hundredGlobalState.CarDetailsChanged += () => CarDetailsChanged(false);
     }
 
-    public void AddRelic<T>(float strength = 1) where T : Relic, new() {
-        _relics.Add(new T() { InputStrength = strength });
-    }
     public void AddRelic(RelicType type, float strength = 1) {
         if (type == RelicType.BOUNCY) {
             _relics.Add(new BouncyRelic(strength));
@@ -27,9 +25,14 @@ public partial class RelicManager : Node {
             _relics.Add(new JumpRelic(strength));
         } else if (type == RelicType.BIGFAN) {
             _relics.Add(new BigFanRelic(strength));
+        } else if (type == RelicType.FUELREDUCE) {
+            _relics.Add(new FuelReductionRelic(strength));
         } else {
             throw new Exception("Unknown relic type: " + type);
         }
+
+        // trigger all things that need to modify the car state
+        CarDetailsChanged(true);
     }
 
     public List<Relic> GetRelics() => _relics;
@@ -76,10 +79,22 @@ public partial class RelicManager : Node {
     }
 
     public override void _PhysicsProcess(double delta) {
-        if (_hundredGlobalState.Car?.RigidBody.Freeze ?? true) return;
+        if (_hundredGlobalState.Car?.RigidBody?.Freeze ?? true) return;
 
         foreach (var relic in _relics) {
             relic._PhysicsProcess(_hundredGlobalState.Car, delta);
+        }
+    }
+
+
+    private void CarDetailsChanged(bool onlyNew) {
+        foreach (var relic in _relics) {
+            if (relic is IOnPurchaseRelic key) {
+                // if onlyNew is called we check if its applied first (i.e. when a new relic is added)
+                if (onlyNew && key.Applied) continue;
+
+                key.CarUpdated(_hundredGlobalState.Car);
+            }
         }
     }
 

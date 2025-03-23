@@ -22,7 +22,8 @@ public abstract class Relic(float inputStrength) {
 }
 
 public interface IOnPurchaseRelic {
-
+    public bool Applied { get; }
+    void CarUpdated(Car self);
 }
 
 public interface IOnCarChangeRelic {
@@ -81,5 +82,18 @@ public class BigFanRelic : Relic {
         var speedDiff = Math.Max(0, (MAX_SPEED * InputStrength) - currentSpeed);
 
         self.RigidBody.ApplyCentralImpulse(-dir * (float)mass * MASS_MULT * InputStrength * (float)delta * speedDiff);
+    }
+}
+
+public class FuelReductionRelic : Relic, IOnPurchaseRelic {
+    public override RelicType Type => RelicType.FUELREDUCE;
+
+    public bool Applied { get; private set; }
+
+    public FuelReductionRelic(float strength) : base(strength) { }
+
+    public void CarUpdated(Car self) {
+        self.Details.Engine.FuelByRpmRate *= 0.8f * (1f / InputStrength);
+        Applied = true;
     }
 }

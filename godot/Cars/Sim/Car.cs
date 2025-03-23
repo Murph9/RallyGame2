@@ -60,7 +60,7 @@ public partial class Car : Node3D {
         parent.QueueFree();
         RigidBody.Owner = null;
         RigidBody.ContactMonitor = true;
-        RigidBody.MaxContactsReported = 2;
+        RigidBody.MaxContactsReported = 2; // TODO perf
 
         // update the car colour
         var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);

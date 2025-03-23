@@ -129,7 +129,7 @@ public partial class CarUI : Control {
 
             // fuel
             DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 6), $"fuel: {float.Round(Car.Engine.CurrentFuel, 2)} / {Car.Details.FuelMax} L", width: -1, fontSize: defaultFontSize);
-            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 7), $"fuel rate: {Car.Engine.CurrentFuelRate.ToString("G3")} L/s", width: -1, fontSize: defaultFontSize);
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 7), $"fuel rate ({Car.Details.Engine.FuelByRpmRate:G2}): {Car.Engine.CurrentFuelRate:G3} L/s", width: -1, fontSize: defaultFontSize);
         }
     }
 

@@ -108,11 +108,12 @@ public partial class HundredGlobalState : Node {
 
     public void SetCar(Car car) {
         Car = car;
-        // not sure if this needs an event, its an internal detail
+        EmitSignal(SignalName.CarDetailsChanged); // this is when the car object (and details) actually changes
     }
+
     public void SetCarDetails(CarDetails carDetails) {
         CarDetails = carDetails;
-        EmitSignal(SignalName.CarDetailsChanged);
+        // not sure if this needs an event, its an internal detail
     }
     public void AddTotalTimePassed(double delta) {
         TotalTimePassed += delta;
