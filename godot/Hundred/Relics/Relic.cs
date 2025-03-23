@@ -97,3 +97,18 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
         Applied = true;
     }
 }
+
+public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
+    public override RelicType Type => RelicType.TYREWEARREDUCE;
+
+    public bool Applied { get; private set; }
+
+    public TyreWearReductionRelic(float strength) : base(strength) { }
+
+    public void CarUpdated(Car self) {
+        foreach (var wheel in self.Wheels) {
+            wheel.Details.TyreWearRate *= 0.8f * (1f / InputStrength);
+        }
+        Applied = true;
+    }
+}
