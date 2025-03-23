@@ -58,6 +58,7 @@ public partial class RelicManager : Node {
     }
 
     public override void _Process(double delta) {
+        if (!IsInstanceValid(_hundredGlobalState.Car?.RigidBody)) return;
         if (_hundredGlobalState.Car?.RigidBody.Freeze ?? true) return;
 
         if (Input.IsActionJustPressed("car_action_1")) {
@@ -79,6 +80,7 @@ public partial class RelicManager : Node {
     }
 
     public override void _PhysicsProcess(double delta) {
+        if (!IsInstanceValid(_hundredGlobalState.Car?.RigidBody)) return;
         if (_hundredGlobalState.Car?.RigidBody?.Freeze ?? true) return;
 
         foreach (var relic in _relics) {
