@@ -35,6 +35,8 @@ public partial class Wheel : Node3D {
     public double TractionControlTimeOut;
     public double ABSControlTimeOut;
 
+    public float TyreWear;
+
     // calculation results
     public Vector3 AppliedForces;
     public Vector3 GripDir => AppliedForces / (float)Car.Details.TotalMass;
@@ -49,6 +51,7 @@ public partial class Wheel : Node3D {
 
     public override void _Ready() {
         Active = true;
+        TyreWear = 1;
 
         var scene = GD.Load<PackedScene>("res://assets/car/" + Details.ModelName);
         WheelModel = scene.Instantiate<Node3D>();

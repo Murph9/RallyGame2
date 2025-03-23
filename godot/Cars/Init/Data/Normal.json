@@ -20,25 +20,29 @@
       "mass": 10,
       "modelName": "wheel1.blend",
       "radius": 0.3,
-      "width": 0.3
+      "width": 0.3,
+      "TyreWearRate": 0.001
     },
     {
       "mass": 10,
       "modelName": "wheel1.blend",
       "radius": 0.3,
-      "width": 0.3
+      "width": 0.3,
+      "TyreWearRate": 0.001
     },
     {
       "mass": 10,
       "modelName": "wheel1.blend",
       "radius": 0.3,
-      "width": 0.3
+      "width": 0.3,
+      "TyreWearRate": 0.001
     },
     {
       "mass": 10,
       "modelName": "wheel1.blend",
       "radius": 0.3,
-      "width": 0.3
+      "width": 0.3,
+      "TyreWearRate": 0.001
     }
   ],
   "Parts": [

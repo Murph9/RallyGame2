@@ -288,13 +288,26 @@ public partial class Car : Node3D {
             anglefract = Mathf.Sign(anglefract);
         }
 
+        // calculate wear on the tyre based on ratiofract
+        if (groundVelocity.LengthSquared() > 4) {
+            // traction formula is unstable
+            w.TyreWear = Mathf.Max(0, w.TyreWear - w.Details.TyreWearRate * (float)delta * p);
+        }
+
         var td = Details.TractionDetails;
         w.AppliedForces = new Vector3() {
             // calc the longitudinal force from the slip ratio
-            Z = ratiofract * (float)CalcWheelTraction.Calc(w.SlipRatio, td.LongMaxSlip, td.LongGripMax, td.LongPeakLength, td.LongPeakDecay) * w.SusForce.Length(),
+            Z = ratiofract * (float)CalcWheelTraction.Calc(w.SlipRatio, td.LongMaxSlip, td.LongGripMax, td.LongPeakLength, td.LongPeakDecay),
             // calc the latitudinal force from the slip angle
-            X = -anglefract * (float)CalcWheelTraction.Calc(w.SlipAngle, td.LatMaxSlip, td.LatGripMax, td.LatPeakLength, td.LongPeakDecay) * w.SusForce.Length()
+            X = -anglefract * (float)CalcWheelTraction.Calc(w.SlipAngle, td.LatMaxSlip, td.LatGripMax, td.LatPeakLength, td.LongPeakDecay)
         };
+
+        // reduce total traction based on tyre wear
+        w.AppliedForces *= (float)CalcWheelTraction.TotalGripFromWear(w.TyreWear);
+
+        // convert dimensionless values to Nm by adding the normal force
+        w.AppliedForces *= w.SusForce.Length();
+
 
         if (w.AppliedForces.LengthSquared() > 0) {
             // Apply the physics to the car
@@ -335,6 +348,7 @@ public partial class Car : Node3D {
 
         for (var i = 0; i < Wheels.Length; i++) {
             car.Wheels[i].RadSec = Wheels[i].RadSec;
+            car.Wheels[i].TyreWear = Wheels[i].TyreWear;
         }
 
         return car;

@@ -5,6 +5,7 @@ using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
 using System;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars;
 
@@ -130,6 +131,10 @@ public partial class CarUI : Control {
             // fuel
             DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 6), $"fuel: {float.Round(Car.Engine.CurrentFuel, 2)} / {Car.Details.FuelMax} L", width: -1, fontSize: defaultFontSize);
             DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 7), $"fuel rate ({Car.Details.Engine.FuelByRpmRate:G2}): {Car.Engine.CurrentFuelRate:G3} L/s", width: -1, fontSize: defaultFontSize);
+
+            // tyre wear
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 9), $"Tyre Wear Rate: {string.Join(",", Car.Wheels.Select(x => x.Details.TyreWearRate))}", width: -1, fontSize: defaultFontSize);
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 10), $"Tyre Wear: {string.Join(",", Car.Wheels.Select(x => x.TyreWear))}", width: -1, fontSize: defaultFontSize);
         }
     }
 

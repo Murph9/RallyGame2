@@ -9,6 +9,8 @@ public record WheelDetails {
     public float Mass;
     public float Width;
 
+    public float TyreWearRate;
+
     public int Id;
     public Vector3 Position;
 }

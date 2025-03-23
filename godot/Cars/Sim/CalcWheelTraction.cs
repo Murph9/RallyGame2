@@ -34,4 +34,10 @@ public class CalcWheelTraction {
         // at peak
         return t;
     }
+
+    // i could find any info on how tyres behave while warn i have decided:
+    // 100% grip until 80% remaining, then reduce down to total of 80% as this is arcade after all - you need some chance
+    public static double TotalGripFromWear(double currentTyreWear) {
+        return currentTyreWear > 0.2f ? 1f : (currentTyreWear * 0.2f + 0.8f);
+    }
 }
