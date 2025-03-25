@@ -37,12 +37,12 @@ public partial class RelicManager : Node {
 
     public List<Relic> GetRelics() => _relics;
 
-    private void TrafficCollision(Car otherCar) {
+    private void TrafficCollision(Car otherCar, Vector3 relativeVelocity) {
         if (_hundredGlobalState.Car.RigidBody.Freeze) return;
 
         foreach (var relic in _relics) {
             if (relic is IOnTrafficCollisionRelic t) {
-                t.TrafficCollision(_hundredGlobalState.Car, otherCar);
+                t.TrafficCollision(_hundredGlobalState.Car, otherCar, relativeVelocity);
             }
         }
     }

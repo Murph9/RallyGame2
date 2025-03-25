@@ -163,7 +163,6 @@ public partial class HundredGlobalState : Node {
 
     // and a list of events so we can track them here
     [Signal]
-    public delegate void TrafficCollisionEventHandler(Car trafficCar); // TODO this might need some other data
-    public void CollisionWithTraffic(Car trafficCar) => EmitSignal(SignalName.TrafficCollision, trafficCar);
-
+    public delegate void TrafficCollisionEventHandler(Car trafficCar, Vector3 relativeVelocity);
+    public void CollisionWithTraffic(Car trafficCar, Vector3 relativeVelocity) => EmitSignal(SignalName.TrafficCollision, trafficCar, relativeVelocity);
 }

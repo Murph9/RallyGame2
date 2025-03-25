@@ -35,16 +35,16 @@ public interface IOnKeyRelic {
 }
 
 public interface IOnTrafficCollisionRelic {
-    void TrafficCollision(Car self, Car otherCar);
+    void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity);
 }
 
 public class BouncyRelic(float strength) : Relic(strength), IOnTrafficCollisionRelic {
     public override RelicType Type => RelicType.BOUNCY;
-    private static readonly float MASS_MULT = 10f;
+    private static readonly float MASS_MULT = 2f;
 
-    public void TrafficCollision(Car self, Car otherCar) {
+    public void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity) {
         OutputStrength = (float)otherCar.Details.TotalMass * MASS_MULT;
-        otherCar.RigidBody.ApplyCentralImpulse(new Vector3(0, OutputStrength, 0));
+        otherCar.RigidBody.ApplyCentralImpulse(relativeVelocity * OutputStrength * InputStrength);
     }
 }
 
