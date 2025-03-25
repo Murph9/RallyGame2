@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b31lt63xa7fmy"]
 
-[ext_resource type="Script" uid="uid://y623a424iaig" path="res://Hundred/HundredRelicScreen.cs" id="1_cn23i"]
+[ext_resource type="Script" uid="uid://dxtk271m45p86" path="res://Hundred/HundredRelicScreen.cs" id="1_cn23i"]
 
 [node name="HundredRelicScreen" type="CenterContainer"]
 anchors_preset = 15
