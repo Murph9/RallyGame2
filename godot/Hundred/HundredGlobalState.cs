@@ -20,13 +20,13 @@ public partial class HundredGlobalState : Node {
     [Signal]
     public delegate void SecondPassedEventHandler(int totalTime);
     [Signal]
-    public delegate void RivalRaceStartedEventHandler();
+    public delegate void RivalRaceStartedEventHandler(Car Rival);
     [Signal]
-    public delegate void RivalRaceResetEventHandler();
+    public delegate void RivalRaceResetEventHandler(Car Rival);
     [Signal]
-    public delegate void RivalRaceWonEventHandler();
+    public delegate void RivalRaceWonEventHandler(Car Rival, double moneyWon);
     [Signal]
-    public delegate void RivalRaceLostEventHandler();
+    public delegate void RivalRaceLostEventHandler(Car Rival, double moneyLost);
 
     public RelicManager RelicManager { get; private set; }
 
@@ -137,7 +137,7 @@ public partial class HundredGlobalState : Node {
         RivalRaceDetails = race;
         RivalRaceMessage = message;
 
-        EmitSignal(SignalName.RivalRaceStarted);
+        EmitSignal(SignalName.RivalRaceStarted, race.Rival);
     }
 
     public void RivalStopped() {
@@ -151,12 +151,12 @@ public partial class HundredGlobalState : Node {
             RivalRaceDetails = RivalRaceDetails.Value with { CheckpointSent = true };
     }
 
-    public void RivalRaceFinished(bool playerWon, string message, float moneyDiff) {
+    public void RivalRaceFinished(Car rival, bool playerWon, string message, float moneyDiff) {
         RivalRaceMessage = message;
         if (playerWon)
-            EmitSignal(SignalName.RivalRaceWon);
+            EmitSignal(SignalName.RivalRaceWon, rival, moneyDiff);
         else
-            EmitSignal(SignalName.RivalRaceLost);
+            EmitSignal(SignalName.RivalRaceLost, rival, 0);
 
         AddMoney(moneyDiff);
     }

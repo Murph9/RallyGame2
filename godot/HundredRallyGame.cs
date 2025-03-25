@@ -125,11 +125,11 @@ public partial class HundredRallyGame : Node {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetRivalRace);
-                            state.RivalRaceFinished(true, "Nice win", RIVAL_RACE_WIN_MONEY);
+                            state.RivalRaceFinished(state.RivalRaceDetails.Value.Rival, true, "Nice win", RIVAL_RACE_WIN_MONEY);
                             return true;
                         } else if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetRivalRace);
-                            state.RivalRaceFinished(false, "You Lost", 0);
+                            state.RivalRaceFinished(state.RivalRaceDetails.Value.Rival, false, "You Lost", 0);
                             return true;
                         }
                     }
