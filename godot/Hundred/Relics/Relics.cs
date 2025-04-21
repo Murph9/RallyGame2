@@ -10,7 +10,7 @@ public class BouncyRelic(RelicManager relicManager, float strength) : Relic(reli
     public override RelicType Type => RelicType.BOUNCY;
     private static readonly float MASS_MULT = 2f;
 
-    public override string DescriptionBBCode => $"Other cars bounce off you at {InputStrength} power";
+    public override string DescriptionBBCode => $"Other cars bounce off you at {InputStrength * MASS_MULT} strength";
 
     public void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity) {
         OutputStrength = (float)otherCar.Details.TotalMass * MASS_MULT;
@@ -42,7 +42,7 @@ public class BigFanRelic : Relic {
     public override RelicType Type => RelicType.BIGFAN;
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
-    public override string DescriptionBBCode => $"Pushes you forward at {InputStrength} power decaying until {MAX_SPEED}";
+    public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {MAX_SPEED} km/h";
 
     public BigFanRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
@@ -62,7 +62,7 @@ public class BigFanRelic : Relic {
 
 public class FuelReductionRelic : Relic, IOnPurchaseRelic {
     public override RelicType Type => RelicType.FUELREDUCE;
-    public override string DescriptionBBCode => $"Reduces fuel use by {InputStrength}";
+    public override string DescriptionBBCode => $"Reduces fuel use by {0.8f * (1f / InputStrength) * 100}%";
 
     public bool Applied { get; private set; }
 
@@ -76,7 +76,7 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
 
 public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
     public override RelicType Type => RelicType.TYREWEARREDUCE;
-    public override string DescriptionBBCode => $"Reduces tyre wear by {InputStrength}";
+    public override string DescriptionBBCode => $"Reduces tyre wear by {0.8f * (1f / InputStrength) * 100}%";
 
     public bool Applied { get; private set; }
 

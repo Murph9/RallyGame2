@@ -8,7 +8,7 @@ public partial class HundredRelicScreen : CenterContainer {
     [Signal]
     public delegate void ClosedEventHandler();
 
-    private RelicType _selected;
+    private Relic _selected;
 
     public override void _Ready() {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
@@ -24,6 +24,7 @@ public partial class HundredRelicScreen : CenterContainer {
 
             var relic = allRelics[Mathf.Abs((int)(GD.Randi() % allRelics.Count))];
             allRelics.Remove(relic);
+            var generatedRelic = state.RelicManager.GenerateRelic(relic, 1);
 
             var container = new HBoxContainer();
             container.AddChild(new ColorRect() {
@@ -33,14 +34,21 @@ public partial class HundredRelicScreen : CenterContainer {
             container.AddChild(new Label() {
                 Text = $"{relic.Name}"
             });
+            container.AddChild(new RichTextLabel() {
+                Text = generatedRelic.DescriptionBBCode,
+                LayoutMode = 2,
+                FitContent = true,
+                BbcodeEnabled = true,
+                AutowrapMode = TextServer.AutowrapMode.Off
+            });
             var optionButton = new Button() {
                 Text = "Choose",
             };
             optionButton.Pressed += () => {
-                if (_selected == relic)
+                if (_selected == generatedRelic)
                     return;
 
-                _selected = relic;
+                _selected = generatedRelic;
             };
             container.AddChild(optionButton);
 
@@ -51,7 +59,7 @@ public partial class HundredRelicScreen : CenterContainer {
             Text = "Select"
         };
         saveButton.Pressed += () => {
-            state.RelicManager.AddRelic(_selected, 1);
+            state.RelicManager.AddRelic(_selected);
             EmitSignal(SignalName.Closed);
         };
         optionsBox.AddChild(saveButton);
