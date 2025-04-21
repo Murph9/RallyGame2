@@ -10,6 +10,8 @@ public class BouncyRelic(RelicManager relicManager, float strength) : Relic(reli
     public override RelicType Type => RelicType.BOUNCY;
     private static readonly float MASS_MULT = 2f;
 
+    public override string DescriptionBBCode => $"Other cars bounce off you at {OutputStrength} power";
+
     public void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity) {
         OutputStrength = (float)otherCar.Details.TotalMass * MASS_MULT;
         otherCar.RigidBody.ApplyCentralImpulse(relativeVelocity * OutputStrength * InputStrength);
@@ -17,15 +19,18 @@ public class BouncyRelic(RelicManager relicManager, float strength) : Relic(reli
 }
 
 public class JumpRelic : Relic, IOnKeyRelic {
+    private const string ACTION_NAME = "car_action_1";
     public override RelicType Type => RelicType.JUMP;
     private static readonly float MASS_MULT = 4f;
+
+    public override string DescriptionBBCode => $"Allows you to jump on the {ACTION_NAME} button";
 
     public JumpRelic(RelicManager relicManager, float strength) : base(relicManager, strength) {
         DelaySeconds = 5;
     }
 
     public void ActionPressed(Car self, string actionName) {
-        if (Delay <= 0 && actionName == "car_action_1") {
+        if (Delay <= 0 && actionName == ACTION_NAME) {
             Delay = DelaySeconds;
             OutputStrength = (float)self.Details.TotalMass * MASS_MULT;
             self.RigidBody.ApplyCentralImpulse(new Vector3(0, OutputStrength, 0));
@@ -37,6 +42,8 @@ public class BigFanRelic : Relic {
     public override RelicType Type => RelicType.BIGFAN;
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
+    public override string DescriptionBBCode => $"Pushes you forward at {OutputStrength} power decaying until {MAX_SPEED}";
+
     public BigFanRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
     public override void _PhysicsProcess(Car self, double delta) {
@@ -55,6 +62,7 @@ public class BigFanRelic : Relic {
 
 public class FuelReductionRelic : Relic, IOnPurchaseRelic {
     public override RelicType Type => RelicType.FUELREDUCE;
+    public override string DescriptionBBCode => $"Reduces fuel use by {OutputStrength}";
 
     public bool Applied { get; private set; }
 
@@ -68,6 +76,7 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
 
 public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
     public override RelicType Type => RelicType.TYREWEARREDUCE;
+    public override string DescriptionBBCode => $"Reduces tyre wear by {OutputStrength}";
 
     public bool Applied { get; private set; }
 
@@ -83,6 +92,7 @@ public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
 
 public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
     public override RelicType Type => RelicType.MONEYINRIVALRACE;
+    public override string DescriptionBBCode => $"Generates ${Math.Round(MONEY_MULT * InputStrength, 2)} for every second in a rival race";
 
     public bool Applied { get; private set; }
 
@@ -99,7 +109,7 @@ public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
             GD.Print("In rival race: " + rivalRace);
 
             // don't give out after 2 mins
-            if (_relicManager.HundredGlobalState.TotalTimePassed - rivalRace.Value > 120 * InputStrength) {
+            if (OutputStrength > 0 && _relicManager.HundredGlobalState.TotalTimePassed - rivalRace.Value > 120 * InputStrength) {
                 GD.Print(".. but its going too long");
                 OutputStrength = 0;
                 continue;
