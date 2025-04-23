@@ -163,9 +163,9 @@ public partial class HundredGlobalState : Node {
 
     // Physics based events
     [Signal]
-    public delegate void TrafficCollisionEventHandler(Car trafficCar, Vector3 resultVelocityDifference);
-    public void CollisionWithTraffic(Car trafficCar, Vector3 resultVelocityDifference) {
-        EmitSignal(SignalName.TrafficCollision, trafficCar, resultVelocityDifference);
+    public delegate void TrafficCollisionEventHandler(Car trafficCar, Vector3 apparentVelocity);
+    public void CollisionWithTraffic(Car trafficCar, Vector3 apparentVelocity, Vector3 resultVelocityDifference) {
+        EmitSignal(SignalName.TrafficCollision, trafficCar, apparentVelocity);
 
         CollisionWithOther(resultVelocityDifference);
     }

@@ -77,7 +77,7 @@ public partial class HundredRacingScene : Node3D {
 
             // TODO we should use the details from the contact physics.GetContactLocalVelocityAtPosition from:
             // rid = _car.RigidBody.GetRid() and PhysicsServer3D.BodyGetDirectState(rid)
-            state.CollisionWithTraffic(car, collisionDiff);
+            state.CollisionWithTraffic(car, _car.RigidBody.LinearVelocity - car.RigidBody.LinearVelocity, collisionDiff);
         };
         state.SetCar(_car);
     }
