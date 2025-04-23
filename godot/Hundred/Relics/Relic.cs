@@ -35,6 +35,10 @@ public interface IOnTrafficCollisionRelic {
     void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity);
 }
 
+public interface IDamagedRelic {
+    void DamageTaken(Car self, float amount);
+}
+
 public interface IRivalRaceRelic {
     void RivalRaceStarted(Car rival);
     void RivalRaceWon(Car rival, double moneyDiff);

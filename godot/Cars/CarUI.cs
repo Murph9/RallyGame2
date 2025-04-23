@@ -136,6 +136,9 @@ public partial class CarUI : Control {
             // tyre wear
             DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 9), $"Tyre Wear Rate: {string.Join(",", Car.Wheels.Select(x => x.Details.TyreWearRate))}", width: -1, fontSize: defaultFontSize);
             DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 10), $"Tyre Wear: {string.Join(",", Car.Wheels.Select(x => x.TyreWear))}", width: -1, fontSize: defaultFontSize);
+
+            // damage
+            DrawString(defaultFont, new Vector2(2, -2 - defaultFontSize * 11), $"Damage %: {Car.Damage}", width: -1, fontSize: defaultFontSize);
         }
     }
 

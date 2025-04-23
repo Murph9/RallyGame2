@@ -161,8 +161,22 @@ public partial class HundredGlobalState : Node {
         AddMoney(moneyDiff);
     }
 
-    // and a list of events so we can track them here
+    // Physics based events
     [Signal]
-    public delegate void TrafficCollisionEventHandler(Car trafficCar, Vector3 relativeVelocity);
-    public void CollisionWithTraffic(Car trafficCar, Vector3 relativeVelocity) => EmitSignal(SignalName.TrafficCollision, trafficCar, relativeVelocity);
+    public delegate void TrafficCollisionEventHandler(Car trafficCar, Vector3 resultVelocityDifference);
+    public void CollisionWithTraffic(Car trafficCar, Vector3 resultVelocityDifference) {
+        EmitSignal(SignalName.TrafficCollision, trafficCar, resultVelocityDifference);
+
+        CollisionWithOther(resultVelocityDifference);
+    }
+
+    [Signal]
+    public delegate void CarDamageEventHandler(float amount);
+    public void CollisionWithOther(Vector3 resultVelocityDifference) {
+        var amount = resultVelocityDifference.Length();
+        if (amount < 2)
+            return;
+        Car.Damage += amount;
+        EmitSignal(SignalName.CarDamage, amount);
+    }
 }

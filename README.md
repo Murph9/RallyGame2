@@ -64,7 +64,6 @@ Ideas for relics:
 -   super bouncy
 -   drift points (with no benefit)
 -   money from style points (making the drift points relic useful)
--   money per car flip
 -   money per second spent in races
 -   increased money per race won
 -   reduction in tyre wear

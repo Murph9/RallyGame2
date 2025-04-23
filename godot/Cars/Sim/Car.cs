@@ -26,7 +26,10 @@ public partial class Car : Node3D {
     public double EngineKw => Engine.CurrentTorque * Engine.CurRPM / 9.5488;
 
     public float DistanceTravelled { get; private set; }
+    public float Damage { get; set; } // out of 100
+
     private Vector3? _lastPos;
+    private Vector3? _lastVelocity; // to track collision differences
 
     private Vector3 _frozenVelocity;
     private Vector3 _frozenAngular;
@@ -147,6 +150,9 @@ public partial class Car : Node3D {
             w._PhysicsProcess(delta);
         }
         ApplyCentralDrag();
+
+        // track last velocity for collision purposes
+        _lastVelocity = RigidBody.LinearVelocity;
     }
 
     private void CalcSuspension(Wheel w) {
@@ -407,5 +413,14 @@ public partial class Car : Node3D {
         Inputs = carInputs;
         Inputs.Car = this;
         AddChild(Inputs as Node3D);
+    }
+
+    /// <summary>
+    /// This method is a hack because the godot RigidBody3D object doesn't tell us more than there 'was' a collision - i want impulse
+    /// </summary>
+    public Vector3 CalcLastFrameVelocityDiff() {
+        if (!_lastVelocity.HasValue) return Vector3.Zero;
+
+        return RigidBody.LinearVelocity - _lastVelocity.Value;
     }
 }

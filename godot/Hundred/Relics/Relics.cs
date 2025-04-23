@@ -6,6 +6,17 @@ using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
+
+public class CollisionDamageReductionRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
+    public override RelicType Type => RelicType.COLLISIONDAMAGEREDUCE;
+
+    public override string DescriptionBBCode => $"Reduce the damage taken from collisions to {0.8f * (1f / InputStrength) * 100}%";
+
+    public void DamageTaken(Car self, float amount) {
+        self.Damage -= amount * (1 - 0.2f) * (1f / InputStrength);
+    }
+}
+
 public class BouncyRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IOnTrafficCollisionRelic {
     public override RelicType Type => RelicType.BOUNCY;
     private static readonly float MASS_MULT = 2f;
