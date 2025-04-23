@@ -6,7 +6,6 @@ namespace murph9.RallyGame2.godot.Hundred.Relics;
 public abstract class Relic(RelicManager relicManager, float inputStrength) {
     public float InputStrength { get; init; } = inputStrength;
     public float OutputStrength { get; protected set; }
-    public abstract RelicType Type { get; }
     public abstract string DescriptionBBCode { get; }
 
     // would love to use an entity system here

@@ -32,7 +32,7 @@ public partial class HundredRelicScreen : CenterContainer {
                 CustomMinimumSize = new Vector2(50, 50),
             });
             container.AddChild(new Label() {
-                Text = $"{relic.Name}"
+                Text = generatedRelic.GetType().Name
             });
             container.AddChild(new RichTextLabel() {
                 Text = generatedRelic.DescriptionBBCode,

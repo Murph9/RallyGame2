@@ -8,7 +8,6 @@ namespace murph9.RallyGame2.godot.Hundred.Relics;
 
 
 public class CollisionDamageReductionRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
-    public override RelicType Type => RelicType.COLLISIONDAMAGEREDUCE;
 
     public override string DescriptionBBCode => $"Reduce the damage taken from collisions to {0.8f * (1f / InputStrength) * 100}%";
 
@@ -18,7 +17,6 @@ public class CollisionDamageReductionRelic(RelicManager relicManager, float stre
 }
 
 public class BouncyRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IOnTrafficCollisionRelic {
-    public override RelicType Type => RelicType.BOUNCY;
     private static readonly float MASS_MULT = 2f;
 
     public override string DescriptionBBCode => $"Other cars bounce off you at {InputStrength * MASS_MULT} strength";
@@ -31,7 +29,6 @@ public class BouncyRelic(RelicManager relicManager, float strength) : Relic(reli
 
 public class JumpRelic : Relic, IOnKeyRelic {
     private const string ACTION_NAME = "car_action_1";
-    public override RelicType Type => RelicType.JUMP;
     private static readonly float MASS_MULT = 4f;
 
     public override string DescriptionBBCode => $"Allows you to jump on the {ACTION_NAME} button";
@@ -50,7 +47,6 @@ public class JumpRelic : Relic, IOnKeyRelic {
 }
 
 public class BigFanRelic : Relic {
-    public override RelicType Type => RelicType.BIGFAN;
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
     public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {MAX_SPEED} km/h";
@@ -72,7 +68,6 @@ public class BigFanRelic : Relic {
 }
 
 public class FuelReductionRelic : Relic, IOnPurchaseRelic {
-    public override RelicType Type => RelicType.FUELREDUCE;
     public override string DescriptionBBCode => $"Reduces fuel use by {0.8f * (1f / InputStrength) * 100}%";
 
     public bool Applied { get; private set; }
@@ -86,7 +81,6 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
 }
 
 public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
-    public override RelicType Type => RelicType.TYREWEARREDUCE;
     public override string DescriptionBBCode => $"Reduces tyre wear by {0.8f * (1f / InputStrength) * 100}%";
 
     public bool Applied { get; private set; }
@@ -102,7 +96,7 @@ public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
 }
 
 public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
-    public override RelicType Type => RelicType.MONEYINRIVALRACE;
+
     public override string DescriptionBBCode => $"Generates ${Math.Round(MONEY_MULT * InputStrength, 2)} for every second in a rival race";
 
     public bool Applied { get; private set; }
