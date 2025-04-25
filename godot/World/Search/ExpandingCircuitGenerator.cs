@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
@@ -163,7 +164,7 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
         // pick a random modification and try to fit it anywhere
         // do this until we have successfully placed N
         for (var i = 0; i < iterations; i++) {
-            var current = _replacements[_rand.RandiRange(0, _replacements.Count - 1)];
+            var current = RandHelper.RandFromList(_rand, _replacements);
             var curTransform = GetNormalizedTransform3DFor(current);
 
             // search the current circuit for where to put it

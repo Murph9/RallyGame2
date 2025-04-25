@@ -101,7 +101,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private WorldPiece PickRandom() {
         var pieceList = _worldPieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
-        return pieceList[_rand.RandiRange(0, pieceList.Length - 1)];
+        return RandHelper.RandFromList(_rand, pieceList);
     }
 
     public override void _PhysicsProcess(double delta) {

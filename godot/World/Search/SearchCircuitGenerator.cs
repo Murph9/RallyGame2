@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
             }
 
             if (state == JUSTPLACE) {
-                last = nextNeighbours[_rand.RandiRange(0, nextNeighbours.Length - 1)];
+                last = RandHelper.RandFromList(_rand, nextNeighbours);
                 if (last.LengthToRoot > randAmount) {
                     Console.WriteLine(GetNamesOfPath(last) + " @" + last.FinalPosition);
                     state = MOVEHOME;
@@ -102,7 +103,7 @@ public class SearchCircuitGenerator(BasicEl[] pieces) : ICircuitGenerator {
                 chosenPiece ??= neighbours.FirstOrDefault(x => x.Piece.Dir.Turn == WorldPieceDir.TurnType.Left);
             }
 
-            chosenPiece ??= neighbours[_rand.RandiRange(0, neighbours.Length - 1)];
+            chosenPiece ??= RandHelper.RandFromList(_rand, neighbours);
 
             last = chosenPiece;
 
