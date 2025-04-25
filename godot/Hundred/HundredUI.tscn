@@ -13,7 +13,7 @@ size_flags_vertical = 3
 script = ExtResource("1_nui4w")
 
 [node name="VBoxContainerLeft" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(350, 0)
 layout_mode = 2
 
 [node name="VBoxContainerState" type="VBoxContainer" parent="VBoxContainerLeft"]
@@ -71,10 +71,12 @@ text = "Parts"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LabelGoal" type="Label" parent="VBoxContainerCenter"]
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainerCenter"]
 layout_mode = 2
-horizontal_alignment = 1
+
+[node name="LabelGoal" type="Label" parent="VBoxContainerCenter/CenterContainer"]
+layout_mode = 2
 
 [node name="VBoxContainerRight" type="HBoxContainer" parent="."]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(350, 0)
 layout_mode = 2

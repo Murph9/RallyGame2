@@ -63,7 +63,7 @@ public partial class HundredUI : HBoxContainer {
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
         }
 
-        var goalInfo = GetNode<Label>("VBoxContainerCenter/LabelGoal");
+        var goalInfo = GetNode<Label>("VBoxContainerCenter/CenterContainer/LabelGoal");
         goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled);
 
         // update relic view
