@@ -29,7 +29,7 @@ public partial class CarUI : Control {
 
     public override void _Ready() {
         for (int i = 0; i < Car.Wheels.Length; i++) {
-            var node = GetNode<WheelUI>("HBoxContainer/WheelGridContainer/WheelUi" + i);
+            var node = GetNode<WheelUI>("VBoxContainer/HBoxContainer/WheelGridContainer/WheelUi" + i);
             node.Wheel = Car.Wheels[i];
             node.Debug = false;
         }
@@ -46,7 +46,7 @@ public partial class CarUI : Control {
 
     private void WindowSizeChanged() {
         const float REFERENCE_SIZE = (360f - 20f) / 1080f;
-        var speedoRect = GetNode<ReferenceRect>("HBoxContainer/SpeedoReferenceRect");
+        var speedoRect = GetNode<ReferenceRect>("VBoxContainer/HBoxContainer/SpeedoReferenceRect");
         speedoRect.CustomMinimumSize = new Vector2(1, 1) * REFERENCE_SIZE * GetViewportRect().End.Y;
     }
 
@@ -55,7 +55,15 @@ public partial class CarUI : Control {
         var defaultFont = ThemeDB.FallbackFont;
         int defaultFontSize = ThemeDB.FallbackFontSize;
 
-        var speedoRect = GetNode<ReferenceRect>("HBoxContainer/SpeedoReferenceRect");
+        // update damage and fuel bars
+        var damageBar = GetNode<ProgressBar>("VBoxContainer/DamageProgressBar");
+        damageBar.Value = Car.Damage;
+
+        var fuelBar = GetNode<ProgressBar>("VBoxContainer/FuelProgressBar");
+        fuelBar.Value = Car.Engine.CurrentFuel / Car.Details.FuelMax;
+
+        // update the speedo
+        var speedoRect = GetNode<ReferenceRect>("VBoxContainer/HBoxContainer/SpeedoReferenceRect");
         DrawSetTransform(speedoRect.GlobalPosition);
         var middle = speedoRect.Size / 2;
 
@@ -105,7 +113,6 @@ public partial class CarUI : Control {
         DrawRect(new Rect2(controlBarX + CONTROL_BAR_WIDTH / 2 - CONTROL_BAR_HEIGHT / 2 + (CONTROL_BAR_WIDTH - CONTROL_BAR_HEIGHT) * -Car.Inputs.Steering,
             middle.Y + CONTROL_BAR_HEIGHT * 2, CONTROL_BAR_HEIGHT, CONTROL_BAR_HEIGHT), Colors.White * 0.7f);
 
-
         // debug numbers
         if (_debugOn) {
             // rpm
@@ -147,7 +154,7 @@ public partial class CarUI : Control {
 
         QueueRedraw();
 
-        var wheels = GetNode<GridContainer>("HBoxContainer/WheelGridContainer");
+        var wheels = GetNode<GridContainer>("VBoxContainer/HBoxContainer/WheelGridContainer");
 
         // force the torque outputs to the bottom left
         var torqueGraph = GetNode<TorqueCurveGraph>("TorqueCurveGraph");

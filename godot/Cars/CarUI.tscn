@@ -12,35 +12,59 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ujtt8")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -360.0
-offset_top = -360.0
+offset_left = -40.0
+offset_top = -40.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="WheelGridContainer" type="GridContainer" parent="HBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Damage"
+horizontal_alignment = 2
+
+[node name="DamageProgressBar" type="ProgressBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="Label2" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Fuel Remaining"
+horizontal_alignment = 2
+
+[node name="FuelProgressBar" type="ProgressBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+max_value = 1.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="WheelGridContainer" type="GridContainer" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 8
 columns = 2
 
-[node name="WheelUi0" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi0" parent="VBoxContainer/HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi1" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi1" parent="VBoxContainer/HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi2" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi2" parent="VBoxContainer/HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="WheelUi3" parent="HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
+[node name="WheelUi3" parent="VBoxContainer/HBoxContainer/WheelGridContainer" instance=ExtResource("2_2ghiq")]
 layout_mode = 2
 
-[node name="SpeedoReferenceRect" type="ReferenceRect" parent="HBoxContainer"]
+[node name="SpeedoReferenceRect" type="ReferenceRect" parent="VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(360, 360)
 layout_mode = 2
