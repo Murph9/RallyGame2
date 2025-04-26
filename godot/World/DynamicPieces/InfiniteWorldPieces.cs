@@ -16,8 +16,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private readonly RandomNumberGenerator _rand = new();
     private readonly float _generationRange;
-
-    private InfinitePieceGenerator _pieceGen;
+    private readonly InfinitePieceGenerator _pieceGen;
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
@@ -64,6 +63,7 @@ public partial class InfiniteWorldPieces : Node3D {
         var pos = GetViewport().GetCamera3D().Position;
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
+        // keep at most this many pieces
         if (_placedPieces.Count >= MAX_COUNT) {
             // keep max piece count by removing the oldest one
             var removal = _placedPieces.First();
@@ -73,16 +73,16 @@ public partial class InfiniteWorldPieces : Node3D {
             RemoveChild(removal);
         }
 
+        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _generationRange) {
+            return;
+        }
+
         foreach (var queuedPiece in new List<WorldPiece>(_queuedPieces)) {
             PlacePiece(queuedPiece, currentTransform, _rand.RandiRange(0, queuedPiece.Directions.Length - 1), true);
 
             currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
         _queuedPieces.Clear();
-
-        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _generationRange) {
-            return;
-        }
 
         var (piece, directionIndex) = _pieceGen.Next(currentTransform, _rand);
         PlacePiece(piece, currentTransform, directionIndex);

@@ -3,7 +3,6 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World;
 using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
@@ -39,12 +38,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
 
-    private WorldType _currentWorldType;
-
     public InfiniteRoadManager(int spawnDistance, WorldType initialWorldType) {
         UpdateWorldType(initialWorldType);
 
-        _world = new InfiniteWorldPieces(_currentWorldType, spawnDistance);
+        _world = new InfiniteWorldPieces(initialWorldType, spawnDistance);
         _world.PieceAdded += PiecePlacedListener;
         _world.SetIgnoredPieces(["station"]);
     }
@@ -54,11 +51,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public void UpdateWorldType(WorldType name) {
-        _currentWorldType = name;
         GD.Print("World Type set to " + name);
         if (_world == null) return;
 
-        _world.UpdateWorldType(_currentWorldType);
+        _world.UpdateWorldType(name);
     }
 
     public static IEnumerable<WorldType> GetWorldTypes() {
