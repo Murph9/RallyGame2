@@ -32,6 +32,8 @@ public partial class RelicManager : Node {
     }
 
     public void AddRelic(Relic relic) {
+        if (relic == null) return;
+
         _relics.Add(relic);
 
         // trigger all things that need to modify the car state
