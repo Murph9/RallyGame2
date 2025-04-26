@@ -18,6 +18,7 @@ public partial class HundredRacingScene : Node3D {
     public float PlayerDistanceTravelled => _car.DistanceTravelled;
     public Vector3 PlayerCarPos => _car.RigidBody.GlobalPosition;
     public Vector3 PlayerCarLinearVelocity => _car.RigidBody.LinearVelocity;
+    public bool PlayerIsAccelerating => _car.Inputs.AccelCur > 0;
 
     public override void _Ready() {
         // load from global state

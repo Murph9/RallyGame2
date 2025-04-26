@@ -66,9 +66,6 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     public override void _PhysicsProcess(double delta) {
-        var pos = GetViewport().GetCamera3D().Position;
-        var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
-
         // keep at most this many pieces
         if (_placedPieces.Count >= MAX_COUNT) {
             // keep max piece count by removing the oldest one
@@ -79,6 +76,10 @@ public partial class InfiniteWorldPieces : Node3D {
             RemoveChild(removal);
         }
 
+        // add in queued pieces
+        var pos = GetViewport().GetCamera3D().Position;
+        var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
+
         foreach (var queuedPiece in new List<WorldPiece>(_queuedPieces)) {
             PlacePiece(queuedPiece, currentTransform, _rand.RandiRange(0, queuedPiece.Directions.Length - 1), true);
 
@@ -86,6 +87,7 @@ public partial class InfiniteWorldPieces : Node3D {
         }
         _queuedPieces.Clear();
 
+        // update placementStrategy position for math
         _placementStrategy.NextTransform = currentTransform;
     }
 
@@ -96,7 +98,7 @@ public partial class InfiniteWorldPieces : Node3D {
         PlacePiece(piece, currentTransform, directionIndex);
     }
 
-    public void QueuePiece(string pieceName) { // TODO load shops some other way, like stopping for a short time - this sucks (for dev reasons)
+    public void QueuePiece(string pieceName) {
         var piece = _pieceGen.WorldPieces.FirstOrDefault(x => x.Name.Contains(pieceName));
         if (piece != null)
             _queuedPieces.Add(piece);

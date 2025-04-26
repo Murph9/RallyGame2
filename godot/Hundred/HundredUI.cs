@@ -63,8 +63,17 @@ public partial class HundredUI : HBoxContainer {
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
         }
 
-        var goalInfo = GetNode<Label>("VBoxContainerCenter/CenterContainer/LabelGoal");
+        var goalInfo = GetNode<Label>("%GoalLabel");
         goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled);
+
+        var shopInfo = GetNode<Label>("%ShopTimerLabel");
+        if (state.ShopCooldownTimer > 0) {
+            shopInfo.Text = "Shop cooldown";
+        } else if (state.ShopStoppedTimer > 0) {
+            shopInfo.Text = "Shop opening soon";
+        } else {
+            shopInfo.Text = "";
+        }
 
         // update relic view
         var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");

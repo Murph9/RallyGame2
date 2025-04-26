@@ -32,9 +32,6 @@ public partial class HundredGlobalState : Node {
 
     public float TargetDistance { get; private set; }
 
-    public float NextShopDistance { get; private set; }
-    public float ShopSpread { get; private set; }
-
     public Car Car { get; private set; }
     public CarDetails CarDetails { get; private set; }
     public double TotalTimePassed { get; private set; }
@@ -46,12 +43,19 @@ public partial class HundredGlobalState : Node {
 
     public RivalRace? RivalRaceDetails { get; private set; }
     public string RivalRaceMessage { get; private set; }
+    public double RivalWinBaseAmount { get; private set; }
 
     public int ShopPartCount { get; private set; }
     public int ShopRelicCount { get; private set; }
 
     public float GoalSpread { get; private set; }
     public GoalState Goal { get; private set; }
+
+
+    public double ShopStoppedTimer { get; set; }
+    public double ShopCooldownTimer { get; set; }
+    public double ShopStoppedTriggerAmount { get; private set; }
+    public double ShopCooldownTriggerAmount { get; private set; }
 
     public HundredGlobalState() {
         Reset();
@@ -66,8 +70,6 @@ public partial class HundredGlobalState : Node {
 
         Car = null;
         CarDetails = null;
-        NextShopDistance = 100; // m
-        ShopSpread = 500; // m
 
         TotalTimePassed = 0; // s
         Money = 0; // $
@@ -76,9 +78,13 @@ public partial class HundredGlobalState : Node {
 
         RivalRaceDetails = null;
         RivalRaceMessage = null;
+        RivalWinBaseAmount = 1000;
 
         ShopPartCount = 3;
         ShopRelicCount = 2;
+
+        ShopStoppedTriggerAmount = 3;
+        ShopCooldownTriggerAmount = 5;
 
         GoalSpread = 1000;
         Goal = new(CalcGoalType(), GoalSpread, 500);
@@ -127,10 +133,6 @@ public partial class HundredGlobalState : Node {
 
     public void SetCurrentSpeedMs(float value) {
         CurrentSpeedMs = value;
-    }
-
-    public void SetNextShopDistance(float value) {
-        NextShopDistance = value;
     }
 
     public void RivalStarted(RivalRace race, string message) {

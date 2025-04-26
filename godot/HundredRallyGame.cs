@@ -16,7 +16,6 @@ namespace murph9.RallyGame2.godot;
 public partial class HundredRallyGame : Node {
 
     // The manager of the game
-    private const float RIVAL_RACE_WIN_MONEY = 1000;
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;
@@ -42,7 +41,6 @@ public partial class HundredRallyGame : Node {
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
         _roadManager = new InfiniteRoadManager(300, World.DynamicPieces.WorldType.Simple2);
-        _roadManager.ShopPlaced += ShopTriggeredAt;
         _roadManager.RoadNextPoint += RoadPlacedAt;
         AddChild(_roadManager);
 
@@ -74,7 +72,14 @@ public partial class HundredRallyGame : Node {
                 _racingScene.ResetCarTo(pos);
             }
 
+            if (state.ShopStoppedTimer > state.ShopStoppedTriggerAmount && state.ShopCooldownTimer < 0) {
+                CallDeferred(MethodName.ShowShop);
+            }
+
 #if DEBUG
+            if (Input.IsKeyPressed(Key.Key8)) {
+                CallDeferred(MethodName.ShowShop);
+            }
             if (Input.IsKeyPressed(Key.Key9)) {
                 CallDeferred(MethodName.ShowRelicShop);
             }
@@ -92,18 +97,16 @@ public partial class HundredRallyGame : Node {
         // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        state.SetCurrentSpeedMs(_racingScene.PlayerCarLinearVelocity.Length());
+        var currentPlayerSpeed = _racingScene.PlayerCarLinearVelocity.Length();
+        state.SetCurrentSpeedMs(currentPlayerSpeed);
 
-        // trigger next shop stop
-        if (_racingScene.PlayerDistanceTravelled > state.NextShopDistance) {
-            GD.Print("Queuing shop because of next trigger " + state.NextShopDistance);
-            if (state.NextShopDistance < state.ShopSpread) {
-                state.SetNextShopDistance(state.ShopSpread); // the first one is much closer than normal
-            } else {
-                state.SetNextShopDistance(state.NextShopDistance + state.ShopSpread);
+        if (!_paused) {
+            if (currentPlayerSpeed < 1 && !_racingScene.PlayerIsAccelerating)
+                state.ShopStoppedTimer += delta;
+            else {
+                state.ShopStoppedTimer = 0;
+                state.ShopCooldownTimer -= delta; // TODO you need to accel for 5 seconds for this
             }
-
-            _roadManager.TriggerShopPiece();
         }
 
         // check the current race state
@@ -125,7 +128,7 @@ public partial class HundredRallyGame : Node {
                         // oh the race is over?
                         if (_racingScene.IsMainCar(node)) {
                             CallDeferred(MethodName.ResetRivalRace);
-                            state.RivalRaceFinished(state.RivalRaceDetails.Value.Rival, true, "Nice win", RIVAL_RACE_WIN_MONEY);
+                            state.RivalRaceFinished(state.RivalRaceDetails.Value.Rival, true, "Nice win", (float)state.RivalWinBaseAmount);
                             return true;
                         } else if (node == state.RivalRaceDetails.Value.Rival.RigidBody) {
                             CallDeferred(MethodName.ResetRivalRace);
@@ -151,16 +154,6 @@ public partial class HundredRallyGame : Node {
         }
     }
 
-    private void ShopTriggeredAt(Transform3D transform) {
-        transform.Origin += transform.Basis * new Vector3(30, 0, -10);
-
-        CreateCheckpoint(transform, node => {
-            if (!_racingScene.IsMainCar(node)) return false;
-
-            CallDeferred(MethodName.ShowShop);
-            return true;
-        });
-    }
     private void RemoveNode(Node node) {
         RemoveChild(node);
     }
@@ -230,15 +223,16 @@ public partial class HundredRallyGame : Node {
 
         var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
         upgrade.Closed += (carChanged) => {
+            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
             if (carChanged) {
                 var changeDetails = upgrade.GetChangedDetails();
 
-                var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
                 state.SetCarDetails(changeDetails.Item1);
                 state.AddMoney(-changeDetails.Item2);
             }
 
             SetPauseState(false);
+            state.ShopCooldownTimer = state.ShopCooldownTriggerAmount;
             _racingScene.ReplaceCarWithState();
             CallDeferred(MethodName.RemoveNode, upgrade);
         };
