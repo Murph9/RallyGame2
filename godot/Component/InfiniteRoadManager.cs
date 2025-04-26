@@ -59,6 +59,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return (WorldType[])Enum.GetValues(typeof(WorldType));
     }
 
+    public void StopAfter(double distance) {
+        _world.LimitPlacingAfterDistance(distance);
+    }
+
     public override void _Process(double delta) {
         // calculate the player pos
         var cameraPos = GetViewport().GetCamera3D().Position;

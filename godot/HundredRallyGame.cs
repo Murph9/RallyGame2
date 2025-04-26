@@ -177,6 +177,7 @@ public partial class HundredRallyGame : Node {
         if (state.Goal.Ready && !state.Goal.EndPlaced && state.Goal.EndDistance < distanceAtPos) {
             GD.Print("Creating end trigger for the goal: " + state.Goal.Type);
             state.Goal.EndPlaced = true;
+            _roadManager.StopAfter(state.Goal.EndDistance);
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
 
@@ -214,6 +215,7 @@ public partial class HundredRallyGame : Node {
             SetPauseState(false);
             CallDeferred(MethodName.RemoveNode, relics);
             _roadManager.UpdateWorldType(RandHelper.RandFromList(InfiniteRoadManager.GetWorldTypes().ToArray()));
+            _roadManager.StopAfter(0);
         };
         AddChild(relics);
     }

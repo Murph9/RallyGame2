@@ -25,6 +25,8 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<WorldPiece> _queuedPieces = [];
     private PiecePlacedDetails _nextTransform;
 
+    private double _pieceDistanceLimit;
+
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
 
@@ -65,6 +67,10 @@ public partial class InfiniteWorldPieces : Node3D {
         _pieceGen.UpdatePieceType(type);
     }
 
+    public void LimitPlacingAfterDistance(double distance) {
+        _pieceDistanceLimit = distance;
+    }
+
     public override void _PhysicsProcess(double delta) {
         // keep at most this many pieces
         if (_placedPieces.Count >= MAX_COUNT) {
@@ -92,6 +98,10 @@ public partial class InfiniteWorldPieces : Node3D {
     }
 
     public void GeneratePiece() {
+        if (_pieceDistanceLimit > 0 && _checkpoints.Last().Item3 > _pieceDistanceLimit) {
+            return; // no more generating
+        }
+
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
         var (piece, directionIndex) = _pieceGen.Next(currentTransform, _rand);
