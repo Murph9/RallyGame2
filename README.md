@@ -29,12 +29,18 @@ Download godot, setup the .vscode launch.json script to point to its location
 An infinite world
 
 -   spawn next to the road with a goal of driving 100km
-    -   at some fixed amount 10km you will have a goal to reach:
+    -   at some fixed amount X km you will have a goal to reach:
         -   a speed trap target
         -   an average speed section
         -   time trial section
         -   ???
-    -   or start with a bad car but slowly have a minimum speed you need to hit
+    -   at every new section you must pick a new world section:
+        -   pick between like 2 kinds of new road type
+        -   each have a specific category of reward to make you pick certain kinds
+        -   possibly a weather condition like wind/air density/rain/slippery/more expensive
+            -   more built up, i.e. more things but costs more
+        -   the next goal should be known for each one as well
+-   start with a base car but slowly make it better
 -   come across cars to race along the road for $
     -   match their speed and challenge them
         -   win and get a random part (with rarity)
