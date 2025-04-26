@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
-public record LastPlacedDetails(string Name, Transform3D FinalTransform);
+record PiecePlacedDetails(string Name, Transform3D FinalTransform);
 
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D {
@@ -21,7 +21,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
     private readonly List<WorldPiece> _queuedPieces = [];
-    private LastPlacedDetails _nextTransform;
+    private PiecePlacedDetails _nextTransform;
 
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
@@ -49,7 +49,7 @@ public partial class InfiniteWorldPieces : Node3D {
         boxBody.Position = new Vector3(0, -0.501f, 0);
         AddChild(boxBody);
 
-        _nextTransform = new LastPlacedDetails(null, Transform3D.Identity);
+        _nextTransform = new PiecePlacedDetails(null, Transform3D.Identity);
 
         // use the base location as the first checkpoint
         _checkpoints.Add(new(Transform3D.Identity, null, 0));
@@ -120,7 +120,7 @@ public partial class InfiniteWorldPieces : Node3D {
         // TODO there has to be a way to do this with inbuilt methods:
         var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Origin;
         var rot = (_nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
-        _nextTransform = new LastPlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
+        _nextTransform = new PiecePlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
         // the transform is expected to be in the direction of travel here
         EmitSignal(SignalName.PieceAdded, transform, piece.Name, queuedPiece);
