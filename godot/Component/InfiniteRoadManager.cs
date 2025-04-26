@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
 using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
@@ -109,7 +110,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         // give them basic ai for now
         var ai = new TrafficAiInputs(this, false);
         ai.TargetSpeedMs += 10; // a little more than the default AI
-        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position, GetRandColour());
+        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position, RandHelper.GetRandColour(_rand));
         car.RigidBody.LinearVelocity = position.Basis * Vector3.Back * 10; // TODO
 
         AddChild(car);
@@ -146,7 +147,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
         }
-        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, GetRandColour());
+        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, RandHelper.GetRandColour(_rand));
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeedMs;
 
         AddChild(car);
@@ -276,9 +277,5 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public float TotalDistanceFromCheckpoint(Vector3 position) {
         return _world.TotalDistanceFromCheckpoint(position);
-    }
-
-    private Color GetRandColour() {
-        return Color.FromHsv(_rand.Randf(), 0.8f, 0.8f);
     }
 }
