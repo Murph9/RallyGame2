@@ -18,7 +18,7 @@ public partial class InfiniteWorldPieces : Node3D {
     private readonly RandomNumberGenerator _rand = new();
 
     private readonly InfinitePieceGenerator _pieceGen;
-    private readonly PiecePlacementStrategy _placementStrategy;
+    private readonly CameraPiecePlacementStrategy _placementStrategy;
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
@@ -30,7 +30,7 @@ public partial class InfiniteWorldPieces : Node3D {
 
     public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
         _pieceGen = new InfinitePieceGenerator(type, pieceAttemptMax);
-        _placementStrategy = new PiecePlacementStrategy(generationRange);
+        _placementStrategy = new CameraPiecePlacementStrategy(generationRange);
         _placementStrategy.NeedPiece += GeneratePiece;
 
         // generate a starting box so we don't spawn in the void

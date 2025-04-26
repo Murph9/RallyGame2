@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
-public partial class PiecePlacementStrategy : Node3D {
+public partial class CameraPiecePlacementStrategy : Node3D {
     private readonly float _generationRange;
 
     public Transform3D NextTransform { get; set; }
@@ -14,7 +14,7 @@ public partial class PiecePlacementStrategy : Node3D {
     [Signal]
     public delegate void NeedPieceEventHandler();
 
-    public PiecePlacementStrategy(float generationRange) {
+    public CameraPiecePlacementStrategy(float generationRange) {
         _generationRange = generationRange;
     }
 
