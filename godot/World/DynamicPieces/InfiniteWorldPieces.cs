@@ -16,30 +16,21 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private readonly RandomNumberGenerator _rand = new();
     private readonly float _generationRange;
-    private readonly int _pieceAttemptMax;
 
-    private readonly PackedScene _blenderScene;
-    private readonly WorldType _pieceType;
-    private readonly List<WorldPiece> _worldPieces = [];
-    private Vector3 _trafficLeftSideOffset;
+    private InfinitePieceGenerator _pieceGen;
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
     private readonly List<WorldPiece> _queuedPieces = [];
     private LastPlacedDetails _nextTransform;
 
-    public List<string> IgnoredList { get; set; } = [];
-    // ["left_45", "right_45"];
-
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
 
     public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
         _generationRange = generationRange;
-        _pieceAttemptMax = pieceAttemptMax;
 
-        _pieceType = type;
-        _blenderScene = GD.Load<PackedScene>("res://assets/worldPieces/" + _pieceType.ToString().ToLower() + ".blend");
+        _pieceGen = new InfinitePieceGenerator(type, pieceAttemptMax);
 
         // generate a starting box so we don't spawn in the void
         var boxBody = new StaticBody3D();
@@ -65,55 +56,13 @@ public partial class InfiniteWorldPieces : Node3D {
         _checkpoints.Add(new(Transform3D.Identity, null, 0));
     }
 
-
-    public override void _Ready() {
-        var scene = _blenderScene.Instantiate<Node3D>();
-
-        // I have attempted mirroring pieces (and therefore only creating one model for each turn type)
-        // The scale and rotate args of all methods only modify the transform
-        // BUT we set the transform to place the piece so the above will get ignored
-        // If you do figure it out all the normals and UV mappings are quite wrong
-        // - You can also not move all the vertexes without a large perf hit, but it might be possible to make it from scratch i.e. another MeshInstance3D
-
-        try {
-            foreach (var c in scene.GetChildren().ToList()) {
-                if (c is MeshInstance3D model) {
-                    _worldPieces.Add(WorldPiece.LoadFrom(model));
-                } else if (c is Node3D node) {
-                    if (node.Name == "TrafficLeftSide") {
-                        GD.Print("Loading " + node.Name + " as a traffic offset value");
-                        _trafficLeftSideOffset = node.Transform.Origin;
-                    }
-                }
-                scene.RemoveChild(c);
-            }
-
-            if (_trafficLeftSideOffset == Vector3.Zero) {
-                throw new Exception("Traffic offset not set for model type " + _pieceType);
-            }
-
-        } catch (Exception e) {
-            GD.PrintErr("Failed to parse pieces for " + _pieceType);
-            GD.PrintErr(e);
-        }
-        GD.Print("Loaded " + _worldPieces.Count + " pieces");
-    }
-
-    private WorldPiece PickRandom() {
-        var pieceList = _worldPieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
-        return RandHelper.RandFromList(_rand, pieceList);
+    public void UpdateWorldType(WorldType type) {
+        _pieceGen.UpdatePieceType(type);
     }
 
     public override void _PhysicsProcess(double delta) {
         var pos = GetViewport().GetCamera3D().Position;
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
-
-        // for the physics issues we can only make one piece per frame
-        // while (pos.DistanceTo(_nextTransform.FinalTransform.Origin) < _distance) {
-
-        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _generationRange) {
-            return;
-        }
 
         if (_placedPieces.Count >= MAX_COUNT) {
             // keep max piece count by removing the oldest one
@@ -125,66 +74,26 @@ public partial class InfiniteWorldPieces : Node3D {
         }
 
         foreach (var queuedPiece in new List<WorldPiece>(_queuedPieces)) {
-            PlacePiece(queuedPiece, currentTransform, 0, true); // TODO only the first one so far
+            PlacePiece(queuedPiece, currentTransform, _rand.RandiRange(0, queuedPiece.Directions.Length - 1), true);
 
             currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         }
         _queuedPieces.Clear();
 
-        var attempts = 0;
-        var piece = PickRandom();
-        var directionIndex = _rand.RandiRange(0, piece.Directions.Length - 1);
-        while (!PieceValidSimple(piece, currentTransform, directionIndex) && attempts < _pieceAttemptMax) {
-            piece = PickRandom();
-            attempts++;
+        if (pos.DistanceTo(_nextTransform.FinalTransform.Origin) >= _generationRange) {
+            return;
         }
 
-        if (attempts > 0) {
-            // GD.Print($"Found piece {piece?.Name} in {attempts} tries, at " + currentTransform);
-        }
-
+        var (piece, directionIndex) = _pieceGen.Next(currentTransform, _rand);
         PlacePiece(piece, currentTransform, directionIndex);
     }
 
     public void QueuePiece(string pieceName) {
-        var piece = _worldPieces.FirstOrDefault(x => x.Name.Contains(pieceName));
+        var piece = _pieceGen.WorldPieces.FirstOrDefault(x => x.Name.Contains(pieceName));
         if (piece != null)
             _queuedPieces.Add(piece);
     }
 
-    private static bool PieceValidSimple(WorldPiece piece, Transform3D transform, int outIndex) {
-        var outDirection = piece.Directions.Skip(outIndex).First();
-        var rot = (transform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
-        var angle = rot.AngleTo(Quaternion.Identity);
-        if (angle > Math.PI * 1 / 2f) {
-            return false;
-        }
-        return true;
-    }
-
-    private bool PieceValidPhysicsCollision(WorldPiece piece, Transform3D transform) {
-        var space = GetWorld3D().DirectSpaceState;
-        var collisionShapes = piece.Model.GetAllChildrenOfType<CollisionShape3D>();
-
-        if (!collisionShapes.Any() || collisionShapes.Count() > 1) {
-            GD.PushError("My world piece was wrong: " + collisionShapes);
-            return false;
-        }
-
-        foreach (var collisionShape in collisionShapes) {
-            var physicsParams = new PhysicsShapeQueryParameters3D {
-                Shape = collisionShape.Shape,
-                Transform = transform
-            };
-            var result = space.IntersectShape(physicsParams);
-
-            if (result.Count > 0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0, bool queuedPiece = false) {
         var toAdd = piece.Model.Duplicate() as Node3D;
@@ -225,12 +134,17 @@ public partial class InfiniteWorldPieces : Node3D {
         return GetAllCurrentCheckpoints().First();
     }
 
+    public void SetIgnoredPieces(IEnumerable<string> pieceNames) {
+        _pieceGen.IgnoredList.Clear();
+        _pieceGen.IgnoredList.AddRange(pieceNames);
+    }
+
     public IReadOnlyCollection<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
         // rotate everything by CAR_ROTATION_OFFSET so its pointing the correct way for cars
         return _checkpoints
             .Select(x => x.Item1)
             .Append(_nextTransform.FinalTransform)
-            .Select(x => new InfiniteCheckpoint(new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _trafficLeftSideOffset))
+            .Select(x => new InfiniteCheckpoint(new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _pieceGen.TrafficLeftSideOffset))
             .ToList();
     }
 

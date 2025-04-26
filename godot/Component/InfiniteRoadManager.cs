@@ -39,14 +39,30 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
 
-    public InfiniteRoadManager(int spawnDistance) {
-        _world = new InfiniteWorldPieces(WorldType.Simple2, spawnDistance);
+    private WorldType _currentWorldType;
+
+    public InfiniteRoadManager(int spawnDistance, WorldType initialWorldType) {
+        UpdateWorldType(initialWorldType);
+
+        _world = new InfiniteWorldPieces(_currentWorldType, spawnDistance);
         _world.PieceAdded += PiecePlacedListener;
-        _world.IgnoredList.Add("station");
+        _world.SetIgnoredPieces(["station"]);
     }
 
     public override void _Ready() {
         AddChild(_world);
+    }
+
+    public void UpdateWorldType(WorldType name) {
+        _currentWorldType = name;
+        GD.Print("World Type set to " + name);
+        if (_world == null) return;
+
+        _world.UpdateWorldType(_currentWorldType);
+    }
+
+    public static IEnumerable<WorldType> GetWorldTypes() {
+        return (WorldType[])Enum.GetValues(typeof(WorldType));
     }
 
     public override void _Process(double delta) {

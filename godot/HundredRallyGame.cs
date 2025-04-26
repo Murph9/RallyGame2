@@ -41,7 +41,7 @@ public partial class HundredRallyGame : Node {
         }
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
-        _roadManager = new InfiniteRoadManager(300);
+        _roadManager = new InfiniteRoadManager(300, World.DynamicPieces.WorldType.Simple2);
         _roadManager.ShopPlaced += ShopTriggeredAt;
         _roadManager.RoadNextPoint += RoadPlacedAt;
         AddChild(_roadManager);
@@ -220,6 +220,7 @@ public partial class HundredRallyGame : Node {
         relics.Closed += () => {
             SetPauseState(false);
             CallDeferred(MethodName.RemoveNode, relics);
+            _roadManager.UpdateWorldType(RandHelper.RandFromList(InfiniteRoadManager.GetWorldTypes().ToArray()));
         };
         AddChild(relics);
     }
