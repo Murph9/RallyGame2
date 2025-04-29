@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -22,10 +23,10 @@ public partial class HundredGoalSelectScreen : CenterContainer {
                 CustomMinimumSize = new Vector2(50, 50),
             });
             container.AddChild(new Label() {
-                Text = goal.Type.ToString()
+                Text = goal.Type.ToString() + ": " + goal.Type.Description()
             });
             container.AddChild(new RichTextLabel() {
-                Text = "Road type: " + goal.RoadType, // TODO bbcode
+                Text = goal.RoadType.Description(),
                 LayoutMode = 2,
                 FitContent = true,
                 BbcodeEnabled = true,
