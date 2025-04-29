@@ -3,7 +3,11 @@ using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -48,9 +52,10 @@ public partial class HundredGlobalState : Node {
     public int ShopPartCount { get; private set; }
     public int ShopRelicCount { get; private set; }
 
+    public int GoalSelectCount { get; private set; }
     public float GoalSpread { get; private set; }
+    public float GoalLength { get; private set; }
     public GoalState Goal { get; private set; }
-
 
     public double ShopStoppedTimer { get; set; }
     public double ShopCooldownTimer { get; set; }
@@ -87,20 +92,31 @@ public partial class HundredGlobalState : Node {
         ShopCooldownTriggerAmount = 5;
 
         GoalSpread = 1000;
-        Goal = new(CalcGoalType(), GoalSpread, 500);
+        GoalLength = 250;
+        GoalSelectCount = 2;
+        Goal = new(GoalType.Nothing, WorldType.Simple2, GoalSpread, GoalLength);
 
         RelicManager = new RelicManager(this);
         AddChild(RelicManager);
     }
 
-    private static GoalType CalcGoalType() {
-        var options = Enum.GetValues(typeof(GoalType));
-        var index = new RandomNumberGenerator().RandiRange(0, options.Length - 1);
-        return (GoalType)options.GetValue(index);
+    public void SetGoal(GoalState goal) {
+        if (goal is null) {
+            GD.Print("Updated goal is null, please dont");
+        }
+
+        Goal = goal;
     }
 
-    public void GenerateNewGoal() {
-        Goal = new(CalcGoalType(), Goal.TriggerDistance + GoalSpread, 500);
+    public IEnumerable<GoalState> GenerateNewGoals(int count) {
+        for (var i = 0; i < count; i++) {
+            var roadType = RandHelper.RandFromList(Enum.GetValues<WorldType>());
+
+            var goalsWithoutNothing = Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToArray();
+            var goalType = RandHelper.RandFromList(goalsWithoutNothing);
+
+            yield return new GoalState(goalType, roadType, Goal.TotalDistance + GoalSpread, GoalLength);
+        }
     }
 
     public void AddMoney(float delta) {

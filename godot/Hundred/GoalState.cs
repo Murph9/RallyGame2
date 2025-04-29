@@ -1,12 +1,14 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public class GoalState(GoalType type, float triggerDistance, float goalLength) {
-    public GoalType Type { get; } = type;
-    public float TriggerDistance { get; } = triggerDistance;
+public class GoalState(GoalType goal, WorldType roadType, float totalDistance, float goalLength) {
+    public GoalType Type { get; } = goal;
+    public WorldType RoadType { get; } = roadType;
+    public float TotalDistance { get; } = totalDistance - goalLength;
     public float Length { get; } = goalLength;
 
     public float ZoneStartDistance { get; set; }
@@ -17,7 +19,7 @@ public class GoalState(GoalType type, float triggerDistance, float goalLength) {
     public bool InProgress { get; set; }
     public bool? IsSuccessful { get; private set; } = null;
 
-    public float EndDistance => TriggerDistance + Length;
+    public float EndDistance => TotalDistance + Length;
 
     public void StartDistanceIs(float distanceAtPos) {
         ZoneStartDistance = distanceAtPos;
@@ -36,6 +38,7 @@ public class GoalState(GoalType type, float triggerDistance, float goalLength) {
             GoalType.SpeedTrap => SpeedTrapWasSuccessful(gameTime, carLinearVelocity),
             GoalType.AverageSpeedSection => AverageSpeedWasSuccessful(gameTime, carLinearVelocity),
             GoalType.TimeTrial => (bool?)TimeTrialWasSuccessful(gameTime, carLinearVelocity),
+            GoalType.Nothing => true,
             _ => throw new Exception("Unknown type " + Type),
         };
 
@@ -49,8 +52,8 @@ public class GoalState(GoalType type, float triggerDistance, float goalLength) {
         }
 
         if (!InProgress) {
-            var text = $"Goal {Type} starts at {Math.Round(TriggerDistance / 1000f, 1)} km";
-            if (ZoneStartDistance > TriggerDistance) // its set show the distance left
+            var text = $"Goal {Type} starts at {Math.Round(TotalDistance / 1000f, 1)} km";
+            if (ZoneStartDistance > TotalDistance) // its set show the distance left
                 text += $" in {Math.Round(ZoneStartDistance - distance)}m";
             return text;
         }

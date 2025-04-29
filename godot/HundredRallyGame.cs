@@ -162,7 +162,7 @@ public partial class HundredRallyGame : Node {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
         // ready, not already triggered and we generated the start of the event
-        if (state.Goal.Ready && state.Goal.ZoneStartDistance < state.Goal.TriggerDistance && state.Goal.TriggerDistance < distanceAtPos) {
+        if (state.Goal.Ready && state.Goal.ZoneStartDistance < state.Goal.TotalDistance && state.Goal.TotalDistance < distanceAtPos) {
             GD.Print("Starting the goal: " + state.Goal.Type);
             state.Goal.StartDistanceIs(distanceAtPos);
 
@@ -184,8 +184,6 @@ public partial class HundredRallyGame : Node {
                 var successful = state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
 
                 CallDeferred(MethodName.ShowRelicShop);
-
-                state.GenerateNewGoal();
                 return true;
             });
         }
@@ -214,8 +212,12 @@ public partial class HundredRallyGame : Node {
         relics.Closed += () => {
             SetPauseState(false);
             CallDeferred(MethodName.RemoveNode, relics);
-            _roadManager.UpdateWorldType(RandHelper.RandFromList(InfiniteRoadManager.GetWorldTypes().ToArray()));
-            _roadManager.StopAfter(0);
+
+            // check if the current goal is not active
+            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+            if (!state.Goal.InProgress) {
+                CallDeferred(MethodName.ShowGoalSelect);
+            }
         };
         AddChild(relics);
     }
@@ -239,6 +241,22 @@ public partial class HundredRallyGame : Node {
             CallDeferred(MethodName.RemoveNode, upgrade);
         };
         AddChild(upgrade);
+    }
+
+    private void ShowGoalSelect() {
+        SetPauseState(true);
+
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+
+        var goalSelect = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredGoalSelectScreen))).Instantiate<HundredGoalSelectScreen>();
+        goalSelect.Closed += () => {
+            SetPauseState(false);
+            CallDeferred(MethodName.RemoveNode, goalSelect);
+
+            _roadManager.UpdateWorldType(state.Goal.RoadType);
+            _roadManager.StopAfter(0); // and continue placing new road
+        };
+        AddChild(goalSelect);
     }
 
     private void SetPauseState(bool paused) {

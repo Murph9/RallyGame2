@@ -62,8 +62,12 @@ public partial class Car : Node3D {
         parent.RemoveChild(RigidBody); // remove the scene parent
         parent.QueueFree();
         RigidBody.Owner = null;
-        RigidBody.ContactMonitor = true;
-        RigidBody.MaxContactsReported = 2;
+
+        if (!Inputs.IsAi) {
+            // only report contacts on the player car
+            RigidBody.ContactMonitor = true;
+            RigidBody.MaxContactsReported = 2;
+        }
 
         // update the car colour
         var carModels = RigidBody.GetChildren().Where(x => x is MeshInstance3D);

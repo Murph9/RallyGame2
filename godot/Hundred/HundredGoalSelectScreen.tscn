@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4v24c5qhuytk"]
+
+[ext_resource type="Script" uid="uid://6772o41itk5v" path="res://Hundred/HundredGoalSelectScreen.cs" id="1_t1qdw"]
+
+[node name="HundredGoalSelectScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_t1qdw")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="HeadingLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Fork in the Road: Choose a path and goal"
+horizontal_alignment = 1
+
+[node name="IntroLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainerOptions" type="VBoxContainer" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainerStats" type="VBoxContainer" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
