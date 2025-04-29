@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://dpt56ng7rnpg4"]
+
+[ext_resource type="Script" uid="uid://680jj5ies2fr" path="res://Hundred/HundredInProgressUi.cs" id="1_m3ij4"]
+
+[node name="HundredInProgressUi" type="VBoxContainer"]
+alignment = 2
+script = ExtResource("1_m3ij4")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "In Progress:"

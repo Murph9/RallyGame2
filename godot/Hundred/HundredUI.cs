@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
+using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,17 @@ namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredUI : HBoxContainer {
 
-    private readonly Dictionary<string, Tuple<Part, Control>> partMappings = [];
+    private readonly Dictionary<string, Tuple<Part, Control>> _partMappings = [];
+    private readonly Dictionary<Car, HundredInProgressItem> _rivalDetails = [];
+    private HundredInProgressItem _goalInProgress;
+    private HundredInProgressUi _inProgressUi;
 
     public override void _Ready() {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        state.GoalChanged += GoalChanged;
+        state.RivalRaceStarted += RivalStarted;
+        state.RivalRaceStopped += RivalStopped;
+
         var allParts = state.CarDetails.GetAllPartsInTree();
 
         var partContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerParts");
@@ -32,9 +40,12 @@ public partial class HundredUI : HBoxContainer {
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
             });
 
-            partMappings.Add(part.Name, new(part, hbox));
+            _partMappings.Add(part.Name, new(part, hbox));
             partContainer.AddChild(hbox);
         }
+
+        _inProgressUi = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredInProgressUi))).Instantiate<HundredInProgressUi>();
+        GetNode<VBoxContainer>("VBoxContainerRight").AddChild(_inProgressUi);
     }
 
     public override void _Process(double delta) {
@@ -59,7 +70,7 @@ public partial class HundredUI : HBoxContainer {
         // show the parts and their current levels
         var allParts = state.CarDetails.GetAllPartsInTree();
         foreach (var part in allParts) {
-            var uiPart = partMappings[part.Name];
+            var uiPart = _partMappings[part.Name];
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
         }
 
@@ -98,6 +109,28 @@ public partial class HundredUI : HBoxContainer {
 
             relicContainer.AddChild(hbox);
         }
+
+        if (_goalInProgress != null) {
+            // TODO perf
+            foreach (var child in _goalInProgress.GetChildren().ToArray()) {
+                _goalInProgress.RemoveChild(child);
+            }
+
+            _goalInProgress.AddChild(new Label() {
+                Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled)
+            });
+        }
+
+        foreach (var rivalRaceUi in _rivalDetails) {
+            // TODO we don't support 2 rivals yet
+            if (state.RivalRaceDetails.HasValue) {
+                // TODO perf
+                foreach (var child in rivalRaceUi.Value.GetChildren().ToArray()) {
+                    rivalRaceUi.Value.RemoveChild(child);
+                }
+                rivalRaceUi.Value.AddChild(new Label() { Text = "RivalRace: " + state.RivalRaceDetails.Value.Rival.Name });
+            }
+        }
     }
 
     private static string GenerateTimeString(double time) {
@@ -109,5 +142,23 @@ public partial class HundredUI : HBoxContainer {
         if (mins > 0)
             output += mins + " min ";
         return output + ((int)time % 60) + " sec";
+    }
+
+    private void GoalChanged() {
+        if (_goalInProgress is not null) {
+            _inProgressUi.Remove(_goalInProgress);
+        }
+        _goalInProgress = _inProgressUi.Add();
+    }
+
+    private void RivalStarted(Car rival) {
+        var uiElement = _inProgressUi.Add();
+        _rivalDetails.Add(rival, uiElement);
+    }
+
+    private void RivalStopped(Car rival) {
+        var uiElement = _rivalDetails[rival];
+        _inProgressUi.Remove(uiElement);
+        _rivalDetails.Remove(rival);
     }
 }

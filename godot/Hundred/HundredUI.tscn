@@ -85,6 +85,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBoxContainerRight" type="HBoxContainer" parent="."]
+[node name="VBoxContainerRight" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(350, 0)
 layout_mode = 2

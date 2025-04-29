@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://du03872up37ea"]
+
+[ext_resource type="Script" uid="uid://d1kc5gl6nh7pt" path="res://Hundred/HundredInProgressItem.cs" id="1_fgsx4"]
+
+[node name="HundredInProgressItem" type="HBoxContainer"]
+script = ExtResource("1_fgsx4")

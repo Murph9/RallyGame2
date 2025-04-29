@@ -25,7 +25,7 @@ public partial class HundredGoalSelectScreen : CenterContainer {
                 Text = goal.Type.ToString()
             });
             container.AddChild(new RichTextLabel() {
-                Text = "description", // TODO bbcode
+                Text = "Road type: " + goal.RoadType, // TODO bbcode
                 LayoutMode = 2,
                 FitContent = true,
                 BbcodeEnabled = true,

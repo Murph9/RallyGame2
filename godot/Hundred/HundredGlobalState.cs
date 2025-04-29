@@ -5,7 +5,6 @@ using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +13,9 @@ namespace murph9.RallyGame2.godot.Hundred;
 public readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
 
 public partial class HundredGlobalState : Node {
+
+    [Signal]
+    public delegate void GoalChangedEventHandler();
 
     [Signal]
     public delegate void MoneyIncreasedEventHandler(float amount);
@@ -26,7 +28,7 @@ public partial class HundredGlobalState : Node {
     [Signal]
     public delegate void RivalRaceStartedEventHandler(Car Rival);
     [Signal]
-    public delegate void RivalRaceResetEventHandler(Car Rival);
+    public delegate void RivalRaceStoppedEventHandler(Car Rival);
     [Signal]
     public delegate void RivalRaceWonEventHandler(Car Rival, double moneyWon);
     [Signal]
@@ -106,6 +108,7 @@ public partial class HundredGlobalState : Node {
         }
 
         Goal = goal;
+        EmitSignal(SignalName.GoalChanged);
     }
 
     public IEnumerable<GoalState> GenerateNewGoals(int count) {
@@ -159,9 +162,10 @@ public partial class HundredGlobalState : Node {
     }
 
     public void RivalStopped() {
+        var rival = RivalRaceDetails.Value.Rival;
         RivalRaceDetails = null;
 
-        EmitSignal(SignalName.RivalRaceReset);
+        EmitSignal(SignalName.RivalRaceStopped, rival);
     }
 
     public void RivalCheckpointSet() {
