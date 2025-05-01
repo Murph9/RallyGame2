@@ -181,7 +181,7 @@ public partial class HundredRallyGame : Node {
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
 
-                var successful = state.Goal.EndedAt(state.TotalTimePassed, distanceAtPos, _racingScene.PlayerCarLinearVelocity);
+                var successful = state.Goal.EndedAt(state.TotalTimePassed, _racingScene.PlayerCarLinearVelocity);
 
                 CallDeferred(MethodName.ShowRelicShop);
                 return true;

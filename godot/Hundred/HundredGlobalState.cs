@@ -56,7 +56,7 @@ public partial class HundredGlobalState : Node {
 
     public int GoalSelectCount { get; private set; }
     public float GoalSpread { get; private set; }
-    public float GoalLength { get; private set; }
+    public float GoalSegmentLength { get; private set; }
     public GoalState Goal { get; private set; }
 
     public double ShopStoppedTimer { get; set; }
@@ -94,9 +94,9 @@ public partial class HundredGlobalState : Node {
         ShopCooldownTriggerAmount = 5;
 
         GoalSpread = 1000;
-        GoalLength = 250;
+        GoalSegmentLength = 250;
         GoalSelectCount = 2;
-        Goal = new(GoalType.Nothing, WorldType.Simple2, GoalSpread, GoalLength);
+        Goal = new(GoalType.Nothing, WorldType.Simple2, GoalSpread, GoalSegmentLength);
 
         RelicManager = new RelicManager(this);
         AddChild(RelicManager);
@@ -118,7 +118,7 @@ public partial class HundredGlobalState : Node {
             var goalsWithoutNothing = Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToArray();
             var goalType = RandHelper.RandFromList(goalsWithoutNothing);
 
-            yield return new GoalState(goalType, roadType, Goal.TotalDistance + GoalSpread, GoalLength);
+            yield return new GoalState(goalType, roadType, Goal.TotalDistance + GoalSpread, GoalSegmentLength);
         }
     }
 

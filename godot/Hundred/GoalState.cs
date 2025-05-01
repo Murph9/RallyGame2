@@ -5,11 +5,11 @@ using System;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public class GoalState(GoalType goal, WorldType roadType, float totalDistance, float goalLength) {
+public class GoalState(GoalType goal, WorldType roadType, float totalDistance, float goalSegmentLength) {
     public GoalType Type { get; } = goal;
     public WorldType RoadType { get; } = roadType;
-    public float TotalDistance { get; } = totalDistance - goalLength;
-    public float Length { get; } = goalLength;
+    public float TotalDistance { get; } = totalDistance - goalSegmentLength;
+    public float GoalSegmentLength { get; } = goalSegmentLength;
 
     public float ZoneStartDistance { get; set; }
     public double StartTime { get; set; }
@@ -19,7 +19,7 @@ public class GoalState(GoalType goal, WorldType roadType, float totalDistance, f
     public bool InProgress { get; set; }
     public bool? IsSuccessful { get; private set; } = null;
 
-    public float EndDistance => TotalDistance + Length;
+    public float EndDistance => TotalDistance + GoalSegmentLength;
 
     public void StartDistanceIs(float distanceAtPos) {
         ZoneStartDistance = distanceAtPos;
@@ -30,14 +30,14 @@ public class GoalState(GoalType goal, WorldType roadType, float totalDistance, f
         StartTime = totalTimePassed;
     }
 
-    public bool EndedAt(double gameTime, float endDistance, Vector3 carLinearVelocity) {
+    public bool EndedAt(double gameTime, Vector3 carLinearVelocity) {
         InProgress = false;
         Ready = false;
 
         IsSuccessful = Type switch {
             GoalType.SpeedTrap => SpeedTrapWasSuccessful(gameTime, carLinearVelocity),
-            GoalType.AverageSpeedSection => AverageSpeedWasSuccessful(gameTime, carLinearVelocity),
-            GoalType.TimeTrial => (bool?)TimeTrialWasSuccessful(gameTime, carLinearVelocity),
+            GoalType.AverageSpeedSection => AverageSpeedWasSuccessful(gameTime),
+            GoalType.TimeTrial => (bool?)TimeTrialWasSuccessful(gameTime),
             GoalType.Nothing => true,
             _ => throw new Exception("Unknown type " + Type),
         };
@@ -62,45 +62,35 @@ public class GoalState(GoalType goal, WorldType roadType, float totalDistance, f
 
         switch (Type) {
             case GoalType.SpeedTrap:
-                var targetSpeed = SpeedTrapTargetMs(gameTime, ZoneStartDistance);
-                return $"SpeedTrap: Hit {Math.Round(MyMath.MsToKmh(targetSpeed))} km/h in {remainingDistance} km";
+                var targetSpeed = Type.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
+                return $"SpeedTrap: Hit {Math.Round(MyMath.MsToKmh(targetSpeed))} km/h in {Math.Round(remainingDistance, 2)} km";
             case GoalType.AverageSpeedSection:
-                var targetAvgSpeed = SpeedTrapTargetMs(gameTime, ZoneStartDistance);
+                var targetAvgSpeed = Type.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
                 return $"AverageSpeed: Target {Math.Round(MyMath.MsToKmh(targetAvgSpeed))}km/h, current: {Math.Round(MyMath.MsToKmh(distance / gameTime), 1)}";
             case GoalType.TimeTrial:
-                var targetTime = TimeTrialTargetSec(gameTime, ZoneStartDistance);
+                var targetTime = Type.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
                 var timeDiff = gameTime - StartTime;
-                return $"Target {Math.Round(targetTime)} sec, remaining: {Math.Round(targetTime - timeDiff, 2)} sec, distance remaining {remainingDistance} km";
+                return $"Target {Math.Round(targetTime)} sec, remaining: {Math.Round(targetTime - timeDiff, 2)} sec, distance remaining {Math.Round(remainingDistance, 2)} km";
         }
 
         return null;
     }
 
-    // forumla: start at 50km/h -> 150km/h at the end
-    private static float SpeedTrapTargetMs(double gameTime, float distance) => (50 + distance / (100 * 1000) * 100) / 3.6f;
-    // forumla: start at 50km/h -> 100km/h at the end
-    private static float AverageSpeedTargetMs(double gameTime, float distance) => (50 + distance / (100 * 1000) * 50) / 3.6f;
-    // formula: start at 60msec/(50km/h) -> 100/sec
-    private float TimeTrialTargetSec(double gameTime, float distance) {
-        var distancePerKm = 1 / AverageSpeedTargetMs(gameTime, distance);
-        return Length * distancePerKm;
-    }
-
     private bool SpeedTrapWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
-        var target = SpeedTrapTargetMs(gameTime, ZoneStartDistance);
+        var target = GoalType.SpeedTrap.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
         return target < carLinearVelocity.Length();
     }
 
-    private bool AverageSpeedWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
+    private bool AverageSpeedWasSuccessful(double gameTime) {
         var timeDiff = gameTime - StartTime;
-        var targetSpeed = AverageSpeedTargetMs(gameTime, ZoneStartDistance);
-        var goalDistance = Length - ZoneStartDistance;
+        var targetSpeed = GoalType.AverageSpeedSection.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
+        var goalDistance = GoalSegmentLength - ZoneStartDistance;
 
         return targetSpeed < goalDistance / timeDiff;
     }
 
-    private bool TimeTrialWasSuccessful(double gameTime, Vector3 carLinearVelocity) {
-        var targetTime = TimeTrialTargetSec(gameTime, ZoneStartDistance);
+    private bool TimeTrialWasSuccessful(double gameTime) {
+        var targetTime = GoalType.TimeTrial.GoalValue(gameTime, ZoneStartDistance, GoalSegmentLength);
 
         var timeDiff = gameTime - StartTime;
         return targetTime > timeDiff;
