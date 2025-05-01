@@ -174,11 +174,11 @@ public class CarDetails : IHaveParts {
                     bestGear = gear;
                 }
                 // This prints a more detailed graph:
-                // GD.Print(speed * 3.6f + ", " + wheelTorque + ", " + gear);
+                // GD.Print(MyMath.MsToKmh(speed) + ", " + wheelTorque + ", " + gear);
             }
 
             // This prints a nice graph:
-            // GD.Print(speed * 3.6f, bestTorque, bestGear);
+            // GD.Print(MyMath.MsToKmh(speed), bestTorque, bestGear);
             changeTimes.Add(new(bestGear, speed));
         }
 

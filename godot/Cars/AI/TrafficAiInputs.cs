@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
 using System.Linq;
 
@@ -8,7 +9,7 @@ namespace murph9.RallyGame2.godot.Cars.AI;
 
 public partial class TrafficAiInputs : CarAi {
 
-    private const float BASE_TARGET_SPEED_MS = 30 / 3.6f; //km/h to m/s
+    private static readonly float BASE_TARGET_SPEED_MS = MyMath.KmhToMs(30);
 
     public float TargetSpeedMs { get; set; } = BASE_TARGET_SPEED_MS;
 

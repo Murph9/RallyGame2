@@ -23,7 +23,7 @@ public partial class HundredGoalSelectScreen : CenterContainer {
                 CustomMinimumSize = new Vector2(50, 50),
             });
             container.AddChild(new Label() {
-                Text = goal.Type.ToString() + ": " + goal.Type.Description()
+                Text = goal.Type.ToString() + ": " + goal.Type.Description() + " target: " + goal.TargetScore
             });
             container.AddChild(new RichTextLabel() {
                 Text = goal.RoadType.Description(),

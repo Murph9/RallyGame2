@@ -1,10 +1,15 @@
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
 public enum GoalType {
-    Nothing, SpeedTrap, AverageSpeedSection, TimeTrial
+    Nothing,
+    SpeedTrap,
+    AverageSpeedSection,
+    TimeTrial,
+    MinimumSpeed,
 }
 
 
@@ -15,18 +20,24 @@ public static class GoalTypeExtensions {
         {GoalType.SpeedTrap, new("Get a particular speed at the end of the zone")},
         {GoalType.AverageSpeedSection, new("Maintain a speed average until the end")},
         {GoalType.TimeTrial, new("Complete the section in under a minimum time")},
+        {GoalType.MinimumSpeed, new("Make sure you don't drop below the minimum speed")}
     };
 
     public static string Description(this GoalType type) => DETAILS[type].Description;
 
-    public static double GoalValue(this GoalType type, double gameTime, double distance, double totalLength) {
+    public static double GoalValue(this GoalType type, double distance, double totalLength) {
+        var distanceFraction = distance / (100f * 1000f);
+
         return type switch {
+            GoalType.Nothing => 0,
             // forumla: start at 50km/h -> 150km/h at the end
-            GoalType.SpeedTrap => (50 + distance / (100 * 1000) * 100) / 3.6f,
+            GoalType.SpeedTrap => MyMath.KmhToMs(50 + 100 * distanceFraction),
             // forumla: start at 50km/h -> 100km/h at the end
-            GoalType.AverageSpeedSection => (50 + distance / (100 * 1000) * 50) / 3.6f,
-            // formula: start at 60msec/(50km/h) -> 100/sec
-            GoalType.TimeTrial => totalLength / (50 + distance / (100 * 1000) * 50) / 3.6f,
+            GoalType.AverageSpeedSection => MyMath.KmhToMs(50 + 50 * distanceFraction),
+            // formula: start at 60msec/(50km/h -> 100/sec)
+            GoalType.TimeTrial => totalLength / MyMath.KmhToMs(50 + 50 * distanceFraction),
+            // formula: start at 25km/h -> 50km/h
+            GoalType.MinimumSpeed => MyMath.KmhToMs(25 + 25 * distanceFraction),
             _ => throw new Exception(type + " doesn't support a goal value"),
         };
     }

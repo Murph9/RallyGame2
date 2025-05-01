@@ -75,7 +75,7 @@ public partial class HundredUI : HBoxContainer {
         }
 
         var goalInfo = GetNode<Label>("%GoalLabel");
-        goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled);
+        goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
 
         var shopInfo = GetNode<Label>("%ShopTimerLabel");
         if (state.ShopCooldownTimer > 0) {
@@ -117,7 +117,7 @@ public partial class HundredUI : HBoxContainer {
             }
 
             _goalInProgress.AddChild(new Label() {
-                Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled)
+                Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed)
             });
         }
 

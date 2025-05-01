@@ -94,19 +94,19 @@ public partial class HundredRallyGame : Node {
     }
 
     public override void _PhysicsProcess(double delta) {
+        if (_paused) return;
+
         // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
         var currentPlayerSpeed = _racingScene.PlayerCarLinearVelocity.Length();
         state.SetCurrentSpeedMs(currentPlayerSpeed);
 
-        if (!_paused) {
-            if (currentPlayerSpeed < 1 && !_racingScene.PlayerIsAccelerating)
-                state.ShopStoppedTimer += delta;
-            else {
-                state.ShopStoppedTimer = 0;
-                state.ShopCooldownTimer -= delta; // TODO you need to accel for 5 seconds for this
-            }
+        if (currentPlayerSpeed < 1 && !_racingScene.PlayerIsAccelerating)
+            state.ShopStoppedTimer += delta;
+        else {
+            state.ShopStoppedTimer = 0;
+            state.ShopCooldownTimer -= delta; // TODO you need to accel for 5 seconds for this
         }
 
         // check the current race state
@@ -161,27 +161,28 @@ public partial class HundredRallyGame : Node {
     private void RoadPlacedAt(float distanceAtPos, Transform3D transform) {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
-        // ready, not already triggered and we generated the start of the event
-        if (state.Goal.Ready && state.Goal.ZoneStartDistance < state.Goal.TotalDistance && state.Goal.TotalDistance < distanceAtPos) {
-            GD.Print("Starting the goal: " + state.Goal.Type);
-            state.Goal.StartDistanceIs(distanceAtPos);
+        // create the trigger area for the start of the goal zone
+        if (state.Goal.ActualZoneStartDistance == 0 && state.Goal.GlobalZoneStartDistance < distanceAtPos) {
+            state.Goal.ActualZoneStartDistance = distanceAtPos;
 
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
+                GD.Print("Starting the goal: " + state.Goal.Type);
 
-                state.Goal.StartHitAt(state.TotalTimePassed);
+                state.Goal.ZoneStartHit(state.TotalTimePassed);
                 return true;
             });
         }
 
-        if (state.Goal.Ready && !state.Goal.EndPlaced && state.Goal.EndDistance < distanceAtPos) {
+        // create the trigger for the end of the zone
+        if (!state.Goal.ZoneActive && state.Goal.GlobalEndDistance < distanceAtPos) {
             GD.Print("Creating end trigger for the goal: " + state.Goal.Type);
-            state.Goal.EndPlaced = true;
-            _roadManager.StopAfter(state.Goal.EndDistance);
+            _roadManager.StopAfter(state.Goal.GlobalEndDistance); // stop roads from being created after this point
+
             CreateCheckpoint(transform, (node) => {
                 if (!_racingScene.IsMainCar(node)) return false;
 
-                var successful = state.Goal.EndedAt(state.TotalTimePassed, _racingScene.PlayerCarLinearVelocity);
+                state.Goal.SetSuccessful(state.TotalTimePassed, _racingScene.PlayerCarLinearVelocity);
 
                 CallDeferred(MethodName.ShowRelicShop);
                 return true;
@@ -215,7 +216,7 @@ public partial class HundredRallyGame : Node {
 
             // check if the current goal is not active
             var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-            if (!state.Goal.InProgress) {
+            if (!state.Goal.ZoneActive) {
                 CallDeferred(MethodName.ShowGoalSelect);
             }
         };

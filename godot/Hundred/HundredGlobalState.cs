@@ -44,8 +44,7 @@ public partial class HundredGlobalState : Node {
     public float Money { get; private set; }
     public float DistanceTravelled { get; private set; }
 
-    public float CurrentSpeedMs { get; private set; }
-    public float CurrentSpeedKMH => MyMath.MsToKmh(CurrentSpeedMs);
+    public float CurrentPlayerSpeed { get; private set; }
 
     public RivalRace? RivalRaceDetails { get; private set; }
     public string RivalRaceMessage { get; private set; }
@@ -56,7 +55,7 @@ public partial class HundredGlobalState : Node {
 
     public int GoalSelectCount { get; private set; }
     public float GoalSpread { get; private set; }
-    public float GoalSegmentLength { get; private set; }
+    public float GoalZoneLength { get; private set; }
     public GoalState Goal { get; private set; }
 
     public double ShopStoppedTimer { get; set; }
@@ -66,6 +65,10 @@ public partial class HundredGlobalState : Node {
 
     public HundredGlobalState() {
         Reset();
+    }
+
+    public override void _PhysicsProcess(double delta) {
+        Goal._PhysicsProcess(delta, CurrentPlayerSpeed);
     }
 
     public void Reset() {
@@ -81,7 +84,7 @@ public partial class HundredGlobalState : Node {
         TotalTimePassed = 0; // s
         Money = 0; // $
         DistanceTravelled = 0; // m
-        CurrentSpeedMs = 0; // m/s
+        CurrentPlayerSpeed = 0; // m/s
 
         RivalRaceDetails = null;
         RivalRaceMessage = null;
@@ -94,9 +97,11 @@ public partial class HundredGlobalState : Node {
         ShopCooldownTriggerAmount = 5;
 
         GoalSpread = 1000;
-        GoalSegmentLength = 250;
+        GoalZoneLength = 250;
         GoalSelectCount = 2;
-        Goal = new(GoalType.Nothing, WorldType.Simple2, GoalSpread, GoalSegmentLength);
+
+        var randGoal = RandHelper.RandFromList(Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToArray());
+        Goal = new(randGoal, WorldType.Simple2, 0, GoalSpread, GoalZoneLength);
 
         RelicManager = new RelicManager(this);
         AddChild(RelicManager);
@@ -112,13 +117,17 @@ public partial class HundredGlobalState : Node {
     }
 
     public IEnumerable<GoalState> GenerateNewGoals(int count) {
+        var goalsWithoutNothing = Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToList();
+        var roadTypes = Enum.GetValues<WorldType>().ToList();
         for (var i = 0; i < count; i++) {
-            var roadType = RandHelper.RandFromList(Enum.GetValues<WorldType>());
 
-            var goalsWithoutNothing = Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToArray();
             var goalType = RandHelper.RandFromList(goalsWithoutNothing);
+            goalsWithoutNothing.Remove(goalType);
 
-            yield return new GoalState(goalType, roadType, Goal.TotalDistance + GoalSpread, GoalSegmentLength);
+            var roadType = RandHelper.RandFromList(roadTypes);
+            roadTypes.Remove(roadType);
+
+            yield return new GoalState(goalType, roadType, Goal.GlobalEndDistance, GoalSpread, GoalZoneLength);
         }
     }
 
@@ -151,7 +160,7 @@ public partial class HundredGlobalState : Node {
     }
 
     public void SetCurrentSpeedMs(float value) {
-        CurrentSpeedMs = value;
+        CurrentPlayerSpeed = value;
     }
 
     public void RivalStarted(RivalRace race, string message) {

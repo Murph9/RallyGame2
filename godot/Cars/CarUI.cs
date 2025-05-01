@@ -94,7 +94,7 @@ public partial class CarUI : Control {
         DrawString(defaultFont, new Vector2(30, speedoRect.Size.Y - 20), Car.Engine.CurGear.ToString(), width: -1, fontSize: defaultFontSize * 4);
 
         // show speed
-        var speed = Car.RigidBody.LinearVelocity.Length() * 3.6f; // m/s -> km/h
+        var speed = MyMath.MsToKmh(Car.RigidBody.LinearVelocity.Length());
         var speedStr = float.Round(speed, 0).ToString();
         var width = speedoRect.Size.X * 0.75f;
         DrawString(defaultFont, new Vector2(0, speedoRect.Size.Y - defaultFontSize - 10), speedStr, HorizontalAlignment.Right, width, fontSize: defaultFontSize * 3);
