@@ -68,6 +68,7 @@ public class InfinitePieceGenerator {
         var directionIndex = rand.RandiRange(0, piece.Directions.Length - 1);
         while (!PieceValidSimple(piece, currentTransform, directionIndex) && attempts < _pieceAttemptMax) {
             piece = PickRandom(rand);
+            directionIndex = rand.RandiRange(0, piece.Directions.Length - 1);
             attempts++;
         }
 
