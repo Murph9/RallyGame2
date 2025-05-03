@@ -356,6 +356,7 @@ public partial class Car : Node3D {
 
         car.DistanceTravelled = DistanceTravelled;
         car._lastPos = _lastPos;
+        car.Damage = Damage;
         car.Engine.CloneExistingState(Engine);
 
         for (var i = 0; i < Wheels.Length; i++) {
