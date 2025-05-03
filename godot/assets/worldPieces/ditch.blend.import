@@ -26,52 +26,13 @@ meshes/light_baking=1
 meshes/lightmap_texel_size=0.2
 meshes/force_disable_compression=false
 skins/use_named_skins=true
-animation/import=true
+animation/import=false
 animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
-_subresources={
-"nodes": {
-"PATH:cross": {
-"generate/physics": true
-},
-"PATH:hill_down": {
-"generate/physics": true
-},
-"PATH:hill_up": {
-"generate/physics": true
-},
-"PATH:left": {
-"generate/physics": true
-},
-"PATH:left_chicane": {
-"generate/physics": true
-},
-"PATH:left_long": {
-"generate/physics": true
-},
-"PATH:left_sharp": {
-"generate/physics": true
-},
-"PATH:right": {
-"generate/physics": true
-},
-"PATH:right_chicane": {
-"generate/physics": true
-},
-"PATH:right_long": {
-"generate/physics": true
-},
-"PATH:right_sharp": {
-"generate/physics": true
-},
-"PATH:straight": {
-"generate/physics": true
-}
-}
-}
+_subresources={}
 blender/nodes/visible=0
 blender/nodes/active_collection_only=false
 blender/nodes/punctual_lights=true
