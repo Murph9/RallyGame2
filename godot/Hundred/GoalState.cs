@@ -79,7 +79,7 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
                 var timeDiff = gameTime - ActualZoneStartTime;
                 return $"Target {Math.Round(TargetScore)} sec, remaining: {Math.Round(TargetScore - timeDiff, 2)} sec, distance remaining {Math.Round(remainingDistance, 2)} km";
             case GoalType.MinimumSpeed:
-                return $"Keep above {Math.Round(MyMath.MsToKmh(TargetScore))} km/h, current: {Math.Round(MyMath.MsToKmh(carLinearVelocity))} km/h";
+                return $"Keep above {Math.Round(MyMath.MsToKmh(TargetScore))} km/h, Max time below 5 sec, current {Math.Round(TimeSpentBelowTargetSpeed, 2)} sec";
         }
 
         return null;
