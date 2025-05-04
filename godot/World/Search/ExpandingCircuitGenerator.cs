@@ -138,13 +138,13 @@ public class ExpandingCircuitGenerator : ICircuitGenerator {
         _replacements = [];
 
         // lets just start with some hard coded ones
-        _replacements.Add(FromList("left_long", "left_long", "right_long"));
-        _replacements.Add(FromList("straight", "straight", "cross", "left", "left", "right_long"));
-        _replacements.Add(FromList("straight", "left", "straight", "left", "straight"));
+        _replacements.Add(FromList("left_long_90", "left_long_90", "right_long_90"));
+        _replacements.Add(FromList("straight", "straight", "cross", "left_90", "left_90", "right_long_90"));
+        _replacements.Add(FromList("straight", "left_90", "straight", "left_90", "straight"));
         _replacements.Add(FromList("hill_down", "hill_up"));
         _replacements.Add(FromList("hill_up", "hill_down"));
-        _replacements.Add(FromList("hill_down", "left", "hill_up"));
-        _replacements.Add(FromList("hill_up", "left", "hill_down"));
+        _replacements.Add(FromList("hill_down", "left_90", "hill_up"));
+        _replacements.Add(FromList("hill_up", "left_90", "hill_down"));
 
         foreach (var p in _normalizedOffsets) {
             Console.WriteLine(p);

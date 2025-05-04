@@ -52,12 +52,12 @@ public partial class StaticWorld : Node3D, IWorld {
         }
     }
 
-    public Transform3D GetSpawn() {
-        return Transform3D.Identity;
+    public InfiniteCheckpoint GetInitialSpawn() {
+        return new InfiniteCheckpoint(Transform3D.Identity, Vector3.Zero);
     }
 
-    public IEnumerable<Transform3D> GetCheckpoints() {
-        return Array.Empty<Transform3D>();
+    public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
+        return Array.Empty<InfiniteCheckpoint>();
     }
 
     public IEnumerable<Curve3DPoint> GetCurve3DPoints() {

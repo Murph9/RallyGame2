@@ -7,10 +7,9 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
 record PiecePlacedDetails(string Name, Transform3D FinalTransform);
-public record InfiniteCheckpoint(Transform3D Transform, Vector3 LeftOffset);
 
 // tracks the world pieces
-public partial class InfiniteWorldPieces : Node3D {
+public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private const int MAX_COUNT = 100;
     private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
@@ -22,13 +21,12 @@ public partial class InfiniteWorldPieces : Node3D {
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
-    private readonly List<WorldPiece> _queuedPieces = [];
     private PiecePlacedDetails _nextTransform;
 
     private double _pieceDistanceLimit;
 
     [Signal]
-    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform, string pieceName, bool queuedPiece);
+    public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 
     public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
         _pieceGen = new InfinitePieceGenerator(type, pieceAttemptMax);
@@ -86,18 +84,11 @@ public partial class InfiniteWorldPieces : Node3D {
         var pos = GetViewport().GetCamera3D().Position;
         var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
 
-        foreach (var queuedPiece in new List<WorldPiece>(_queuedPieces)) {
-            PlacePiece(queuedPiece, currentTransform, _rand.RandiRange(0, queuedPiece.Directions.Length - 1), true);
-
-            currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
-        }
-        _queuedPieces.Clear();
-
         // update placementStrategy position for math
         _placementStrategy.NextTransform = currentTransform;
     }
 
-    public void GeneratePiece() {
+    private void GeneratePiece() {
         if (_pieceDistanceLimit > 0 && _checkpoints.Last().Item3 > _pieceDistanceLimit) {
             return; // no more generating
         }
@@ -106,12 +97,6 @@ public partial class InfiniteWorldPieces : Node3D {
 
         var (piece, directionIndex) = _pieceGen.Next(currentTransform, _rand);
         PlacePiece(piece, currentTransform, directionIndex);
-    }
-
-    public void QueuePiece(string pieceName) {
-        var piece = _pieceGen.WorldPieces.FirstOrDefault(x => x.Name.Contains(pieceName));
-        if (piece != null)
-            _queuedPieces.Add(piece);
     }
 
     private void PlacePiece(WorldPiece piece, Transform3D transform, int outIndex = 0, bool queuedPiece = false) {
@@ -142,7 +127,7 @@ public partial class InfiniteWorldPieces : Node3D {
         _nextTransform = new PiecePlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
 
         // the transform is expected to be in the direction of travel here
-        EmitSignal(SignalName.PieceAdded, transform, piece.Name, queuedPiece);
+        EmitSignal(SignalName.PieceAdded, transform);
     }
 
     public InfiniteCheckpoint GetInitialSpawn() {
@@ -158,7 +143,7 @@ public partial class InfiniteWorldPieces : Node3D {
         _pieceGen.IgnoredList.AddRange(pieceNames);
     }
 
-    public IReadOnlyCollection<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
+    public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
         // rotate everything by CAR_ROTATION_OFFSET so its pointing the correct way for cars
         return _checkpoints
             .Select(x => x.Item1)
@@ -193,5 +178,10 @@ public partial class InfiniteWorldPieces : Node3D {
             root.AddChild(instance);
         }
     }
+
+    public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
+        throw new NotImplementedException(); // and its going to stay that way
+    }
+
 }
 

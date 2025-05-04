@@ -35,17 +35,17 @@ public partial class RacingScreen : Node3D {
 
     public override void _Ready() {
         var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
+        Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetInitialSpawn().Transform);
         Car.RigidBody.Position += new Vector3(-15, 0, 0);
         AddChild(Car);
 
         var roadManager = state.WorldDetails.CircuitRoadManager;
 
-        var checkpoints = roadManager.World.GetCheckpoints().ToArray();
+        var checkpoints = roadManager.World.GetAllCurrentCheckpoints().ToArray();
         for (var i = 0; i < checkpoints.Length; i++) {
             var curCheckpoint = checkpoints[i];
 
-            AddChild(DebugHelper.GenerateWorldText("Checkpoint: " + i.ToString(), curCheckpoint.Origin + new Vector3(0, 1, 0)));
+            AddChild(DebugHelper.GenerateWorldText("Checkpoint: " + i.ToString(), curCheckpoint.Transform.Origin + new Vector3(0, 1, 0)));
 
             var size = new Vector3(12, 12, 12);
             if (i == 0) {
@@ -53,7 +53,7 @@ public partial class RacingScreen : Node3D {
             }
             var index = i; // this is to protect the lambda below from losing the index
 
-            var checkArea = Checkpoint.AsBox(curCheckpoint, size, new Color(1, 1, 1, 0.3f));
+            var checkArea = Checkpoint.AsBox(curCheckpoint.Transform, size, new Color(1, 1, 1, 0.3f));
             checkArea.ThingEntered += (Node3D node) => { CheckpointDetection(index, node); };
             _checkpointNodes.Add(checkArea);
             AddChild(checkArea);
@@ -148,7 +148,7 @@ public partial class RacingScreen : Node3D {
 
         // clone into new car
         var state = GetNode<GlobalState>("/root/GlobalState");
-        Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetSpawn());
+        Car = new Car(state.CarDetails, null, state.WorldDetails.CircuitRoadManager.World.GetInitialSpawn().Transform);
         Car.RigidBody.Position += new Vector3(-15, 0, 0);
         AddChild(Car);
     }

@@ -26,25 +26,25 @@ public class FixedPieceLayoutGenerator(ICollection<WorldPiece> pieces) {
         } else if (layout == CircuitLayout.LargeCircle) {
             yield return GetPieceByName("straight");
             yield return GetPieceByName("straight");
-            yield return GetPieceByName("left_long");
-            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long_90");
+            yield return GetPieceByName("left_long_90");
             yield return GetPieceByName("straight");
             yield return GetPieceByName("straight");
-            yield return GetPieceByName("left_long");
-            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long_90");
+            yield return GetPieceByName("left_long_90");
             yield break;
 
         } else if (layout == CircuitLayout.VeryLongLine) {
             for (int i = 0; i < 100; i++) {
                 yield return GetPieceByName("straight");
             }
-            yield return GetPieceByName("left_long");
-            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long_90");
+            yield return GetPieceByName("left_long_90");
             for (int i = 0; i < 100; i++) {
                 yield return GetPieceByName("straight");
             }
-            yield return GetPieceByName("left_long");
-            yield return GetPieceByName("left_long");
+            yield return GetPieceByName("left_long_90");
+            yield return GetPieceByName("left_long_90");
             yield break;
         }
     }

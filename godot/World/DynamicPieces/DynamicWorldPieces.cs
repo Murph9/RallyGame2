@@ -45,9 +45,11 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
         try {
             foreach (var c in scene.GetChildren().ToList()) {
                 scene.RemoveChild(c);
-
-                var p = WorldPiece.LoadFrom(c as MeshInstance3D);
-                _pieces.Add(p);
+                var mesh = c as MeshInstance3D;
+                if (mesh is not null) {
+                    var p = WorldPiece.LoadFrom(mesh);
+                    _pieces.Add(p);
+                }
             }
         } catch (Exception e) {
             GD.Print("Failed to parse pieces for " + pieceType);
@@ -88,12 +90,12 @@ public partial class DynamicWorldPieces : Node3D, IWorld {
         }
     }
 
-    public Transform3D GetSpawn() {
-        return new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    public InfiniteCheckpoint GetInitialSpawn() {
+        return new InfiniteCheckpoint(new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero), Vector3.Zero);
     }
 
-    public IEnumerable<Transform3D> GetCheckpoints() {
-        return _placedPieces.Select(x => x.Transform);
+    public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
+        return _placedPieces.Select(x => new InfiniteCheckpoint(x.Transform, Vector3.Zero));
     }
 
     public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
