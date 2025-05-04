@@ -1,10 +1,11 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.World.DynamicPieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.World.DynamicPieces;
+namespace murph9.RallyGame2.godot.World;
 
 record PiecePlacedDetails(string Name, Transform3D FinalTransform);
 
@@ -16,7 +17,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private readonly RandomNumberGenerator _rand = new();
 
-    private readonly InfinitePieceGenerator _pieceGen;
+    private readonly ScenePieceGenerator _pieceGen;
     private readonly CameraPiecePlacementStrategy _placementStrategy;
 
     private readonly List<Node3D> _placedPieces = [];
@@ -29,7 +30,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 
     public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
-        _pieceGen = new InfinitePieceGenerator(type, pieceAttemptMax);
+        _pieceGen = new ScenePieceGenerator(type, pieceAttemptMax);
         _placementStrategy = new CameraPiecePlacementStrategy(generationRange);
         _placementStrategy.NeedPiece += GeneratePiece;
 
@@ -106,7 +107,6 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         AddChild(toAdd);
         _placedPieces.Add(toAdd);
 
-        // GD.Print("InfinteWorldPieces: Placing piece " + piece.Name);
         var outDirection = piece.Directions.Skip(outIndex).First();
 
         var checkpointDistance = _checkpoints.Last().Item3;

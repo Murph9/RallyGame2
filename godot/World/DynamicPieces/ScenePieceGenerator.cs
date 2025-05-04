@@ -1,13 +1,12 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.DynamicPieces;
 
-public class InfinitePieceGenerator {
+public class ScenePieceGenerator : IPieceGenerator {
     private readonly int _pieceAttemptMax;
     private WorldType _pieceType;
 
@@ -18,9 +17,8 @@ public class InfinitePieceGenerator {
     public IReadOnlyCollection<WorldPiece> WorldPieces => _worldPieces;
 
     public List<string> IgnoredList { get; init; } = [];
-    // ["left_45", "right_45"];
 
-    public InfinitePieceGenerator(WorldType type, int pieceAttemptMax) {
+    public ScenePieceGenerator(WorldType type, int pieceAttemptMax) {
         _pieceAttemptMax = pieceAttemptMax;
         UpdatePieceType(type);
     }
@@ -37,6 +35,8 @@ public class InfinitePieceGenerator {
         // BUT we set the transform to place the piece so the above will get ignored
         // If you do figure it out all the normals and UV mappings are quite wrong
         // - You can also not move all the vertexes without a large perf hit, but it might be possible to make it from scratch i.e. another MeshInstance3D
+        //
+        // look into the Procedural classes instead
 
         try {
             foreach (var c in scene.GetChildren().ToList()) {

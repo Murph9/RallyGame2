@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.World.DynamicPieces;
+namespace murph9.RallyGame2.godot.World;
 
 public record WorldPiece {
     public string Name { get; init; }
@@ -11,7 +11,7 @@ public record WorldPiece {
     public WorldPieceDir[] Directions { get; init; }
     public List<Vector3> ObjectLocations { get; init; }
 
-    private WorldPiece(string name, Node3D model, Dictionary<Transform3D, IEnumerable<Transform3D>> directions, int segments, float curveAngle) {
+    public WorldPiece(string name, Node3D model, Dictionary<Transform3D, IEnumerable<Transform3D>> directions, int segments, float curveAngle) {
         Name = name;
         Model = model;
 

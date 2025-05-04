@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.World.DynamicPieces;
+namespace murph9.RallyGame2.godot.World;
 
 public record WorldPieceDir(ICollection<Transform3D> Transforms, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
     private static Basis LEFT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(90));
