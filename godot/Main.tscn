@@ -23,7 +23,7 @@ skeleton = NodePath("../../RigidBody3D4")
 transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.999978, 0.000845477, -0.00656091, -1.81075e-09, 0.991799, 0.127809, 0.00661516, -0.127806, 0.991777, 0.221146, 5.99109, 9.99093)
+transform = Transform3D(0.999976, 0.0037613, -0.00588138, 0, 0.842453, 0.538771, 0.00698126, -0.538758, 0.842432, 0, 25, 32)
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 offset_left = 2.0
