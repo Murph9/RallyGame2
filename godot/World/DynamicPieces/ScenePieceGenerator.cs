@@ -18,7 +18,7 @@ public class ScenePieceGenerator : IPieceGenerator {
 
     public List<string> IgnoredList { get; init; } = [];
 
-    public ScenePieceGenerator(WorldType type, int pieceAttemptMax) {
+    public ScenePieceGenerator(WorldType type, int pieceAttemptMax = 10) {
         _pieceAttemptMax = pieceAttemptMax;
         UpdatePieceType(type);
     }

@@ -17,8 +17,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private readonly RandomNumberGenerator _rand = new();
 
-    private readonly ScenePieceGenerator _pieceGen;
-    private readonly CameraPiecePlacementStrategy _placementStrategy;
+    private readonly IPieceGenerator _pieceGen;
+    private readonly PiecePlacementStrategy _placementStrategy;
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
@@ -29,9 +29,9 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 
-    public InfiniteWorldPieces(WorldType type, float generationRange = 40, int pieceAttemptMax = 10) {
-        _pieceGen = new ScenePieceGenerator(type, pieceAttemptMax);
-        _placementStrategy = new CameraPiecePlacementStrategy(generationRange);
+    public InfiniteWorldPieces(IPieceGenerator pieceGenerator, PiecePlacementStrategy strategy) {
+        _pieceGen = pieceGenerator;
+        _placementStrategy = strategy;
         _placementStrategy.NeedPiece += GeneratePiece;
 
         // generate a starting box so we don't spawn in the void
