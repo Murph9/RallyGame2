@@ -161,6 +161,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     private void PlaceObjectsForPiece(Node3D root, WorldPiece piece) {
+        if (piece.ObjectLocations == null) return;
+
         foreach (var objLocation in piece.ObjectLocations) {
             var mat = new StandardMaterial3D() {
                 AlbedoColor = Colors.GreenYellow

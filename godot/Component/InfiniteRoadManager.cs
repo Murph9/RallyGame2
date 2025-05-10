@@ -5,6 +5,7 @@ using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World;
 using murph9.RallyGame2.godot.World.DynamicPieces;
+using murph9.RallyGame2.godot.World.Procedural;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         var strat = new PiecePlacementStrategy(PiecePlacementStrategy.Type.Camera, spawnDistance);
 
-        _world = new InfiniteWorldPieces(new ScenePieceGenerator(initialWorldType), strat);
+        _world = new InfiniteWorldPieces(new ProceduralPieceGenerator(initialWorldType), strat);
         _world.PieceAdded += PiecePlacedListener;
         _world.SetIgnoredPieces(["station"]);
     }
