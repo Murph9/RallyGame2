@@ -125,7 +125,7 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         var straight = new ArrayMesh();
         var s = new SurfaceTool();
         foreach (var material in _importedCrossSection) {
-            var surfaceArrays = GenerateStraightMesh(material, "straight" + material.Material.ResourceName, STRAIGHT_LENGTH);
+            var surfaceArrays = GenerateStraightMesh(material, STRAIGHT_LENGTH);
             s.CreateFromArrays(surfaceArrays);
             s.GenerateNormals();
             s.GenerateTangents();
@@ -135,10 +135,9 @@ public class ProceduralPieceGenerator : IPieceGenerator {
 
             var index = straight.GetSurfaceCount() - 1;
             straight.SurfaceSetMaterial(index, material.Material);
-
         }
 
-        ResourceSaver.Save(straight, "res://temp/assets/straight.tres", ResourceSaver.SaverFlags.Compress);
+        ResourceSaver.Save(straight, "res://temp/assets/" + _type + "_straight.tres", ResourceSaver.SaverFlags.Compress);
 
         var straightObj = new MeshInstance3D() {
             Mesh = straight
@@ -160,37 +159,35 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         return (_worldPieces[0], 0);
     }
 
-    private static Godot.Collections.Array GenerateStraightMesh(ImportedMesh surface, string name, float length) {
+    private static Godot.Collections.Array GenerateStraightMesh(ImportedMesh surface, float length) {
         // generate new mesh
         Godot.Collections.Array surfaceArray = [];
         surfaceArray.Resize((int)Mesh.ArrayType.Max);
         List<Vector3> verts = [];
-        List<int> indices = [];
+        List<Vector2> uvs = [];
 
-        // generate the quads
+        // generate the tri mesh
         var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
-        for (var i = 0; i < 2; i++) {
-            foreach (var v in vertices) {
-                verts.Add(v + new Vector3(length * i, 0, 0));
-            }
-        }
-        // calc indices by column/row
-        for (var i = 0; i < verts.Count; i += vertices.Length) {
-            // draw the row, ignoring the last vertex column
-            for (var j = 0; j < vertices.Length - 1; j++) {
-                // triangle 1
-                indices.Add(i + j + 1);
-                indices.Add(i + j + vertices.Length);
-                indices.Add(i + j);
-                // triangle 2
-                indices.Add(i + j + vertices.Length);
-                indices.Add(i + j + 1);
-                indices.Add(i + j + vertices.Length + 1);
-            }
+
+        // create vertex quads
+        for (var i = 0; i < vertices.Length - 1; i++) {
+            verts.Add(vertices[i + 1]);
+            uvs.Add(new Vector2(1, 0));
+            verts.Add(vertices[i]);
+            uvs.Add(new Vector2(0, 0));
+            verts.Add(vertices[i] + new Vector3(length, 0, 0));
+            uvs.Add(new Vector2(0, 1));
+
+            verts.Add(vertices[i + 1] + new Vector3(length, 0, 0));
+            uvs.Add(new Vector2(1, 1));
+            verts.Add(vertices[i + 1]);
+            uvs.Add(new Vector2(1, 0));
+            verts.Add(vertices[i] + new Vector3(length, 0, 0));
+            uvs.Add(new Vector2(0, 1));
         }
 
         surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
-        surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
 
         return surfaceArray;
     }
