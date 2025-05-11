@@ -17,7 +17,7 @@ class WorldTypeDetails {
 
 public class ProceduralPieceGenerator : IPieceGenerator {
 
-    private static readonly Vector3 PIECE_SIZE = new(20, 2, 20);
+    private static readonly Vector3 PIECE_SIZE = new(20, 1, 20);
     private static readonly int PIECE_ATTEMPT_COUNT = 3;
     private static readonly int SEGMENTS = 4;
 
@@ -142,8 +142,16 @@ public class ProceduralPieceGenerator : IPieceGenerator {
             { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), [] }
         }, 1, 0));
 
-        // down a little
         // up a little
+        var hillUpObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateHill(surface, PIECE_SIZE.Y, SEGMENTS));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUp", hillUpObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
+            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, PIECE_SIZE.Y, 0)), [] }
+        }, SEGMENTS / 2, 45));
+        // down a little
+        var hillDownObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateHill(surface, -PIECE_SIZE.Y, SEGMENTS));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDown", hillDownObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
+            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, -PIECE_SIZE.Y, 0)), [] }
+        }, SEGMENTS / 2, 45));
 
         // 45 deg
         var right45Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateCurveMeshByDeg(surface, true, 45, SEGMENTS / 2));
@@ -246,6 +254,43 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
         surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
 
+        return surfaceArray;
+    }
+
+    private static Godot.Collections.Array GenerateHill(ImportedMesh surface, float highDiff, int segments) {
+        Godot.Collections.Array surfaceArray = [];
+        surfaceArray.Resize((int)Mesh.ArrayType.Max);
+        List<Vector3> verts = [];
+        List<Vector2> uvs = [];
+
+        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
+
+        for (int j = 0; j < segments; j++) {
+            var curFraction = j / (float)segments;
+            var nextFraction = (j + 1) / (float)segments;
+            var curHeight = new Vector3(curFraction * PIECE_SIZE.X, highDiff / 2 + Mathf.Cos(curFraction * Mathf.Pi) * -highDiff / 2, 0);
+            var nextHeight = new Vector3(nextFraction * PIECE_SIZE.X, highDiff / 2 + Mathf.Cos(nextFraction * Mathf.Pi) * -highDiff / 2, 0);
+
+            for (var i = 0; i < vertices.Length - 1; i++) {
+                verts.Add(vertices[i + 1] + curHeight);
+                verts.Add(vertices[i] + curHeight);
+                verts.Add(vertices[i] + nextHeight);
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 0));
+                uvs.Add(new Vector2(0, 1));
+
+                verts.Add(vertices[i + 1] + nextHeight);
+                verts.Add(vertices[i + 1] + curHeight);
+                verts.Add(vertices[i] + nextHeight);
+                uvs.Add(new Vector2(1, 1));
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 1));
+            }
+        }
+
+
+        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
         return surfaceArray;
     }
 
