@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.DynamicPieces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,24 +9,40 @@ namespace murph9.RallyGame2.godot.World.Procedural;
 
 record ImportedMesh(Material Material, List<Vector3> Vertices);
 
+class WorldTypeDetails {
+    public readonly List<ImportedMesh> ImportedCrossSection = [];
+    public readonly List<WorldPiece> WorldPieces = [];
+    public Vector3 TrafficLeftSideOffset;
+}
+
 public class ProceduralPieceGenerator : IPieceGenerator {
 
-    private readonly List<ImportedMesh> _importedCrossSection = [];
-    private readonly List<WorldPiece> _worldPieces = [];
+    private const bool USE_EXISTING_MESH_FILES = false;
 
-    public Vector3 TrafficLeftSideOffset { get; private set; }
-    private WorldType _type;
+    private static readonly Vector3 PIECE_SIZE = new(20, 2, 20);
+    private static readonly int PIECE_ATTEMPT_COUNT = 3;
+
+    private readonly Dictionary<WorldType, WorldTypeDetails> _types = [];
+    private WorldType _currentType;
 
     public List<string> IgnoredList { get; init; } = [];
+    public Vector3 TrafficLeftSideOffset => _types[_currentType].TrafficLeftSideOffset;
 
     public ProceduralPieceGenerator(WorldType type) {
-        _type = type;
         UpdatePieceType(type);
     }
 
     public void UpdatePieceType(WorldType type) {
-        // testing reading data from a blender file
-        var packedScene = GD.Load<PackedScene>("res://assets/worldPieces/" + _type.ToString().ToLowerInvariant() + ".blend");
+        _currentType = type;
+
+        if (_types.ContainsKey(type)) {
+            return; // already loaded
+        }
+
+        var worldTypeDetails = new WorldTypeDetails();
+
+        // reading cross section data from the blender files
+        var packedScene = GD.Load<PackedScene>("res://assets/worldPieces/" + _currentType.ToString().ToLowerInvariant() + ".blend");
         var scene = packedScene.Instantiate<Node3D>();
         var model = scene.GetAllChildrenOfType<MeshInstance3D>().Single(x => x.Name == "straight");
         var arrayMesh = model.GetMesh() as ArrayMesh;
@@ -33,10 +50,11 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         foreach (var c in scene.GetAllChildrenOfType<Node3D>()) {
             if (c.Name == "TrafficLeftSide") {
                 GD.Print("Loading " + c.Name + " as a traffic offset value");
-                TrafficLeftSideOffset = c.Transform.Origin;
+                worldTypeDetails.TrafficLeftSideOffset = c.Transform.Origin;
             }
         }
 
+        // scenes are split by material, so we need to get all the vertex groups
         for (var i = 0; i < arrayMesh.GetSurfaceCount(); i++) {
             var material = arrayMesh.SurfaceGetMaterial(i);
             var arrays = arrayMesh.SurfaceGetArrays(i);
@@ -71,11 +89,10 @@ public class ProceduralPieceGenerator : IPieceGenerator {
                 }
             }
 
-
             // store only vertices we care about on the x axis
             var outVertMap = new Dictionary<int, Vector3>();
 
-            // calculate which vertexes are connected to other vertexes
+            // calculate which vertexes are connected to other vertexes, so we join them correctly in the pieces
             var indicesGroups = new List<List<int>>();
             while (true) {
                 var foundIndices = new List<int>();
@@ -107,7 +124,7 @@ public class ProceduralPieceGenerator : IPieceGenerator {
                 indicesGroups.Add(foundIndices);
 
                 if (connections.Count == 0) {
-                    break;
+                    break; // all connections in this group are completed
                 }
             }
 
@@ -115,51 +132,82 @@ public class ProceduralPieceGenerator : IPieceGenerator {
             foreach (var vertexGroup in indicesGroups.Select(x => x.Where(y => outVertMap.ContainsKey(y)).Select(y => outVertMap[y]))) {
                 var temp = new ImportedMesh(material, vertexGroup.ToList());
 
-                _importedCrossSection.Add(temp);
+                worldTypeDetails.ImportedCrossSection.Add(temp);
             }
         }
 
-        // generate pieces using the cross section
+        // generate pieces using the cross section and add to the list
+        var straightObj = GenerateFor(worldTypeDetails.ImportedCrossSection, _currentType + "_straight", GenerateStraightMesh);
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("straight", straightObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
+            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), [] }
+        }, 1, 0));
 
-        const float STRAIGHT_LENGTH = 10;
-        var straight = new ArrayMesh();
-        var s = new SurfaceTool();
-        foreach (var material in _importedCrossSection) {
-            var surfaceArrays = GenerateStraightMesh(material, STRAIGHT_LENGTH);
-            s.CreateFromArrays(surfaceArrays);
-            s.GenerateNormals();
-            s.GenerateTangents();
-            surfaceArrays = s.CommitToArrays();
+        var leftObj = GenerateFor(worldTypeDetails.ImportedCrossSection, _currentType + "_left", GenerateLeft90Mesh);
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("left", leftObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
+            { new Transform3D(MyMath.LEFT90, new Vector3(PIECE_SIZE.X, 0, -PIECE_SIZE.Z)), [] }
+        }, 4, 90));
 
-            straight.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArrays);
+        _types.Add(type, worldTypeDetails);
+    }
 
-            var index = straight.GetSurfaceCount() - 1;
-            straight.SurfaceSetMaterial(index, material.Material);
+    public (WorldPiece, int) Next(Transform3D currentTransform, RandomNumberGenerator rand) {
+        var attempts = 0;
+        var piece = PickRandom(rand);
+        var directionIndex = rand.RandiRange(0, piece.Directions.Length - 1);
+        while (!PieceValid(piece, currentTransform, directionIndex) && attempts < PIECE_ATTEMPT_COUNT) {
+            piece = PickRandom(rand);
+            directionIndex = rand.RandiRange(0, piece.Directions.Length - 1);
+            attempts++;
         }
 
-        ResourceSaver.Save(straight, "res://temp/assets/" + _type + "_straight.tres", ResourceSaver.SaverFlags.Compress);
+        return (piece, directionIndex);
+    }
 
-        var straightObj = new MeshInstance3D() {
-            Mesh = straight
+    private WorldPiece PickRandom(RandomNumberGenerator rand) {
+        var pieceList = _types[_currentType].WorldPieces.Where(x => !IgnoredList.Contains(x.Name)).ToArray();
+        return RandHelper.RandFromList(rand, pieceList);
+    }
+
+    private static MeshInstance3D GenerateFor(List<ImportedMesh> importedCrossSection, string name, Func<ImportedMesh, Godot.Collections.Array> func) {
+        var resourceName = "res://temp/assets/" + name + ".tres";
+        var arrayMesh = new ArrayMesh();
+
+        if (ResourceLoader.Exists(resourceName)) {
+            arrayMesh = ResourceLoader.Load<ArrayMesh>(resourceName, null, USE_EXISTING_MESH_FILES ? ResourceLoader.CacheMode.IgnoreDeep : ResourceLoader.CacheMode.Reuse);
+        }
+
+        if (arrayMesh != null) {
+            var s = new SurfaceTool();
+            foreach (var surface in importedCrossSection) {
+                var surfaceArrays = func(surface);
+                s.CreateFromArrays(surfaceArrays);
+                s.GenerateNormals();
+                s.GenerateTangents();
+                surfaceArrays = s.CommitToArrays();
+
+                arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArrays);
+
+                var index = arrayMesh.GetSurfaceCount() - 1;
+                arrayMesh.SurfaceSetMaterial(index, surface.Material);
+            }
+
+            ResourceSaver.Save(arrayMesh, "res://temp/assets/" + name + ".tres", ResourceSaver.SaverFlags.Compress);
+        }
+
+        var meshObj = new MeshInstance3D() {
+            Mesh = arrayMesh
         };
 
         var body3d = new StaticBody3D();
         body3d.AddChild(new CollisionShape3D() {
-            Shape = straight.CreateTrimeshShape()
+            Shape = arrayMesh.CreateTrimeshShape()
         });
-        straightObj.AddChild(body3d);
+        meshObj.AddChild(body3d);
 
-        _worldPieces.Add(new WorldPiece("straight", straightObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            {new Transform3D(Basis.Identity, new Vector3(STRAIGHT_LENGTH, 0, 0)), []}
-        }, 1, 0));
+        return meshObj;
     }
 
-    public (WorldPiece, int) Next(Transform3D currentTransform, RandomNumberGenerator rand) {
-        // TODO IgnoredList
-        return (_worldPieces[0], 0);
-    }
-
-    private static Godot.Collections.Array GenerateStraightMesh(ImportedMesh surface, float length) {
+    private static Godot.Collections.Array GenerateStraightMesh(ImportedMesh surface) {
         // generate new mesh
         Godot.Collections.Array surfaceArray = [];
         surfaceArray.Resize((int)Mesh.ArrayType.Max);
@@ -172,17 +220,17 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         // create vertex quads
         for (var i = 0; i < vertices.Length - 1; i++) {
             verts.Add(vertices[i + 1]);
-            uvs.Add(new Vector2(1, 0));
             verts.Add(vertices[i]);
+            verts.Add(vertices[i] + new Vector3(PIECE_SIZE.X, 0, 0));
+            uvs.Add(new Vector2(1, 0));
             uvs.Add(new Vector2(0, 0));
-            verts.Add(vertices[i] + new Vector3(length, 0, 0));
             uvs.Add(new Vector2(0, 1));
 
-            verts.Add(vertices[i + 1] + new Vector3(length, 0, 0));
-            uvs.Add(new Vector2(1, 1));
+            verts.Add(vertices[i + 1] + new Vector3(PIECE_SIZE.X, 0, 0));
             verts.Add(vertices[i + 1]);
+            verts.Add(vertices[i] + new Vector3(PIECE_SIZE.X, 0, 0));
+            uvs.Add(new Vector2(1, 1));
             uvs.Add(new Vector2(1, 0));
-            verts.Add(vertices[i] + new Vector3(length, 0, 0));
             uvs.Add(new Vector2(0, 1));
         }
 
@@ -190,5 +238,53 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
 
         return surfaceArray;
+    }
+
+    private static Godot.Collections.Array GenerateLeft90Mesh(ImportedMesh surface) {
+        // generate new mesh
+        Godot.Collections.Array surfaceArray = [];
+        surfaceArray.Resize((int)Mesh.ArrayType.Max);
+        List<Vector3> verts = [];
+        List<Vector2> uvs = [];
+
+        // generate the tri mesh
+        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
+
+        var circleCenter = new Vector3(0, 0, -PIECE_SIZE.X);
+        const float SEGMENTS = 4;
+        for (int j = 0; j < SEGMENTS; j++) {
+            var curAngle = new Basis(new Vector3(0, 1, 0), Mathf.DegToRad(-90 * j / (float)SEGMENTS));
+            var nextAngle = new Basis(new Vector3(0, 1, 0), Mathf.DegToRad(-90 * (j + 1) / (float)SEGMENTS));
+
+            for (var i = 0; i < vertices.Length - 1; i++) {
+                verts.Add((vertices[i + 1] - circleCenter) * curAngle + circleCenter);
+                verts.Add((vertices[i] - circleCenter) * curAngle + circleCenter);
+                verts.Add((vertices[i] - circleCenter) * nextAngle + circleCenter);
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 0));
+                uvs.Add(new Vector2(0, 1));
+
+                verts.Add((vertices[i + 1] - circleCenter) * nextAngle + circleCenter);
+                verts.Add((vertices[i + 1] - circleCenter) * curAngle + circleCenter);
+                verts.Add((vertices[i] - circleCenter) * nextAngle + circleCenter);
+                uvs.Add(new Vector2(1, 1));
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 1));
+            }
+        }
+
+        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+        return surfaceArray;
+    }
+
+    private static bool PieceValid(WorldPiece piece, Transform3D transform, int outIndex) {
+        var outDirection = piece.Directions.Skip(outIndex).First();
+        var rot = (transform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
+        var angle = rot.AngleTo(Quaternion.Identity);
+        if (angle > Math.PI * 1 / 2f) {
+            return false;
+        }
+        return true;
     }
 }

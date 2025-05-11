@@ -3,6 +3,12 @@ using Godot;
 namespace murph9.RallyGame2.godot.Utilities;
 
 public class MyMath {
+    public readonly static Basis LEFT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(90));
+    public readonly static Basis RIGHT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-90));
+
+    public readonly static Basis LEFT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(45));
+    public readonly static Basis RIGHT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-45));
+
     public static float MsToKmh(float speed) => speed * 3.6f;
     public static double MsToKmh(double speed) => speed * 3.6f;
     public static float KmhToMs(float speed) => speed / 3.6f;

@@ -7,11 +7,6 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.World;
 
 public record WorldPieceDir(ICollection<Transform3D> Transforms, WorldPieceDir.TurnType Turn, WorldPieceDir.OffsetType Offset, WorldPieceDir.VertType Vert) {
-    private static Basis LEFT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(90));
-    private static Basis RIGHT90 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-90));
-
-    private static Basis LEFT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(45));
-    private static Basis RIGHT45 = new(new Vector3(0, 1, 0), Mathf.DegToRad(-45));
 
     public Transform3D FinalTransform => Transforms.Last();
 
@@ -37,9 +32,9 @@ public record WorldPieceDir(ICollection<Transform3D> Transforms, WorldPieceDir.T
         if (Math.Abs(t.Origin.Y) > 0) // a change in elevation
             vert = t.Origin.Y > 0 ? VertType.Up : VertType.Down;
 
-        if (t.Basis.IsEqualApprox(LEFT90) || t.Basis.IsEqualApprox(LEFT45))
+        if (t.Basis.IsEqualApprox(MyMath.LEFT90) || t.Basis.IsEqualApprox(MyMath.LEFT45))
             turn = TurnType.Left;
-        else if (t.Basis.IsEqualApprox(RIGHT90) || t.Basis.IsEqualApprox(RIGHT45))
+        else if (t.Basis.IsEqualApprox(MyMath.RIGHT90) || t.Basis.IsEqualApprox(MyMath.RIGHT45))
             turn = TurnType.Right;
 
         subTransforms ??= [];

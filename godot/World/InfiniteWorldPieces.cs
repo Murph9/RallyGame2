@@ -153,7 +153,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     public float TotalDistanceFromCheckpoint(Vector3 position) {
-        var checkpointTuple = _checkpoints.SingleOrDefault(x => x.Item1.Origin.IsEqualApprox(position));
+        var checkpointTuple = _checkpoints.FirstOrDefault(x => x.Item1.Origin.IsEqualApprox(position));
         if (checkpointTuple != null) {
             return checkpointTuple.Item3;
         }
