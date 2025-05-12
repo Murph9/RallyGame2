@@ -17,7 +17,6 @@ class WorldTypeDetails {
 
 public class ProceduralPieceGenerator : IPieceGenerator {
 
-    private static readonly Vector3 PIECE_SIZE = new(20, 1, 20);
     private static readonly int PIECE_ATTEMPT_COUNT = 3;
     private static readonly int SEGMENTS = 4;
 
@@ -137,40 +136,40 @@ public class ProceduralPieceGenerator : IPieceGenerator {
 
         // generate pieces using the cross section and add to the list
         // straight
-        var straightObj = GenerateFor(worldTypeDetails.ImportedCrossSection, GenerateStraightMesh);
+        var straightObj = GenerateFor(worldTypeDetails.ImportedCrossSection, PieceTypes.GenerateStraightMesh);
         worldTypeDetails.WorldPieces.Add(new WorldPiece("straight", straightObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), [] }
+            { new Transform3D(Basis.Identity, new Vector3(PieceTypes.PIECE_SIZE.X, 0, 0)), [] }
         }, 1, 0));
 
         // up a little
-        var hillUpObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateHill(surface, PIECE_SIZE.Y, SEGMENTS));
+        var hillUpObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateHill(surface, PieceTypes.PIECE_SIZE.Y, SEGMENTS));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUp", hillUpObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, PIECE_SIZE.Y, 0)), [] }
+            { new Transform3D(Basis.Identity, new Vector3(PieceTypes.PIECE_SIZE.X, PieceTypes.PIECE_SIZE.Y, 0)), [] }
         }, SEGMENTS / 2, 45));
         // down a little
-        var hillDownObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateHill(surface, -PIECE_SIZE.Y, SEGMENTS));
+        var hillDownObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateHill(surface, -PieceTypes.PIECE_SIZE.Y, SEGMENTS));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDown", hillDownObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, -PIECE_SIZE.Y, 0)), [] }
+            { new Transform3D(Basis.Identity, new Vector3(PieceTypes.PIECE_SIZE.X, -PieceTypes.PIECE_SIZE.Y, 0)), [] }
         }, SEGMENTS / 2, 45));
 
         // 45 deg
-        var right45Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateCurveMeshByDeg(surface, true, 45, SEGMENTS / 2));
+        var right45Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateCurveMeshByDeg(surface, true, 45, SEGMENTS / 2));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("right45", right45Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.RIGHT45, GenerateFinalPointOfMeshCurve(true, 45)), [] }
+            { new Transform3D(MyMath.RIGHT45, PieceTypes.GenerateFinalPointOfMeshCurve(true, 45)), [] }
         }, SEGMENTS / 2, 45));
-        var left45Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateCurveMeshByDeg(surface, false, 45, SEGMENTS / 2));
+        var left45Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateCurveMeshByDeg(surface, false, 45, SEGMENTS / 2));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("left45", left45Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.LEFT45, GenerateFinalPointOfMeshCurve(false, 45)), [] }
+            { new Transform3D(MyMath.LEFT45, PieceTypes.GenerateFinalPointOfMeshCurve(false, 45)), [] }
         }, SEGMENTS / 2, 45));
 
         // 90 deg
-        var right90Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateCurveMeshByDeg(surface, true, 90, SEGMENTS));
+        var right90Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateCurveMeshByDeg(surface, true, 90, SEGMENTS));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("right90", right90Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.RIGHT90, GenerateFinalPointOfMeshCurve(true, 90)), [] }
+            { new Transform3D(MyMath.RIGHT90, PieceTypes.GenerateFinalPointOfMeshCurve(true, 90)), [] }
         }, SEGMENTS, 90));
-        var left90Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => GenerateCurveMeshByDeg(surface, false, 90, SEGMENTS));
+        var left90Obj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateCurveMeshByDeg(surface, false, 90, SEGMENTS));
         worldTypeDetails.WorldPieces.Add(new WorldPiece("left90", left90Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.LEFT90, GenerateFinalPointOfMeshCurve(false, 90)), [] }
+            { new Transform3D(MyMath.LEFT90, PieceTypes.GenerateFinalPointOfMeshCurve(false, 90)), [] }
         }, SEGMENTS, 90));
 
         _types.Add(type, worldTypeDetails);
@@ -223,118 +222,6 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         meshObj.AddChild(body3d);
 
         return meshObj;
-    }
-
-    private static Godot.Collections.Array GenerateStraightMesh(ImportedMesh surface) {
-        Godot.Collections.Array surfaceArray = [];
-        surfaceArray.Resize((int)Mesh.ArrayType.Max);
-        List<Vector3> verts = [];
-        List<Vector2> uvs = [];
-
-        // generate the tri mesh
-        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
-
-        // create vertex quads
-        for (var i = 0; i < vertices.Length - 1; i++) {
-            verts.Add(vertices[i + 1]);
-            verts.Add(vertices[i]);
-            verts.Add(vertices[i] + new Vector3(PIECE_SIZE.X, 0, 0));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(0, 1));
-
-            verts.Add(vertices[i + 1] + new Vector3(PIECE_SIZE.X, 0, 0));
-            verts.Add(vertices[i + 1]);
-            verts.Add(vertices[i] + new Vector3(PIECE_SIZE.X, 0, 0));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(0, 1));
-        }
-
-        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
-        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
-
-        return surfaceArray;
-    }
-
-    private static Godot.Collections.Array GenerateHill(ImportedMesh surface, float highDiff, int segments) {
-        Godot.Collections.Array surfaceArray = [];
-        surfaceArray.Resize((int)Mesh.ArrayType.Max);
-        List<Vector3> verts = [];
-        List<Vector2> uvs = [];
-
-        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
-
-        for (int j = 0; j < segments; j++) {
-            var curFraction = j / (float)segments;
-            var nextFraction = (j + 1) / (float)segments;
-            var curHeight = new Vector3(curFraction * PIECE_SIZE.X, highDiff / 2 + Mathf.Cos(curFraction * Mathf.Pi) * -highDiff / 2, 0);
-            var nextHeight = new Vector3(nextFraction * PIECE_SIZE.X, highDiff / 2 + Mathf.Cos(nextFraction * Mathf.Pi) * -highDiff / 2, 0);
-
-            for (var i = 0; i < vertices.Length - 1; i++) {
-                verts.Add(vertices[i + 1] + curHeight);
-                verts.Add(vertices[i] + curHeight);
-                verts.Add(vertices[i] + nextHeight);
-                uvs.Add(new Vector2(1, 0));
-                uvs.Add(new Vector2(0, 0));
-                uvs.Add(new Vector2(0, 1));
-
-                verts.Add(vertices[i + 1] + nextHeight);
-                verts.Add(vertices[i + 1] + curHeight);
-                verts.Add(vertices[i] + nextHeight);
-                uvs.Add(new Vector2(1, 1));
-                uvs.Add(new Vector2(1, 0));
-                uvs.Add(new Vector2(0, 1));
-            }
-        }
-
-
-        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
-        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
-        return surfaceArray;
-    }
-
-    private static Godot.Collections.Array GenerateCurveMeshByDeg(ImportedMesh surface, bool right, float degree, int segments) {
-        Godot.Collections.Array surfaceArray = [];
-        surfaceArray.Resize((int)Mesh.ArrayType.Max);
-        List<Vector3> verts = [];
-        List<Vector2> uvs = [];
-
-        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
-
-        var circleCenter = new Vector3(0, 0, right ? PIECE_SIZE.X : -PIECE_SIZE.X);
-
-        // generate the tri mesh based on a circle centered to the left or right
-        for (int j = 0; j < segments; j++) {
-            var curAngle = new Basis(Vector3.Up, Mathf.DegToRad((right ? degree : -degree) * j / segments));
-            var nextAngle = new Basis(Vector3.Up, Mathf.DegToRad((right ? degree : -degree) * (j + 1) / segments));
-
-            for (var i = 0; i < vertices.Length - 1; i++) {
-                verts.Add((vertices[i + 1] - circleCenter) * curAngle + circleCenter);
-                verts.Add((vertices[i] - circleCenter) * curAngle + circleCenter);
-                verts.Add((vertices[i] - circleCenter) * nextAngle + circleCenter);
-                uvs.Add(new Vector2(1, 0));
-                uvs.Add(new Vector2(0, 0));
-                uvs.Add(new Vector2(0, 1));
-
-                verts.Add((vertices[i + 1] - circleCenter) * nextAngle + circleCenter);
-                verts.Add((vertices[i + 1] - circleCenter) * curAngle + circleCenter);
-                verts.Add((vertices[i] - circleCenter) * nextAngle + circleCenter);
-                uvs.Add(new Vector2(1, 1));
-                uvs.Add(new Vector2(1, 0));
-                uvs.Add(new Vector2(0, 1));
-            }
-        }
-
-        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
-        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
-        return surfaceArray;
-    }
-
-    private static Vector3 GenerateFinalPointOfMeshCurve(bool right, float degree) {
-        var circleCenter = new Vector3(0, 0, right ? PIECE_SIZE.X : -PIECE_SIZE.X);
-        var curAngle = new Basis(Vector3.Up, Mathf.DegToRad(right ? degree : -degree));
-        return (new Vector3() - circleCenter) * curAngle + circleCenter;
     }
 
     private static bool PieceValid(WorldPiece piece, Transform3D transform, int outIndex) {
