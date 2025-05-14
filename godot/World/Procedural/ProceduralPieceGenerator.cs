@@ -185,6 +185,14 @@ public class ProceduralPieceGenerator : IPieceGenerator {
             { new Transform3D(MyMath.LEFT90, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, false, 90)), [] }
         }, SEGMENTS, 90));
 
+        // a cross piece
+        var crossObj = GenerateFor(worldTypeDetails.ImportedCrossSection, (surface) => PieceTypes.GenerateCrossingMesh(surface, PIECE_SIZE, true, true));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("cross", crossObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
+            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), [] },
+            { new Transform3D(MyMath.RIGHT90, new Vector3(PIECE_SIZE.X/2, 0, PIECE_SIZE.Z/2)), [] },
+            { new Transform3D(MyMath.LEFT90, new Vector3(PIECE_SIZE.X/2, 0, -PIECE_SIZE.Z/2)), [] } // TODO check
+        }, SEGMENTS, 90));
+
         _types.Add(type, worldTypeDetails);
     }
 

@@ -112,6 +112,78 @@ public class PieceTypes {
         return surfaceArray;
     }
 
+    public static Godot.Collections.Array GenerateCrossingMesh(ImportedMesh surface, Vector3 size, bool left, bool right) {
+        Godot.Collections.Array surfaceArray = [];
+        surfaceArray.Resize((int)Mesh.ArrayType.Max);
+        List<Vector3> verts = [];
+        List<Vector2> uvs = [];
+
+        // generate the tri mesh
+        var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
+
+        // create vertex quads
+        for (var i = 0; i < vertices.Length - 1; i++) {
+            verts.Add(vertices[i + 1]);
+            verts.Add(vertices[i]);
+            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            uvs.Add(new Vector2(1, 0));
+            uvs.Add(new Vector2(0, 0));
+            uvs.Add(new Vector2(0, 1));
+
+            verts.Add(vertices[i + 1] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i + 1]);
+            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            uvs.Add(new Vector2(1, 1));
+            uvs.Add(new Vector2(1, 0));
+            uvs.Add(new Vector2(0, 1));
+        }
+
+        var pieceCenter = new Vector3(size.X / 2f, 0, 0);
+
+        if (left) {
+            var leftAntiRotation = new Basis(Vector3.Up, Mathf.DegToRad(90));
+            // create right vertex quads
+            for (var i = 0; i < vertices.Length - 1; i++) {
+                verts.Add(leftAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i] - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 0));
+                uvs.Add(new Vector2(0, 1));
+
+                verts.Add(leftAntiRotation * (vertices[i + 1] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                uvs.Add(new Vector2(1, 1));
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 1));
+            }
+        }
+
+        if (right) {
+            var rightAntiRotation = new Basis(Vector3.Up, Mathf.DegToRad(-90));
+            for (var i = 0; i < vertices.Length - 1; i++) {
+                verts.Add(rightAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i] - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 0));
+                uvs.Add(new Vector2(0, 1));
+
+                verts.Add(rightAntiRotation * (vertices[i + 1] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                uvs.Add(new Vector2(1, 1));
+                uvs.Add(new Vector2(1, 0));
+                uvs.Add(new Vector2(0, 1));
+            }
+        }
+
+        surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+        return surfaceArray;
+    }
+
 
     public static Vector3 GenerateFinalPointOfMeshCurve(Vector3 size, bool right, float degree) {
         var circleCenter = new Vector3(0, 0, right ? size.X : -size.X);
