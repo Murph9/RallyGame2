@@ -16,17 +16,18 @@ public class PieceTypes {
         var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
 
         // create vertex quads
+        var totalLength = new Vector3(size.X, 0, 0);
         for (var i = 0; i < vertices.Length - 1; i++) {
             verts.Add(vertices[i + 1]);
             verts.Add(vertices[i]);
-            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i] + totalLength);
             uvs.Add(new Vector2(1, 0));
             uvs.Add(new Vector2(0, 0));
             uvs.Add(new Vector2(0, 1));
 
-            verts.Add(vertices[i + 1] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i + 1] + totalLength);
             verts.Add(vertices[i + 1]);
-            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i] + totalLength);
             uvs.Add(new Vector2(1, 1));
             uvs.Add(new Vector2(1, 0));
             uvs.Add(new Vector2(0, 1));
@@ -121,18 +122,38 @@ public class PieceTypes {
         // generate the tri mesh
         var vertices = surface.Vertices.OrderBy(x => x.Z).ToArray();
 
+        var length = new Vector3(size.X, 0, 0);
+        var largeOffset = length * 0.75f;
+        var smallOffset = length * 0.25f;
+
         // create vertex quads
         for (var i = 0; i < vertices.Length - 1; i++) {
+            // close side
             verts.Add(vertices[i + 1]);
             verts.Add(vertices[i]);
-            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i] + smallOffset);
             uvs.Add(new Vector2(1, 0));
             uvs.Add(new Vector2(0, 0));
             uvs.Add(new Vector2(0, 1));
 
-            verts.Add(vertices[i + 1] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i + 1] + smallOffset);
             verts.Add(vertices[i + 1]);
-            verts.Add(vertices[i] + new Vector3(size.X, 0, 0));
+            verts.Add(vertices[i] + smallOffset);
+            uvs.Add(new Vector2(1, 1));
+            uvs.Add(new Vector2(1, 0));
+            uvs.Add(new Vector2(0, 1));
+
+            // far side
+            verts.Add(vertices[i + 1] + largeOffset);
+            verts.Add(vertices[i] + largeOffset);
+            verts.Add(vertices[i] + length);
+            uvs.Add(new Vector2(1, 0));
+            uvs.Add(new Vector2(0, 0));
+            uvs.Add(new Vector2(0, 1));
+
+            verts.Add(vertices[i + 1] + length);
+            verts.Add(vertices[i + 1] + largeOffset);
+            verts.Add(vertices[i] + length);
             uvs.Add(new Vector2(1, 1));
             uvs.Add(new Vector2(1, 0));
             uvs.Add(new Vector2(0, 1));
@@ -146,14 +167,14 @@ public class PieceTypes {
             for (var i = 0; i < vertices.Length - 1; i++) {
                 verts.Add(leftAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
                 verts.Add(leftAntiRotation * (vertices[i] - pieceCenter) + pieceCenter);
-                verts.Add(leftAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i] + smallOffset - pieceCenter) + pieceCenter);
                 uvs.Add(new Vector2(1, 0));
                 uvs.Add(new Vector2(0, 0));
                 uvs.Add(new Vector2(0, 1));
 
-                verts.Add(leftAntiRotation * (vertices[i + 1] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i + 1] + smallOffset - pieceCenter) + pieceCenter);
                 verts.Add(leftAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
-                verts.Add(leftAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(leftAntiRotation * (vertices[i] + smallOffset - pieceCenter) + pieceCenter);
                 uvs.Add(new Vector2(1, 1));
                 uvs.Add(new Vector2(1, 0));
                 uvs.Add(new Vector2(0, 1));
@@ -165,19 +186,38 @@ public class PieceTypes {
             for (var i = 0; i < vertices.Length - 1; i++) {
                 verts.Add(rightAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
                 verts.Add(rightAntiRotation * (vertices[i] - pieceCenter) + pieceCenter);
-                verts.Add(rightAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i] + smallOffset - pieceCenter) + pieceCenter);
                 uvs.Add(new Vector2(1, 0));
                 uvs.Add(new Vector2(0, 0));
                 uvs.Add(new Vector2(0, 1));
 
-                verts.Add(rightAntiRotation * (vertices[i + 1] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i + 1] + smallOffset - pieceCenter) + pieceCenter);
                 verts.Add(rightAntiRotation * (vertices[i + 1] - pieceCenter) + pieceCenter);
-                verts.Add(rightAntiRotation * (vertices[i] + new Vector3(size.X / 2, 0, 0) - pieceCenter) + pieceCenter);
+                verts.Add(rightAntiRotation * (vertices[i] + smallOffset - pieceCenter) + pieceCenter);
                 uvs.Add(new Vector2(1, 1));
                 uvs.Add(new Vector2(1, 0));
                 uvs.Add(new Vector2(0, 1));
             }
         }
+
+        // and the center, which we will do in every color because i didn't set it up to handle it
+        /*
+        var vertexXLow = vertices.First();
+        var vertexXHigh = vertices.Last();
+        verts.Add(vertexXHigh);
+        verts.Add(vertexXLow);
+        verts.Add(vertexXLow + length);
+        uvs.Add(new Vector2(1, 0));
+        uvs.Add(new Vector2(0, 0));
+        uvs.Add(new Vector2(0, 1));
+
+        verts.Add(vertexXHigh + length);
+        verts.Add(vertexXHigh);
+        verts.Add(vertexXLow + length);
+        uvs.Add(new Vector2(1, 1));
+        uvs.Add(new Vector2(1, 0));
+        uvs.Add(new Vector2(0, 1));
+        */
 
         surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
         surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
