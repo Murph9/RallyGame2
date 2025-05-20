@@ -138,60 +138,63 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         // generate pieces using the cross section and add to the list
         // straight
         var straightObj = PieceTypes.GenerateFor(PieceTypes.GenerateStraightArrays(worldTypeDetails.ImportedCrossSection, PIECE_SIZE));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("straight", straightObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), [] }
-        }, 1, 0));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("straight", straightObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0)), 1, 0)
+        ]));
 
         // up a little
         var hillUpObj = PieceTypes.GenerateFor(PieceTypes.GenerateHillArrays(worldTypeDetails.ImportedCrossSection, PIECE_SIZE, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUp", hillUpObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, PIECE_SIZE.Y, 0)), [] }
-        }, SEGMENTS / 2, 0));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUp", hillUpObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, PIECE_SIZE.Y, 0)), SEGMENTS / 2, 0)
+        ]));
+
         // down a little
         var hillDownObj = PieceTypes.GenerateFor(PieceTypes.GenerateHillArrays(worldTypeDetails.ImportedCrossSection, new Vector3(1, -1, 1) * PIECE_SIZE, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDown", hillDownObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, -PIECE_SIZE.Y, 0)), [] }
-        }, SEGMENTS / 2, 0));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDown", hillDownObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, -PIECE_SIZE.Y, 0)), SEGMENTS / 2, 0)
+        ]));
 
         // aggressive little down/up
         var hillSize = new Vector3(PIECE_SIZE.X / 3f, 0.5f, 0);
         var hillUpLittleObj = PieceTypes.GenerateFor(PieceTypes.GenerateHillArrays(worldTypeDetails.ImportedCrossSection, hillSize, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUpLittle", hillUpLittleObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, hillSize), [] }
-        }, SEGMENTS / 2, 0));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillUpLittle", hillUpLittleObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, hillSize), SEGMENTS / 2, 0)
+        ]));
         hillSize = new Vector3(PIECE_SIZE.X / 3f, -0.5f, 0);
         var hillDownLittleObj = PieceTypes.GenerateFor(PieceTypes.GenerateHillArrays(worldTypeDetails.ImportedCrossSection, hillSize, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDownLittle", hillDownLittleObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, hillSize), [] }
-        }, SEGMENTS / 2, 0));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("hillDownLittle", hillDownLittleObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, hillSize), SEGMENTS / 2, 0)
+        ]));
 
-        // 45 deg
+        // 45 deg turns
         var right45Obj = PieceTypes.GenerateFor(PieceTypes.GenerateCurveArraysByDeg(worldTypeDetails.ImportedCrossSection, PIECE_SIZE, true, 45, SEGMENTS / 2));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("right45", right45Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.RIGHT45, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, true, 45)), [] }
-        }, SEGMENTS / 2, 45));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("right45", right45Obj, [
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.RIGHT45, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, true, 45)), SEGMENTS / 2, 45)
+        ]));
+
         var left45Obj = PieceTypes.GenerateFor(PieceTypes.GenerateCurveArraysByDeg(worldTypeDetails.ImportedCrossSection, PIECE_SIZE, false, 45, SEGMENTS / 2));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("left45", left45Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.LEFT45, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, false, 45)), [] }
-        }, SEGMENTS / 2, 45));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("left45", left45Obj, [
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.LEFT45, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, false, 45)), SEGMENTS / 2, 45)
+        ]));
 
         // 90 deg
         var right90Obj = PieceTypes.GenerateFor(PieceTypes.GenerateCurveArraysByDeg(worldTypeDetails.ImportedCrossSection, PIECE_SIZE, true, 90, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("right90", right90Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.RIGHT90, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, true, 90)), [] }
-        }, SEGMENTS, 90));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("right90", right90Obj, [
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.RIGHT90, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, true, 90)), SEGMENTS, 90)
+        ]));
+
         var left90Obj = PieceTypes.GenerateFor(PieceTypes.GenerateCurveArraysByDeg(worldTypeDetails.ImportedCrossSection, PIECE_SIZE, false, 90, SEGMENTS));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("left90", left90Obj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(MyMath.LEFT90, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, false, 90)), [] }
-        }, SEGMENTS, 90));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("left90", left90Obj, [
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.LEFT90, PieceTypes.GenerateFinalPointOfMeshCurve(PIECE_SIZE, false, 90)), SEGMENTS, 90)
+        ]));
 
         // a cross piece
         var crossObj = PieceTypes.GenerateFor(PieceTypes.GenerateCrossingArrays(worldTypeDetails.ImportedCrossSection, PIECE_SIZE * 1.5f, true, true));
-        worldTypeDetails.WorldPieces.Add(new WorldPiece("cross", crossObj, new Dictionary<Transform3D, IEnumerable<Transform3D>>() {
-            { new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0) * 1.5f) , [] },
-            { new Transform3D(MyMath.RIGHT90, new Vector3(PIECE_SIZE.X/2, 0, PIECE_SIZE.Z/2) * 1.5f), [] },
-            { new Transform3D(MyMath.LEFT90, new Vector3(PIECE_SIZE.X/2, 0, -PIECE_SIZE.Z/2) * 1.5f), [] }
-        }, SEGMENTS, 90));
+        worldTypeDetails.WorldPieces.Add(new WorldPiece("cross", crossObj, [
+            WorldPieceDir.FromTransform(new Transform3D(Basis.Identity, new Vector3(PIECE_SIZE.X, 0, 0) * 1.5f), SEGMENTS, 90),
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.RIGHT90, new Vector3(PIECE_SIZE.X/2, 0, PIECE_SIZE.Z/2) * 1.5f), SEGMENTS, 90),
+            WorldPieceDir.FromTransform(new Transform3D(MyMath.LEFT90, new Vector3(PIECE_SIZE.X/2, 0, -PIECE_SIZE.Z/2) * 1.5f), SEGMENTS, 90)
+        ]));
 
         _types.Add(type, worldTypeDetails);
     }

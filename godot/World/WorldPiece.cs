@@ -11,20 +11,14 @@ public record WorldPiece {
     public WorldPieceDir[] Directions { get; init; }
     public List<Vector3> ObjectLocations { get; init; }
 
-    public WorldPiece(string name, Node3D model, Dictionary<Transform3D, IEnumerable<Transform3D>> directions, int segments, float curveAngle) {
+    public WorldPiece(string name, Node3D model, IEnumerable<WorldPieceDir> directions) {
         Name = name;
         Model = model;
 
-        if (directions == null || directions.Count < 1) {
+        if (directions == null || !directions.Any()) {
             throw new Exception("World piece found with no directions: " + directions);
         }
 
-        if (directions.Any(x => x.Value.Any())) {
-            // use the given positions
-            Directions = directions.Select(x => WorldPieceDir.FromTransform(x.Key, x.Value)).ToArray();
-        } else {
-            // generate using the given segments and curveAngle
-            Directions = directions.Select(x => WorldPieceDir.FromTransform(x.Key, segments, curveAngle)).ToArray();
-        }
+        Directions = directions.ToArray();
     }
 }
