@@ -40,7 +40,7 @@ public partial class HundredRallyGame : Node {
         }
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
-        _roadManager = new InfiniteRoadManager(300, World.DynamicPieces.WorldType.Simple2);
+        _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2);
         _roadManager.RoadNextPoint += RoadPlacedAt;
         AddChild(_roadManager);
 

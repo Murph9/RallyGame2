@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace murph9.RallyGame2.godot.World.DynamicPieces;
+namespace murph9.RallyGame2.godot.World.Procedural;
 
 public enum WorldType {
     Simple,

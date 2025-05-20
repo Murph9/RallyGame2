@@ -1,6 +1,6 @@
 using Godot;
 
-namespace murph9.RallyGame2.godot.World.DynamicPieces;
+namespace murph9.RallyGame2.godot.World.Procedural;
 
 public partial class PiecePlacementStrategy : Node3D {
     public enum Type {
