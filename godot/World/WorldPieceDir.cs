@@ -10,7 +10,7 @@ public record WorldPieceDir(ICollection<Transform3D> Transforms, WorldPieceDir.T
 
     public Transform3D FinalTransform => Transforms.Last();
 
-    // public static WorldPieceDir FromTransform(Transform3D finalTransform, IEnumerable<Transform3D> subTransforms) => WithTransforms(finalTransform, subTransforms);
+    public static WorldPieceDir FromTransform(Transform3D finalTransform, IEnumerable<Transform3D> subTransforms) => WithTransforms(finalTransform, subTransforms);
 
     public static WorldPieceDir FromTransform(Transform3D finalTransform, int segmentCount, float curveAngle) {
         var subTransforms = GenerateSubSegments(finalTransform, segmentCount, curveAngle);

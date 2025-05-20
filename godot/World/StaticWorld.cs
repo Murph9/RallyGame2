@@ -59,8 +59,4 @@ public partial class StaticWorld : Node3D, IWorld {
     public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
         return Array.Empty<InfiniteCheckpoint>();
     }
-
-    public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
-        return Array.Empty<Curve3DPoint>();
-    }
 }

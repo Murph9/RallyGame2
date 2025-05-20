@@ -180,10 +180,5 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             root.AddChild(instance);
         }
     }
-
-    public IEnumerable<Curve3DPoint> GetCurve3DPoints() {
-        throw new NotImplementedException(); // and its going to stay that way
-    }
-
 }
 
