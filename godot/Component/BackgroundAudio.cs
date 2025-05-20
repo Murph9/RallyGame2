@@ -3,7 +3,7 @@ using murph9.RallyGame2.godot.Utilities.Audio;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.scenes;
+namespace murph9.RallyGame2.godot.Component;
 
 public partial class BackgroundAudio : Node {
     private static readonly float SAMPLE_RATE = 44100f;

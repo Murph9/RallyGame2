@@ -27,49 +27,4 @@ public record WorldPiece {
             Directions = directions.Select(x => WorldPieceDir.FromTransform(x.Key, segments, curveAngle)).ToArray();
         }
     }
-
-    public static WorldPiece LoadFrom(MeshInstance3D model) {
-        GD.Print("Loading '" + model.Name + "' as a road piece");
-        var directions = model.GetChildren()
-            .Where(x => x.GetType() == typeof(Node3D) && x.Name.ToString().Contains("End"))
-            .Select(x => x as Node3D);
-        // note can't use OfType<> or is Node3D here because we want specifically things that are Node3D
-
-        foreach (var dir in directions) {
-            model.RemoveChild(dir);
-            dir.QueueFree();
-        }
-        var directionsWithSegments = directions
-            .ToDictionary(x => x.Transform, y => y
-                .GetChildren()
-                .Where(x => x.GetType() == typeof(Node3D))
-                .Select(x => y.Transform * (x as Node3D).Transform)
-                );
-
-        var objLocations = model.GetChildren()
-            .Where(x => x.GetType() == typeof(Node3D) && x.Name.ToString().Contains("Obj"))
-            .Select(x => (x as Node3D).Transform.Origin);
-
-        // attempt to read curve information from the piece, which is stored in the name of a sub node
-        float curveAngle = 0;
-        int segmentCount = 1;
-
-        var modelName = model.Name.ToString(); // its not a 'String'
-        if (modelName.Contains("left", StringComparison.InvariantCultureIgnoreCase) || modelName.Contains("right", StringComparison.InvariantCultureIgnoreCase)) {
-            if (modelName.Contains("90")) {
-                curveAngle = 90;
-                segmentCount = 4;
-            } else if (modelName.Contains("45")) {
-                curveAngle = 45;
-                segmentCount = 2;
-            } else {
-                GD.PrintErr($"Model name '{modelName}' doesn't contain a curve angle");
-            }
-            GD.Print($"   as {curveAngle} deg with {segmentCount} parts");
-        }
-
-        return new WorldPiece(model.Name, model, directionsWithSegments, segmentCount, curveAngle) {
-            ObjectLocations = objLocations.ToList()
-        };
-    }
 }

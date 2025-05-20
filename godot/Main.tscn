@@ -38,11 +38,7 @@ layout_mode = 2
 layout_mode = 2
 text = "Start 100km Mode"
 
-[node name="StartButton" type="Button" parent="PanelContainer/VBoxContainer"]
-layout_mode = 2
-text = "Start Circuit Mode"
-
-[node name="Button" type="Button" parent="PanelContainer/VBoxContainer"]
+[node name="BallButton" type="Button" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 text = "Add Ball"
 
@@ -61,7 +57,6 @@ layout_mode = 2
 text = "Test Scene"
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/StartButtonHundred" to="." method="_on_hundredstart_button_pressed"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/StartButton" to="." method="_on_circuitstart_button_pressed"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/BallButton" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/TestButton" to="." method="_on_test_button_pressed"]

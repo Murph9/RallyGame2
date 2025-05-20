@@ -28,6 +28,12 @@ Download godot, setup the .vscode launch.json script to point to its location
 
 An infinite world
 
+Ideas for goals:
+
+-   just hit a high speed once (not just at the end of the zone)
+-   flip the car somewhere
+-   hit like 5 traffic at a minimum speed
+
 -   spawn next to the road with a goal of driving 100km
     -   at some fixed amount X km you will have a goal to reach:
         -   a speed trap target
@@ -84,46 +90,15 @@ Some relic categories:
 -   temporarily upgrades your car for a limited amount of time
 -   parts that break after certain time
 
----
+Ideas for the world generation:
 
-## Circuit game idea:
+-   generate mesh pieces instead of loading them from blender
+-   use array mesh to generate some pieces
+-   use MeshDataTool to perturb them a little for better variance
 
--   You are a test track driver
--   And have to select parts to make your car go faster around the fixed track
+Graphics ideas:
 
-    -   Maybe target time slowly reduces under financial pressure?
-
--   Track should be a circuit so you can try 3 laps for the best time
-
--   Get slightly more money the faster you go - although not sure what money would be for yet
-
--   Parts are shown on the model
-    -   I would apply all parts to the model and start the game with them all hidden
-
-and its general TODO list:
-
-some simple circuit generation:
-
--   probably prod the dynamic world generation as i can't make a track to save my life
--   with checkpoints and lap time calc
-
-parts
-
--   no 3d models needed yet, but would be nice
--   using the engine.py on the desktop for now
-
-UI screens (in order):
-
--   intro screen (once)
--   level start screen + your goal is blah
--   racing screen
--   racing results screen
--   upgrade screen for selecting parts
-    -   at least a text block for displaying new car stats
-
-Some way to calculate the starting time to beat
-
--   maybe get AI to drive it in the future
+-   https://www.reddit.com/r/ImaginaryTechnology/comments/1gko5z4/back_to_the_future_3d_animation_by_me/
 
 ---
 
