@@ -7,10 +7,12 @@ namespace murph9.RallyGame2.godot.World.Procedural;
 
 public class PieceTypes {
 
-    public static MeshInstance3D GenerateFor(List<(Material, Godot.Collections.Array)> pieceMeshes) {
+    public record PieceSurfaceResult(List<(Material, Godot.Collections.Array)> Surfaces);
+
+    public static MeshInstance3D GenerateFor(PieceSurfaceResult pieceMeshes) {
         ArrayMesh arrayMesh = new();
 
-        foreach (var surface in pieceMeshes) {
+        foreach (var surface in pieceMeshes.Surfaces) {
             var s = new SurfaceTool();
             s.CreateFromArrays(surface.Item2);
             s.GenerateNormals();
@@ -35,7 +37,7 @@ public class PieceTypes {
         return meshObj;
     }
 
-    public static List<(Material, Godot.Collections.Array)> GenerateStraightArrays(List<ImportedMesh> surfaces, Vector3 size) {
+    public static PieceSurfaceResult GenerateStraightArrays(List<ImportedSurface> surfaces, Vector3 size) {
         var arrays = new List<(Material, Godot.Collections.Array)>();
 
         var totalLength = new Vector3(size.X, 0, 0);
@@ -71,10 +73,10 @@ public class PieceTypes {
             arrays.Add(new(surface.Material, surfaceArray));
         }
 
-        return arrays;
+        return new PieceSurfaceResult(arrays);
     }
 
-    public static List<(Material, Godot.Collections.Array)> GenerateHillArrays(List<ImportedMesh> surfaces, Vector3 size, int segments) {
+    public static PieceSurfaceResult GenerateHillArrays(List<ImportedSurface> surfaces, Vector3 size, int segments) {
         var arrays = new List<(Material, Godot.Collections.Array)>();
 
         foreach (var surface in surfaces) {
@@ -114,10 +116,10 @@ public class PieceTypes {
             arrays.Add(new(surface.Material, surfaceArray));
         }
 
-        return arrays;
+        return new PieceSurfaceResult(arrays);
     }
 
-    public static List<(Material, Godot.Collections.Array)> GenerateCurveArraysByDeg(List<ImportedMesh> surfaces, Vector3 size, bool right, float degree, int segments) {
+    public static PieceSurfaceResult GenerateCurveArraysByDeg(List<ImportedSurface> surfaces, Vector3 size, bool right, float degree, int segments) {
         var arrays = new List<(Material, Godot.Collections.Array)>();
 
         var circleCenter = new Vector3(0, 0, right ? size.X : -size.X);
@@ -157,17 +159,17 @@ public class PieceTypes {
             arrays.Add(new(surface.Material, surfaceArray));
         }
 
-        return arrays;
+        return new PieceSurfaceResult(arrays);
     }
 
-    public static List<(Material, Godot.Collections.Array)> GenerateCrossingArrays(List<ImportedMesh> surfaces, Vector3 size, bool left, bool right) {
+    public static PieceSurfaceResult GenerateCrossingArrays(List<ImportedSurface> surfaces, Vector3 size, bool left, bool right) {
         var arrays = new List<(Material, Godot.Collections.Array)>();
 
         var length = new Vector3(size.X, 0, 0);
         var largeOffset = length * 0.75f;
         var smallOffset = length * 0.25f;
 
-        List<ImportedMesh> darkestSurfaces = [];
+        List<ImportedSurface> darkestSurfaces = [];
         foreach (var surface in surfaces) {
             if (darkestSurfaces.Count == 0) {
                 darkestSurfaces.Add(surface);
@@ -303,7 +305,7 @@ public class PieceTypes {
             arrays.Add(new(darkestSurfaces.First().Material, surfaceArray)); // TODO
         }
 
-        return arrays;
+        return new PieceSurfaceResult(arrays);
     }
 
 
