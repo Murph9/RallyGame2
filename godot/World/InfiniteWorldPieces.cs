@@ -7,8 +7,6 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World;
 
-record PiecePlacedDetails(string Name, Transform3D FinalTransform);
-
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D, IWorld {
 
@@ -22,7 +20,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
-    private PiecePlacedDetails _nextTransform;
+    private InfiniteCheckpoint _nextTransform;
 
     private double _pieceDistanceLimit;
 
@@ -52,7 +50,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         boxBody.Position = new Vector3(0, -0.501f, 0);
         AddChild(boxBody);
 
-        _nextTransform = new PiecePlacedDetails(null, Transform3D.Identity);
+        _nextTransform = new InfiniteCheckpoint(null, Transform3D.Identity, Transform3D.Identity, Vector3.Zero);
 
         // use the base location as the first checkpoint
         _checkpoints.Add(new(Transform3D.Identity, null, 0));
@@ -124,7 +122,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         // TODO there has to be a way to do this with inbuilt methods:
         var pos = _nextTransform.FinalTransform.Origin + _nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Origin;
         var rot = (_nextTransform.FinalTransform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
-        _nextTransform = new PiecePlacedDetails(piece.Name, new Transform3D(new Basis(rot), pos));
+        _nextTransform = new InfiniteCheckpoint(piece.Name, _nextTransform.FinalTransform, new Transform3D(new Basis(rot), pos), Vector3.Zero);
 
         // the transform is expected to be in the direction of travel here
         EmitSignal(SignalName.PieceAdded, transform);
@@ -132,7 +130,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     public InfiniteCheckpoint GetInitialSpawn() {
         if (_placedPieces == null || _placedPieces.Count() == 0) {
-            return new InfiniteCheckpoint(CAR_ROTATION_OFFSET, Vector3.Zero);
+            return new InfiniteCheckpoint("start", CAR_ROTATION_OFFSET, Transform3D.Identity, Vector3.Zero);
         }
 
         return GetAllCurrentCheckpoints().First();
@@ -148,7 +146,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         return _checkpoints
             .Select(x => x.Item1)
             .Append(_nextTransform.FinalTransform)
-            .Select(x => new InfiniteCheckpoint(new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _pieceGen.TrafficLeftSideOffset))
+            .Select(x => new InfiniteCheckpoint(null, new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _pieceGen.TrafficLeftSideOffset))
             .ToList();
     }
 

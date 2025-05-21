@@ -170,18 +170,18 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return true;
     }
 
-    public Transform3D GetInitialSpawn() => _world.GetInitialSpawn().Transform;
+    public Transform3D GetInitialSpawn() => _world.GetInitialSpawn().StartTransform;
 
     public Transform3D GetPassedCheckpoint(Vector3 pos) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
         var index = GetClosestToPieceIndex(checkpoints, pos);
-        return checkpoints[Math.Max(0, index - 1)].Transform;
+        return checkpoints[Math.Max(0, index - 1)].StartTransform;
     }
 
     public Transform3D GetNextCheckpoint(Vector3 pos) {
         var checkpoints = _world.GetAllCurrentCheckpoints().ToArray();
         var indexes = GetNextCheckpointIndexes(checkpoints, pos, false);
-        return checkpoints[indexes.First()].Transform;
+        return checkpoints[indexes.First()].StartTransform;
     }
 
     public Transform3D GetNextCheckpoint(Vector3 pos, bool inReverse, int positionIndex) => GetNextCheckpoints(pos, inReverse, positionIndex).First();
@@ -194,7 +194,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         foreach (var index in indexes) {
             var checkpoint = checkpoints[index];
             var originOffset = checkpoint.LeftOffset * positionIndex;
-            list.Add(new Transform3D(checkpoint.Transform.Basis, checkpoint.Transform.Origin + originOffset));
+            list.Add(new Transform3D(checkpoint.StartTransform.Basis, checkpoint.StartTransform.Origin + originOffset));
         }
 
         return list;
@@ -220,9 +220,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         // figure out we are past the current checkpoint
         // we get fake an angle bisector of the 3 checkpoints around the closest one
         // then figure out which side we are closer to compared with the distance bewteen the checkpoints
-        var curCheckpoint = checkpoints[closestIndex].Transform.Origin;
-        var beforeCheckpoint = checkpoints[closestIndex + reverseOffset * -1].Transform.Origin;
-        var afterCheckpoint = checkpoints[closestIndex + reverseOffset].Transform.Origin;
+        var curCheckpoint = checkpoints[closestIndex].StartTransform.Origin;
+        var beforeCheckpoint = checkpoints[closestIndex + reverseOffset * -1].StartTransform.Origin;
+        var afterCheckpoint = checkpoints[closestIndex + reverseOffset].StartTransform.Origin;
 
         var beforeDistanceDiff = beforeCheckpoint.DistanceTo(curCheckpoint) - beforeCheckpoint.DistanceTo(pos);
         var afterDistanceDiff = afterCheckpoint.DistanceTo(curCheckpoint) - afterCheckpoint.DistanceTo(pos);
@@ -253,7 +253,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         for (int i = 0; i < checkpoints.Length; i++) {
             var checkpoint = checkpoints[i];
-            var currentDistance = checkpoint.Transform.Origin.DistanceSquaredTo(pos);
+            var currentDistance = checkpoint.StartTransform.Origin.DistanceSquaredTo(pos);
             if (currentDistance < closestDistance) {
                 closestIndex = i;
                 closestDistance = currentDistance;

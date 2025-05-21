@@ -53,7 +53,7 @@ public partial class StaticWorld : Node3D, IWorld {
     }
 
     public InfiniteCheckpoint GetInitialSpawn() {
-        return new InfiniteCheckpoint(Transform3D.Identity, Vector3.Zero);
+        return new InfiniteCheckpoint(null, Transform3D.Identity, Transform3D.Identity, Vector3.Zero);
     }
 
     public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
