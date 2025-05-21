@@ -5,14 +5,32 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.World.Procedural;
 
 public class StraightSceneParser {
+
+    public static (Vector3, Vector3) GetZExtents(ArrayMesh arrayMesh) {
+        (Vector3, Vector3) zExtents = new(new Vector3(0, 0, float.MaxValue), new Vector3(0, 0, float.MinValue));
+        for (var i = 0; i < arrayMesh.GetSurfaceCount(); i++) {
+            var surfaceArrays = arrayMesh.SurfaceGetArrays(i);
+            var vertices = (Vector3[])surfaceArrays[(int)Mesh.ArrayType.Vertex];
+
+            foreach (var v in vertices) {
+                if (!Mathf.IsZeroApprox(v.X))
+                    continue;
+                if (zExtents.Item1.Z > v.Z) zExtents.Item1 = v;
+                if (zExtents.Item2.Z < v.Z) zExtents.Item2 = v;
+            }
+        }
+
+        return zExtents;
+    }
+
     public static IEnumerable<ImportedSurface> GetList(ArrayMesh arrayMesh) {
         // scenes are split by material, so we need to get all the vertex groups
         for (var i = 0; i < arrayMesh.GetSurfaceCount(); i++) {
-            var material = arrayMesh.SurfaceGetMaterial(i);
-            var arrays = arrayMesh.SurfaceGetArrays(i);
+            var surfaceMaterial = arrayMesh.SurfaceGetMaterial(i);
+            var surfaceArrays = arrayMesh.SurfaceGetArrays(i);
 
-            var vertices = (Vector3[])arrays[(int)Mesh.ArrayType.Vertex];
-            var indices = ((int[])arrays[(int)Mesh.ArrayType.Index]).ToList();
+            var vertices = (Vector3[])surfaceArrays[(int)Mesh.ArrayType.Vertex];
+            var indices = ((int[])surfaceArrays[(int)Mesh.ArrayType.Index]).ToList();
 
             // calculate if you get from an index to every other
             var connections = new Dictionary<int, HashSet<int>>();
@@ -82,7 +100,7 @@ public class StraightSceneParser {
 
             // then map the index groups back to vertex groups
             foreach (var vertexGroup in indicesGroups.Select(x => x.Where(y => outVertMap.ContainsKey(y)).Select(y => outVertMap[y]))) {
-                yield return new ImportedSurface(material, vertexGroup.ToList());
+                yield return new ImportedSurface(surfaceMaterial, vertexGroup.ToList());
             }
         }
     }
