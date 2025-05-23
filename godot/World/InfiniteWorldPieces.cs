@@ -117,6 +117,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
         }
 
+        GenerateWalls(piece, outDirection, toAdd.Transform);
+
         _nextTransform = new InfiniteCheckpoint(piece.Name, _nextTransform.FinalTransform, _nextTransform.FinalTransform * outDirection.FinalTransform, Vector3.Zero);
 
         // the transform is expected to be in the direction of travel here
@@ -151,6 +153,74 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             return checkpointTuple.Item3;
         }
         return -1;
+    }
+
+    private void GenerateWalls(WorldPiece piece, WorldPieceDir outDirection, Transform3D transform) {
+
+        // create some fences so stop falling off
+        var edgeMax = piece.GetZMaxOffsets(outDirection).ToArray();
+        var edgeMin = piece.GetZMinOffsets(outDirection).ToArray();
+        const float fenceHeight = 1.5f;
+        var fenceHeightVector = new Vector3(0, fenceHeight, 0);
+
+        // draw fence posts
+        foreach (var edgePoint in edgeMax.Concat(edgeMin)) {
+            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgePoint, transform * edgePoint + fenceHeightVector, 0.2f));
+        }
+
+        for (var i = 0; i < edgeMax.Length - 1; i++) {
+            // draw fence side beams
+            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgeMax[i] + fenceHeightVector, transform * edgeMax[i + 1] + fenceHeightVector, 0.2f));
+
+            // give collision
+            var body3d = new StaticBody3D() {
+                PhysicsMaterialOverride = new PhysicsMaterial() {
+                    Friction = 0,
+                    Bounce = 0
+                }
+            };
+            body3d.AddChild(new CollisionShape3D() {
+                Shape = new ConvexPolygonShape3D() {
+                    Points = [
+                        transform * edgeMax[i],
+                        transform * edgeMax[i + 1],
+                        transform * edgeMax[i] + fenceHeightVector,
+
+                        transform * edgeMax[i] + fenceHeightVector,
+                        transform * edgeMax[i + 1],
+                        transform * edgeMax[i + 1] + fenceHeightVector
+                    ]
+                }
+            });
+            AddChild(body3d);
+        }
+        for (var i = 0; i < edgeMin.Length - 1; i++) {
+            // draw fence side beams
+            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgeMin[i] + fenceHeightVector, transform * edgeMin[i + 1] + fenceHeightVector, 0.2f));
+
+            // give collision
+            var body3d = new StaticBody3D() {
+                PhysicsMaterialOverride = new PhysicsMaterial() {
+                    Friction = 0,
+                    Bounce = 0
+                }
+            };
+            body3d.AddChild(new CollisionShape3D() {
+                Shape = new ConvexPolygonShape3D() {
+                    Points = [
+                        transform * edgeMin[i],
+                        transform * edgeMin[i + 1],
+                        transform * edgeMin[i] + fenceHeightVector,
+
+                        transform * edgeMin[i] + fenceHeightVector,
+                        transform * edgeMin[i + 1],
+                        transform * edgeMin[i + 1] + fenceHeightVector
+                    ]
+                }
+            });
+
+            AddChild(body3d);
+        }
     }
 }
 
