@@ -1,0 +1,28 @@
+{
+  "Parts": [
+    {
+      "color": "#dcbeff",
+      "name": "SuspensionRocket",
+      "icon": "suspension.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "FrontAntiroll": 23.0,
+          "FrontComp": 0.5,
+          "FrontMaxTravel": 0.1,
+          "FrontMinTravel": -0.1,
+          "FrontPreloadDistance": 0,
+          "FrontRelax": 0.7,
+          "FrontStiffness": 30,
+          "RearAntiroll": 23,
+          "RearComp": 0.5,
+          "RearMaxTravel": 0.1,
+          "RearMinTravel": -0.1,
+          "RearPreloadDistance": 0,
+          "RearRelax": 0.7,
+          "RearStiffness": 35
+        }
+      ]
+    }
+  ]
+}

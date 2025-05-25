@@ -1,0 +1,132 @@
+{
+  "aeroCrossSection": 0.47,
+  "areoLinearDrag": 0.012,
+  "camLookAtHeight": 1.3,
+  "camOffsetLength": -6,
+  "camOffsetHeight": 1.9,
+  "camShake": 0.000001,
+  "carModel": "rocket1_1.blend",
+  "driveFront": true,
+  "driveRear": true,
+  "engineFileName": "engine_Rocket",
+  "maxSteerAngle": 0.3,
+  "minDriftAngle": 2,
+  "name": "rocket",
+  "suspensionFileName": "suspension_Rocket",
+  "tractionControl": true,
+  "tractionFileName": "traction_Normal",
+  "wheelDetails": [
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3,
+      "TyreWearRate": 0.001
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3,
+      "TyreWearRate": 0.001
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3,
+      "TyreWearRate": 0.001
+    },
+    {
+      "mass": 10,
+      "modelName": "wheel1.blend",
+      "radius": 0.3,
+      "width": 0.3,
+      "TyreWearRate": 0.001
+    }
+  ],
+  "Parts": [
+    {
+      "color": "#e6194B",
+      "name": "Brakes",
+      "icon": "brakes.png",
+      "levelCost": [0, 1000],
+      "levels": [
+        { "BrakeMaxTorque": 1500, "BrakeAbsTimeout": 0.04 },
+        { "BrakeMaxTorque": 3000, "BrakeAbsTimeout": 0.03 }
+      ]
+    },
+    {
+      "color": "#ffe119",
+      "name": "Transmission",
+      "icon": "transmission.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "TransFinaldrive": 2.5,
+          "TransGearRatios": [
+            -5, 5, 3.23, 2.19, 1.71, 1.39, 1.16, 0.93, 0.81, 0.74
+          ],
+          "TransPowerBalance": 0.6
+        }
+      ]
+    },
+    {
+      "color": "#f032e6",
+      "name": "Flywheel and Clutch",
+      "icon": "clutch_flywheel.png",
+      "levelCost": [0, 1400],
+      "levels": [{ "AutoChangeTime": 0.15 }, { "AutoChangeTime": 0.1 }]
+    },
+    {
+      "color": "#3cb44b",
+      "name": "Nitro",
+      "icon": "nitro.png",
+      "levelCost": [0, 1500],
+      "levels": [
+        {
+          "NitroForce": 0,
+          "NitroMax": 0,
+          "NitroEnabled": false,
+          "NitroRate": 0
+        },
+        {
+          "NitroForce": 500,
+          "NitroMax": 15,
+          "NitroEnabled": true,
+          "NitroRate": 1
+        }
+      ]
+    },
+    {
+      "color": "#ffffdd",
+      "name": "Chassis and Weight Reduction",
+      "icon": "chassis_weight.png",
+      "levelCost": [0, 1500],
+      "levels": [
+        { "AeroDownforce": 2, "AeroDrag": 0.15, "BodyMass": 1500 },
+        { "AeroDownforce": 2, "AeroDrag": 0.15, "BodyMass": 1455 }
+      ]
+    },
+    {
+      "color": "#42d4f4",
+      "name": "Rear Spoiler",
+      "icon": "rear_spoiler.png",
+      "levelCost": [0, 500],
+      "levels": [
+        { "AeroDownforce": 0, "AeroDrag": 0 },
+        { "AeroDownforce": 1, "AeroDrag": 0.05 }
+      ]
+    },
+    {
+      "color": "#911eb4",
+      "name": "Front Bumper",
+      "icon": "front_bumper.png",
+      "levelCost": [0, 500],
+      "levels": [
+        { "AeroDownforce": 0, "AeroDrag": 0 },
+        { "AeroDownforce": 1, "AeroDrag": 0.05 }
+      ]
+    }
+  ]
+}

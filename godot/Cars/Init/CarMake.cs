@@ -7,6 +7,7 @@ public enum CarMake {
     Normal,
     Runner,
     Muscle,
+    Rocket,
     /*Rally,
 	Roadster,
 
@@ -22,7 +23,6 @@ public enum CarMake {
 	Hill,
 
 	WhiteSloth,
-	Rocket,
 
 	Debug*/
 }

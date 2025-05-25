@@ -2,7 +2,7 @@
   "Parts": [
     {
       "color": "#dcbeff",
-      "name": "Suspension",
+      "name": "SuspensionRunner",
       "icon": "suspension.png",
       "levelCost": [0],
       "levels": [
