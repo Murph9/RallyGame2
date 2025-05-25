@@ -65,6 +65,7 @@ public partial class Car : Node3D {
         RigidBody.Owner = null;
 
         // verify the collision bodies are convex collision shapes (for performance)
+        // https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/node_type_customization.html
         if (!RigidBody.Name.ToString().Contains("-convcol")) {
             throw new Exception("The rigidbody of " + Details.Name + " doesn't have the correct type, must have the name '-convcol', but has " + RigidBody.Name);
         } else {
