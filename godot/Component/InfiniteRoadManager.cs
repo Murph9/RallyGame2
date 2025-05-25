@@ -161,7 +161,10 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
         }
-        var car = new Car(CarMake.Normal.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, RandHelper.GetRandColour(_rand));
+
+        var carMake = RandHelper.RandFromList(Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
+
+        var car = new Car(carMake.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, RandHelper.GetRandColour(_rand));
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeedMs;
 
         AddChild(car);
