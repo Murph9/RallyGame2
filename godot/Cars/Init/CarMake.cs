@@ -6,12 +6,12 @@ namespace murph9.RallyGame2.godot.Cars.Init;
 public enum CarMake {
     Normal,
     Runner,
+    Muscle,
     /*Rally,
 	Roadster,
 
 	Hunter,
 	Ricer,
-	Muscle,
 	Wagon,
 	Bus,
 

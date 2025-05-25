@@ -1,0 +1,28 @@
+{
+  "Parts": [
+    {
+      "color": "#dcbeff",
+      "name": "SuspensionMuscle",
+      "icon": "suspension.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "FrontAntiroll": 0.5,
+          "FrontComp": 0.19,
+          "FrontMaxTravel": 0.25,
+          "FrontMinTravel": -0.2,
+          "FrontPreloadDistance": 0.1,
+          "FrontRelax": 0.21,
+          "FrontStiffness": 14,
+          "RearAntiroll": 0.5,
+          "RearComp": 0.19,
+          "RearMaxTravel": 0.25,
+          "RearMinTravel": -0.2,
+          "RearPreloadDistance": 0.1,
+          "RearRelax": 0.21,
+          "RearStiffness": 14
+        }
+      ]
+    }
+  ]
+}
