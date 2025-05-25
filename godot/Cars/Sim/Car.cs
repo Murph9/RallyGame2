@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +63,17 @@ public partial class Car : Node3D {
         parent.RemoveChild(RigidBody); // remove the scene parent
         parent.QueueFree();
         RigidBody.Owner = null;
+
+        // verify the collision bodies are convex collision shapes (for performance)
+        if (!RigidBody.Name.ToString().Contains("-convcol")) {
+            throw new Exception("The rigidbody of " + Details.Name + " doesn't have the correct type, must have the name '-convcol', but has " + RigidBody.Name);
+        } else {
+            foreach (var child in RigidBody.GetAllChildrenOfType<CollisionShape3D>()) {
+                if (!child.Shape.GetType().IsAssignableFrom(typeof(ConvexPolygonShape3D))) {
+                    throw new Exception("The rigidbody of " + Details.Name + "doesn't have the correct collision type, should be " + nameof(ConvexPolygonShape3D) + " but is " + child.Shape.GetType());
+                }
+            }
+        }
 
         if (!Inputs.IsAi) {
             // only report contacts on the player car
