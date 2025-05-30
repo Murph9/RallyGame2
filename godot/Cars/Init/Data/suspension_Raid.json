@@ -1,0 +1,28 @@
+{
+  "Parts": [
+    {
+      "color": "#dcbeff",
+      "name": "SuspensionRaid",
+      "icon": "suspension.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "FrontAntiroll": 1,
+          "FrontComp": 0.36,
+          "FrontMaxTravel": 0.3,
+          "FrontMinTravel": -0.1,
+          "FrontPreloadDistance": 0.1,
+          "FrontRelax": 0.6,
+          "FrontStiffness": 12,
+          "RearAntiroll": 1,
+          "RearComp": 0.36,
+          "RearMaxTravel": 0.3,
+          "RearMinTravel": -0.1,
+          "RearPreloadDistance": 0.1,
+          "RearRelax": 0.6,
+          "RearStiffness": 12
+        }
+      ]
+    }
+  ]
+}

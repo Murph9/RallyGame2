@@ -8,8 +8,8 @@ public enum CarMake {
     Runner,
     Muscle,
     Rocket,
-    /*Rally,
-	Roadster,
+    Raid,
+    /*Roadster,
 
 	Hunter,
 	Ricer,
