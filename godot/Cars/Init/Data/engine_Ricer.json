@@ -1,0 +1,34 @@
+{
+  "engineInertia": 10,
+  "idlerpm": 1000,
+  "name": "e_Ricer",
+  "sound": "sounds/engine.wav",
+  "baseTorqueCurve": [0, 50, 150, 210, 226, 223, 200, 140],
+  "Parts": [
+    {
+      "color": "#010101",
+      "name": "base engine",
+      "icon": "engine.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "CombustionEfficiency": 1,
+          "Compression": 10,
+          "CoolingRate": 50,
+          "CylinderBore": 0.1,
+          "EngineMass": 75,
+          "ExhaustAirEffiency": 1,
+          "IdleDrag": 0.1,
+          "IntakeAirEffiency": 1,
+          "MaxRpm": 6700,
+          "PistonCount": 4,
+          "StrokeLength": 0.1,
+          "TransmissionEfficiency": 0.9,
+          "TurboAirMult": 1,
+          "TurboAirStartRPM": 0,
+          "FuelByRpmRate": 0.004
+        }
+      ]
+    }
+  ]
+}

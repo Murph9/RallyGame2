@@ -1,0 +1,28 @@
+{
+  "Parts": [
+    {
+      "color": "#dcbeff",
+      "name": "SuspensionRicer",
+      "icon": "suspension.png",
+      "levelCost": [0],
+      "levels": [
+        {
+          "FrontAntiroll": 40,
+          "FrontComp": 0.5,
+          "FrontMaxTravel": 0.1,
+          "FrontMinTravel": -0.1,
+          "FrontPreloadDistance": 0,
+          "FrontRelax": 0.5,
+          "FrontStiffness": 35,
+          "RearAntiroll": 40,
+          "RearComp": 0.5,
+          "RearMaxTravel": 0.1,
+          "RearMinTravel": -0.1,
+          "RearPreloadDistance": 0,
+          "RearRelax": 0.5,
+          "RearStiffness": 35
+        }
+      ]
+    }
+  ]
+}

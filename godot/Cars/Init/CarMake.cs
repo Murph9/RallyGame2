@@ -9,22 +9,7 @@ public enum CarMake {
     Muscle,
     Rocket,
     Raid,
-    /*Roadster,
-
-	Hunter,
-	Ricer,
-	Wagon,
-	Bus,
-
-	Ultra,
-	LeMans,
-	Inline,
-	TouringCar,
-	Hill,
-
-	WhiteSloth,
-
-	Debug*/
+    Ricer,
 }
 
 public static class CarMakeExtensions {
