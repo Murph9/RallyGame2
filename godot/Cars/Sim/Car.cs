@@ -80,6 +80,21 @@ public partial class Car : Node3D {
             // only report contacts on the player car
             RigidBody.ContactMonitor = true;
             RigidBody.MaxContactsReported = 2;
+        } else {
+            // use a simplified model for the collision if its an ai
+            var first = RigidBody.GetAllChildrenOfType<CollisionShape3D>().First();
+            foreach (var child in RigidBody.GetAllChildrenOfType<CollisionShape3D>()) {
+                child.GetParent().RemoveChild(child);
+                child.Owner = null;
+            }
+            var collisionShape = (ConvexPolygonShape3D)first.Shape;
+            var extents = MeshHelper.GetBoxExtents(collisionShape.Points);
+            var offset = (extents.Item1 + extents.Item2) / 2f;
+            first.Transform = new Transform3D(first.Transform.Basis, first.Transform.Origin + offset);
+            first.Shape = new BoxShape3D() {
+                Size = (extents.Item2 - extents.Item1) * 0.9f // some reduction to allow for ground clearence
+            };
+            RigidBody.AddChild(first);
         }
 
         // update the car colour
@@ -99,6 +114,9 @@ public partial class Car : Node3D {
         // set values from the details
         RigidBody.Mass = (float)Details.TotalMass;
         RigidBody.Transform = initialTransform ?? Transform3D.Identity;
+        RigidBody.PhysicsMaterialOverride = new PhysicsMaterial() {
+            Friction = 0.4f
+        };
         AddChild(RigidBody);
 
         Wheels = Details.WheelDetails.Select(x => new Wheel(this, x)).ToArray();
