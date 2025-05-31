@@ -26,6 +26,7 @@ DebugShapes="*res://Utilities/Debug3D/DebugShapes.cs"
 BackgroundAudio="*res://Component/BackgroundAudio.cs"
 HundredGlobalState="*res://Hundred/HundredGlobalState.cs"
 GlobalPostProcessing="*res://Component/GlobalPostProcessing.cs"
+WorldDustParticles="*res://Component/WorldDustParticles.cs"
 
 [dotnet]
 
