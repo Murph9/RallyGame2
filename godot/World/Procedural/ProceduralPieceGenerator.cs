@@ -143,9 +143,6 @@ public class ProceduralPieceGenerator : IPieceGenerator {
         var outDirection = piece.Directions.Skip(outIndex).First();
         var rot = (transform.Basis * outDirection.FinalTransform.Basis).GetRotationQuaternion().Normalized();
         var angle = rot.AngleTo(Quaternion.Identity);
-        if (angle > Math.PI / 2f) {
-            return false;
-        }
-        return true;
+        return angle <= Math.PI / 2f;
     }
 }

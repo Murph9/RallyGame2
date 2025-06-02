@@ -4,10 +4,11 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.World.Procedural;
 
-public class StraightSceneParser {
+public partial class StraightSceneParser {
 
-    public static (Vector3, Vector3) GetZExtents(ArrayMesh arrayMesh) {
-        (Vector3, Vector3) zExtents = new(new Vector3(0, 0, float.MaxValue), new Vector3(0, 0, float.MinValue));
+    public static PieceZExtents GetZExtents(ArrayMesh arrayMesh) {
+        var minZExtents = new Vector3(0, 0, float.MaxValue);
+        var maxZExtents = new Vector3(0, 0, float.MinValue);
         for (var i = 0; i < arrayMesh.GetSurfaceCount(); i++) {
             var surfaceArrays = arrayMesh.SurfaceGetArrays(i);
             var vertices = (Vector3[])surfaceArrays[(int)Mesh.ArrayType.Vertex];
@@ -15,12 +16,12 @@ public class StraightSceneParser {
             foreach (var v in vertices) {
                 if (!Mathf.IsZeroApprox(v.X))
                     continue;
-                if (zExtents.Item1.Z > v.Z) zExtents.Item1 = v;
-                if (zExtents.Item2.Z < v.Z) zExtents.Item2 = v;
+                if (minZExtents.Z > v.Z) minZExtents = v;
+                if (maxZExtents.Z < v.Z) maxZExtents = v;
             }
         }
 
-        return zExtents;
+        return new PieceZExtents(minZExtents, maxZExtents);
     }
 
     public static IEnumerable<ImportedSurface> GetList(ArrayMesh arrayMesh) {

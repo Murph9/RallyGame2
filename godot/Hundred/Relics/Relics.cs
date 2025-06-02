@@ -111,8 +111,6 @@ public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
         base._Process(self, delta);
 
         foreach (var rivalRace in _startTimeTracking) {
-            GD.Print("In rival race: " + rivalRace);
-
             // don't give out after 2 mins
             if (OutputStrength > 0 && _relicManager.HundredGlobalState.TotalTimePassed - rivalRace.Value > 120 * InputStrength) {
                 GD.Print(".. but its going too long");

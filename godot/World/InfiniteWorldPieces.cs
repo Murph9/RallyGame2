@@ -22,6 +22,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
     private InfiniteCheckpoint _nextTransform;
 
+    private readonly MeshInstance3D _treeModel;
+
     private double _pieceDistanceLimit;
 
     [Signal]
@@ -54,6 +56,9 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
         // use the base location as the first checkpoint
         _checkpoints.Add(new(Transform3D.Identity, null, 0));
+
+        // TODO please load a model or make this better:
+        _treeModel = DebugHelper.BoxLine(Colors.Green, Vector3.Zero, Vector3.Up * 2);
     }
 
     public override void _Ready() {
@@ -162,6 +167,21 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         var edgeMin = piece.GetZMinOffsets(outDirection).ToArray();
         const float fenceHeight = 1.5f;
         var fenceHeightVector = new Vector3(0, fenceHeight, 0);
+
+        // draw some 'trees' out of the track
+        foreach (var (First, Second) in edgeMin.Zip(edgeMax)) {
+            var diff = (First - Second).Normalized();
+
+            var pos = transform * (First + diff * 2);
+            var model = (MeshInstance3D)_treeModel.Duplicate();
+            model.Transform = new Transform3D(model.Transform.Basis, pos);
+            AddChild(model);
+
+            pos = transform * (Second - diff * 2);
+            model = (MeshInstance3D)_treeModel.Duplicate();
+            model.Transform = new Transform3D(model.Transform.Basis, pos);
+            AddChild(model);
+        }
 
         // draw fence posts
         foreach (var edgePoint in edgeMax.Concat(edgeMin)) {

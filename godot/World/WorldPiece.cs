@@ -9,10 +9,9 @@ public record WorldPiece {
     public string Name { get; init; }
     public MeshInstance3D Model { get; init; }
     public WorldPieceDir[] Directions { get; init; }
+    private PieceZExtents _pieceZExtents;
 
-    private readonly (Vector3, Vector3) _zOffsets;
-
-    public WorldPiece(string name, MeshInstance3D model, IEnumerable<WorldPieceDir> directions, (Vector3, Vector3) zOffsets) {
+    public WorldPiece(string name, MeshInstance3D model, IEnumerable<WorldPieceDir> directions, PieceZExtents zExtents) {
         if (directions == null || !directions.Any()) {
             throw new Exception("World piece found with no directions: " + directions);
         }
@@ -20,20 +19,20 @@ public record WorldPiece {
         Name = name;
         Model = model;
         Directions = directions.ToArray();
-        _zOffsets = zOffsets;
+        _pieceZExtents = zExtents;
     }
 
     public IEnumerable<Vector3> GetZMinOffsets(WorldPieceDir dir) {
-        yield return _zOffsets.Item1;
+        yield return _pieceZExtents.MinZPos;
         foreach (var d in dir.Transforms) {
-            yield return d * _zOffsets.Item1;
+            yield return d * _pieceZExtents.MinZPos;
         }
     }
 
     public IEnumerable<Vector3> GetZMaxOffsets(WorldPieceDir dir) {
-        yield return _zOffsets.Item2;
+        yield return _pieceZExtents.MaxZPos;
         foreach (var d in dir.Transforms) {
-            yield return d * _zOffsets.Item2;
+            yield return d * _pieceZExtents.MaxZPos;
         }
     }
 }
