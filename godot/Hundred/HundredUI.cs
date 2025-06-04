@@ -46,6 +46,9 @@ public partial class HundredUI : HBoxContainer {
 
         _inProgressUi = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredInProgressUi))).Instantiate<HundredInProgressUi>();
         GetNode<VBoxContainer>("VBoxContainerRight").AddChild(_inProgressUi);
+
+        // and initialize the UI with the goal
+        GoalChanged();
     }
 
     public override void _Process(double delta) {
@@ -74,14 +77,11 @@ public partial class HundredUI : HBoxContainer {
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
         }
 
-        var goalInfo = GetNode<Label>("%GoalLabel");
-        goalInfo.Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
-
         var shopInfo = GetNode<Label>("%ShopTimerLabel");
         if (state.ShopCooldownTimer > 0) {
             shopInfo.Text = "Shop cooldown";
         } else if (state.ShopStoppedTimer > 0) {
-            shopInfo.Text = "Shop opening soon";
+            shopInfo.Text = "Opening Shop.. in " + Math.Round(state.ShopStoppedTriggerAmount - state.ShopStoppedTimer, 1) + "sec";
         } else {
             shopInfo.Text = "";
         }
