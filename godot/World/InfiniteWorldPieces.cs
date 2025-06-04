@@ -10,7 +10,7 @@ namespace murph9.RallyGame2.godot.World;
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D, IWorld {
 
-    private const int MAX_COUNT = 100;
+    private const int REMOVE_PIECES_BEHIND_CAMERA_DISTANCE = 50;
     private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
 
     private readonly RandomNumberGenerator _rand = new();
@@ -74,21 +74,17 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     public override void _PhysicsProcess(double delta) {
-        // keep at most this many pieces
-        if (_placedPieces.Count >= MAX_COUNT) {
-            // keep max piece count by removing the oldest one
-            var removal = _placedPieces.First();
-
-            _placedPieces.Remove(removal);
-            _checkpoints.RemoveAll(x => x.Item2 == removal);
-            RemoveChild(removal);
+        // attempt to remove the oldest piece
+        var firstPiece = _placedPieces.FirstOrDefault();
+        var cameraPos = GetViewport().GetCamera3D().GlobalPosition;
+        if (firstPiece != null && firstPiece.GlobalPosition.DistanceTo(cameraPos) > REMOVE_PIECES_BEHIND_CAMERA_DISTANCE) {
+            _placedPieces.Remove(firstPiece);
+            _checkpoints.RemoveAll(x => x.Item2 == firstPiece);
+            RemoveChild(firstPiece);
         }
 
-        // add in queued pieces
-        var pos = GetViewport().GetCamera3D().Position;
-        var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
-
         // update placementStrategy position for math
+        var currentTransform = new Transform3D(_nextTransform.FinalTransform.Basis, _nextTransform.FinalTransform.Origin);
         _placementStrategy.NextTransform = currentTransform;
     }
 
@@ -119,10 +115,10 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             var checkTransform = transform * checkpoint;
             _checkpoints.Add(new(checkTransform, toAdd, checkpointDistance));
 
-            AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkTransform, 2, 0.4f));
+            toAdd.AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkpoint, 2, 0.4f));
         }
 
-        GenerateWalls(piece, outDirection, toAdd.Transform);
+        GenerateWalls(toAdd, piece, outDirection);
 
         _nextTransform = new InfiniteCheckpoint(piece.Name, _nextTransform.FinalTransform, _nextTransform.FinalTransform * outDirection.FinalTransform, Vector3.Zero);
 
@@ -160,7 +156,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         return -1;
     }
 
-    private void GenerateWalls(WorldPiece piece, WorldPieceDir outDirection, Transform3D transform) {
+    private void GenerateWalls(Node3D node, WorldPiece piece, WorldPieceDir outDirection) {
+        // var transform = node.GlobalTransform;
 
         // create some fences so stop falling off
         var edgeMax = piece.GetZMaxOffsets(outDirection).ToArray();
@@ -172,25 +169,25 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         foreach (var (First, Second) in edgeMin.Zip(edgeMax)) {
             var diff = (First - Second).Normalized();
 
-            var pos = transform * (First + diff * 2);
+            var pos = (First + diff * 2);
             var model = (MeshInstance3D)_treeModel.Duplicate();
             model.Transform = new Transform3D(model.Transform.Basis, pos);
-            AddChild(model);
+            node.AddChild(model);
 
-            pos = transform * (Second - diff * 2);
+            pos = (Second - diff * 2);
             model = (MeshInstance3D)_treeModel.Duplicate();
             model.Transform = new Transform3D(model.Transform.Basis, pos);
-            AddChild(model);
+            node.AddChild(model);
         }
 
         // draw fence posts
         foreach (var edgePoint in edgeMax.Concat(edgeMin)) {
-            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgePoint, transform * edgePoint + fenceHeightVector, 0.2f));
+            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgePoint, edgePoint + fenceHeightVector, 0.2f));
         }
 
         for (var i = 0; i < edgeMax.Length - 1; i++) {
             // draw fence side beams
-            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgeMax[i] + fenceHeightVector, transform * edgeMax[i + 1] + fenceHeightVector, 0.2f));
+            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMax[i] + fenceHeightVector, edgeMax[i + 1] + fenceHeightVector, 0.2f));
 
             // give collision
             var body3d = new StaticBody3D() {
@@ -202,21 +199,21 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             body3d.AddChild(new CollisionShape3D() {
                 Shape = new ConvexPolygonShape3D() {
                     Points = [
-                        transform * edgeMax[i],
-                        transform * edgeMax[i + 1],
-                        transform * edgeMax[i] + fenceHeightVector,
+                        edgeMax[i],
+                        edgeMax[i + 1],
+                        edgeMax[i] + fenceHeightVector,
 
-                        transform * edgeMax[i] + fenceHeightVector,
-                        transform * edgeMax[i + 1],
-                        transform * edgeMax[i + 1] + fenceHeightVector
+                        edgeMax[i] + fenceHeightVector,
+                        edgeMax[i + 1],
+                        edgeMax[i + 1] + fenceHeightVector
                     ]
                 }
             });
-            AddChild(body3d);
+            node.AddChild(body3d);
         }
         for (var i = 0; i < edgeMin.Length - 1; i++) {
             // draw fence side beams
-            AddChild(DebugHelper.BoxLine(Colors.Brown, transform * edgeMin[i] + fenceHeightVector, transform * edgeMin[i + 1] + fenceHeightVector, 0.2f));
+            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMin[i] + fenceHeightVector, edgeMin[i + 1] + fenceHeightVector, 0.2f));
 
             // give collision
             var body3d = new StaticBody3D() {
@@ -228,18 +225,18 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             body3d.AddChild(new CollisionShape3D() {
                 Shape = new ConvexPolygonShape3D() {
                     Points = [
-                        transform * edgeMin[i],
-                        transform * edgeMin[i + 1],
-                        transform * edgeMin[i] + fenceHeightVector,
+                        edgeMin[i],
+                        edgeMin[i + 1],
+                        edgeMin[i] + fenceHeightVector,
 
-                        transform * edgeMin[i] + fenceHeightVector,
-                        transform * edgeMin[i + 1],
-                        transform * edgeMin[i + 1] + fenceHeightVector
+                        edgeMin[i] + fenceHeightVector,
+                        edgeMin[i + 1],
+                        edgeMin[i + 1] + fenceHeightVector
                     ]
                 }
             });
 
-            AddChild(body3d);
+            node.AddChild(body3d);
         }
     }
 }
