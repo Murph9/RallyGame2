@@ -10,6 +10,7 @@ public enum GoalType {
     AverageSpeedSection,
     TimeTrial,
     MinimumSpeed,
+    SingularSpeed,
 }
 
 
@@ -20,7 +21,8 @@ public static class GoalTypeExtensions {
         {GoalType.SpeedTrap, new("Get a particular speed at the end of the zone")},
         {GoalType.AverageSpeedSection, new("Maintain a speed average until the end")},
         {GoalType.TimeTrial, new("Complete the section in under a minimum time")},
-        {GoalType.MinimumSpeed, new("Make sure you don't drop below the minimum speed")}
+        {GoalType.MinimumSpeed, new("Make sure you don't drop below the minimum speed")},
+        {GoalType.SingularSpeed, new("Hit a high speed at any point")}
     };
 
     public static string Description(this GoalType type) => DETAILS[type].Description;
@@ -38,6 +40,8 @@ public static class GoalTypeExtensions {
             GoalType.TimeTrial => totalLength / MyMath.KmhToMs(50 + 50 * distanceFraction),
             // formula: start at 25km/h -> 50km/h
             GoalType.MinimumSpeed => MyMath.KmhToMs(25 + 25 * distanceFraction),
+            // forumla: start at 75km/h -> 200km/h at the end
+            GoalType.SingularSpeed => MyMath.KmhToMs(75 + 125 * distanceFraction),
             _ => throw new Exception(type + " doesn't support a goal value"),
         };
     }

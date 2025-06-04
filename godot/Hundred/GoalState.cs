@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.Procedural;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -22,6 +23,7 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
     public bool? ZoneWon { get; private set; }
 
     public double TimeSpentBelowTargetSpeed { get; private set; }
+    public double HighestZoneSpeed { get; private set; }
 
     public double TargetScore => Type.GoalValue(GlobalZoneStartDistance, ZoneLength);
 
@@ -38,6 +40,7 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
             GoalType.AverageSpeedSection => TargetScore < (GlobalStartDistance + ZoneLength - ActualZoneStartDistance) / (gameTime - ActualZoneStartTime),
             GoalType.TimeTrial => TargetScore > (gameTime - ActualZoneStartTime),
             GoalType.MinimumSpeed => TimeSpentBelowTargetSpeed > 5, // TODO
+            GoalType.SingularSpeed => TargetScore < HighestZoneSpeed,
             GoalType.Nothing => true,
             _ => throw new Exception("Unknown type " + Type),
         };
@@ -50,6 +53,8 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
             if (carLinearVelocity < TargetScore) {
                 TimeSpentBelowTargetSpeed += delta;
             }
+
+            HighestZoneSpeed = Mathf.Max(carLinearVelocity, HighestZoneSpeed);
         }
     }
 
@@ -80,6 +85,8 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
                 return $"Target {Math.Round(TargetScore)} sec, remaining: {Math.Round(TargetScore - timeDiff, 2)} sec, distance remaining {Math.Round(remainingDistance, 2)} km";
             case GoalType.MinimumSpeed:
                 return $"Keep above {Math.Round(MyMath.MsToKmh(TargetScore))} km/h, Max time below 5 sec, current {Math.Round(TimeSpentBelowTargetSpeed, 2)} sec";
+            case GoalType.SingularSpeed:
+                return $"Hit the speed of {Math.Round(MyMath.MsToKmh(TargetScore))} km/h once, current best: {Math.Round(MyMath.MsToKmh(HighestZoneSpeed))} km/h";
         }
 
         return null;

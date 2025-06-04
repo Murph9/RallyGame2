@@ -13,8 +13,8 @@ An infinite world
 Ideas for goals:
 
 -   just hit a high speed once (not just at the end of the zone)
--   flip the car somewhere
--   hit like 5 traffic at a minimum speed
+-   flip your car somewhere
+-   hit like 5 different traffic (with colours?)
 
 -   spawn next to the road with a goal of driving 100km
     -   at some fixed amount X km you will have a goal to reach:
