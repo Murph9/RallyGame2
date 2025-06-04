@@ -12,6 +12,7 @@ public partial class HundredUI : HBoxContainer {
 
     private readonly Dictionary<string, Tuple<Part, Control>> _partMappings = [];
     private readonly Dictionary<Car, HundredInProgressItem> _rivalDetails = [];
+    private readonly Dictionary<HundredInProgressItem, Label> _uiLabelMap = [];
     private HundredInProgressItem _goalInProgress;
     private HundredInProgressUi _inProgressUi;
 
@@ -96,12 +97,12 @@ public partial class HundredUI : HBoxContainer {
         foreach (var relic in state.RelicManager.GetRelics()) {
             var hbox = new HBoxContainer();
 
-            hbox.AddChild(new Label() {
-                Text = relic.GetType().Name
-            });
             hbox.AddChild(new ColorRect() {
                 Color = Colors.Aqua,
-                CustomMinimumSize = new Vector2(50, 50),
+                CustomMinimumSize = new Vector2(45, 45),
+            });
+            hbox.AddChild(new Label() {
+                Text = relic.GetType().Name
             });
             hbox.AddChild(new Label() {
                 Text = relic.Delay > 0 ? Math.Round(relic.Delay, 1).ToString() : ""
@@ -111,24 +112,13 @@ public partial class HundredUI : HBoxContainer {
         }
 
         if (_goalInProgress != null) {
-            // TODO perf
-            foreach (var child in _goalInProgress.GetChildren().ToArray()) {
-                _goalInProgress.RemoveChild(child);
-            }
-
-            _goalInProgress.AddChild(new Label() {
-                Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed)
-            });
+            _uiLabelMap[_goalInProgress].Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
         }
 
         foreach (var rivalRaceUi in _rivalDetails) {
-            // TODO we don't support 2 rivals yet
             if (state.RivalRaceDetails.HasValue) {
-                // TODO perf
-                foreach (var child in rivalRaceUi.Value.GetChildren().ToArray()) {
-                    rivalRaceUi.Value.RemoveChild(child);
-                }
-                rivalRaceUi.Value.AddChild(new Label() { Text = "RivalRace: " + state.RivalRaceDetails.Value.Rival.Name });
+                // TODO fetch from the array when it exists
+                _uiLabelMap[rivalRaceUi.Value].Text = "RivalRace: " + state.RivalRaceDetails.Value.Rival.Name;
             }
         }
     }
@@ -146,19 +136,28 @@ public partial class HundredUI : HBoxContainer {
 
     private void GoalChanged() {
         if (_goalInProgress is not null) {
+            _uiLabelMap.Remove(_goalInProgress);
             _inProgressUi.Remove(_goalInProgress);
         }
         _goalInProgress = _inProgressUi.Add();
+
+        _uiLabelMap[_goalInProgress] = new Label();
+        _goalInProgress.AddChild(_uiLabelMap[_goalInProgress]);
     }
 
     private void RivalStarted(Car rival) {
         var uiElement = _inProgressUi.Add();
         _rivalDetails.Add(rival, uiElement);
+
+        _uiLabelMap[uiElement] = new Label();
+        uiElement.AddChild(_uiLabelMap[uiElement]);
     }
 
     private void RivalStopped(Car rival) {
         var uiElement = _rivalDetails[rival];
         _inProgressUi.Remove(uiElement);
         _rivalDetails.Remove(rival);
+
+        _uiLabelMap.Remove(uiElement);
     }
 }
