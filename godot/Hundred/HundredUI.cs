@@ -65,9 +65,6 @@ public partial class HundredUI : HBoxContainer {
         var progressLabel = GetNode<Label>("VBoxContainerLeft/VBoxContainerState/HBoxContainerDistance/Label");
         progressLabel.Text = Math.Round(value, 2) + " km";
 
-        var rivalInfo = GetNode<Label>("VBoxContainerLeft/VBoxContainerState/VBoxContainerRival/Label");
-        rivalInfo.Text = state.RivalRaceMessage;
-
         var moneyInfo = GetNode<Label>("VBoxContainerLeft/VBoxContainerState/VBoxContainerMoney/Label");
         moneyInfo.Text = "$" + state.Money;
 
@@ -116,10 +113,8 @@ public partial class HundredUI : HBoxContainer {
         }
 
         foreach (var rivalRaceUi in _rivalDetails) {
-            if (state.RivalRaceDetails.HasValue) {
-                // TODO fetch from the array when it exists
-                _uiLabelMap[rivalRaceUi.Value].Text = "RivalRace: " + state.RivalRaceDetails.Value.Rival.Name;
-            }
+            // TODO are you winning?
+            _uiLabelMap[rivalRaceUi.Value].Text = "RivalRace: " + rivalRaceUi.Key.Name;
         }
     }
 

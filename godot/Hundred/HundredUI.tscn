@@ -37,13 +37,6 @@ allow_greater = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="VBoxContainerRival" type="VBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainerLeft/VBoxContainerState/VBoxContainerRival"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-
 [node name="VBoxContainerMoney" type="VBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
 layout_mode = 2
 

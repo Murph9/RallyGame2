@@ -10,7 +10,13 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public readonly record struct RivalRace(Car Rival, float StartDistance, float RaceDistance, bool CheckpointSent);
+public class RivalRace(Car rival, float startDistance, float raceDistance) {
+    public Car Rival { get; init; } = rival;
+    public float StartDistance { get; init; } = startDistance;
+    public float RaceDistance { get; init; } = raceDistance;
+    public bool CheckpointSet { get; set; }
+    public string Message { get; set; }
+}
 
 public partial class HundredGlobalState : Node {
 
@@ -46,9 +52,10 @@ public partial class HundredGlobalState : Node {
 
     public float CurrentPlayerSpeed { get; private set; }
 
-    public RivalRace? RivalRaceDetails { get; private set; }
-    public string RivalRaceMessage { get; private set; }
+    public List<RivalRace> RivalRaceDetails { get; init; } = [];
     public double RivalWinBaseAmount { get; private set; }
+    public float RivalRaceDistance { get; private set; }
+    public float RivalRaceSpeedDiff { get; private set; }
 
     public int ShopPartCount { get; private set; }
     public int ShopRelicCount { get; private set; }
@@ -86,9 +93,10 @@ public partial class HundredGlobalState : Node {
         DistanceTravelled = 0; // m
         CurrentPlayerSpeed = 0; // m/s
 
-        RivalRaceDetails = null;
-        RivalRaceMessage = null;
+        RivalRaceDetails.Clear();
         RivalWinBaseAmount = 1000;
+        RivalRaceDistance = 100;
+        RivalRaceSpeedDiff = 3;
 
         ShopPartCount = 3;
         ShopRelicCount = 2;
@@ -163,27 +171,24 @@ public partial class HundredGlobalState : Node {
         CurrentPlayerSpeed = value;
     }
 
-    public void RivalStarted(RivalRace race, string message) {
-        RivalRaceDetails = race;
-        RivalRaceMessage = message;
+    public void RivalStarted(RivalRace rival, string message) {
+        RivalRaceDetails.Add(rival);
+        rival.Message = message;
 
-        EmitSignal(SignalName.RivalRaceStarted, race.Rival);
+        EmitSignal(SignalName.RivalRaceStarted, rival.Rival);
     }
 
-    public void RivalStopped() {
-        var rival = RivalRaceDetails.Value.Rival;
-        RivalRaceDetails = null;
+    public void RivalStopped(Car rival) {
+        // get rivalRace obj for that car
+        var rivalRace = RivalRaceDetails.Single(x => x.Rival == rival);
+        RivalRaceDetails.Remove(rivalRace);
 
         EmitSignal(SignalName.RivalRaceStopped, rival);
     }
 
-    public void RivalCheckpointSet() {
-        if (RivalRaceDetails.HasValue)
-            RivalRaceDetails = RivalRaceDetails.Value with { CheckpointSent = true };
-    }
-
     public void RivalRaceFinished(Car rival, bool playerWon, string message, float moneyDiff) {
-        RivalRaceMessage = message;
+        var rivalRace = RivalRaceDetails.Single(x => x.Rival == rival);
+        rivalRace.Message = message;
         if (playerWon)
             EmitSignal(SignalName.RivalRaceWon, rival, moneyDiff);
         else
