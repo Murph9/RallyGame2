@@ -34,6 +34,7 @@ Ideas for goals:
         -   win and get a random part (with rarity)
         -   if you lose you get nothing
     -   also get money per race
+    -   maybe they see you and try and match your speed
 -   traffic
 -   get money from making it distance or find along road
 -   shops spawn along route

@@ -9,7 +9,7 @@ namespace murph9.RallyGame2.godot.Hundred.Relics;
 
 public class CollisionDamageReductionRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
 
-    public override string DescriptionBBCode => $"Reduce the damage taken from collisions to {0.8f * (1f / InputStrength) * 100}%";
+    public override string DescriptionBBCode => $"Reduce the damage taken by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
     public void DamageTaken(Car self, float amount) {
         self.Damage -= amount * (1 - 0.2f) * (1f / InputStrength);
@@ -19,7 +19,7 @@ public class CollisionDamageReductionRelic(RelicManager relicManager, float stre
 public class BouncyRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IOnTrafficCollisionRelic {
     private static readonly float MASS_MULT = 2f;
 
-    public override string DescriptionBBCode => $"Other cars bounce off you at {InputStrength * MASS_MULT} strength";
+    public override string DescriptionBBCode => $"Other cars bounce off you at {Mathf.Round(InputStrength * MASS_MULT)} strength";
 
     public void TrafficCollision(Car self, Car otherCar, Vector3 relativeVelocity) {
         OutputStrength = (float)otherCar.Details.TotalMass * MASS_MULT;
@@ -49,7 +49,7 @@ public class JumpRelic : Relic, IOnKeyRelic {
 public class BigFanRelic : Relic {
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
-    public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {MAX_SPEED} km/h";
+    public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {Mathf.Round(MAX_SPEED)} km/h";
 
     public BigFanRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
@@ -68,7 +68,7 @@ public class BigFanRelic : Relic {
 }
 
 public class FuelReductionRelic : Relic, IOnPurchaseRelic {
-    public override string DescriptionBBCode => $"Reduces fuel use by {0.8f * (1f / InputStrength) * 100}%";
+    public override string DescriptionBBCode => $"Reduces fuel use down by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
     public bool Applied { get; private set; }
 
@@ -81,7 +81,7 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
 }
 
 public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
-    public override string DescriptionBBCode => $"Reduces tyre wear by {0.8f * (1f / InputStrength) * 100}%";
+    public override string DescriptionBBCode => $"Reduces tyre wear by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
     public bool Applied { get; private set; }
 

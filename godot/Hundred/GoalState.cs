@@ -2,7 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.Procedural;
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -37,9 +37,11 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
 
         ZoneWon = Type switch {
             GoalType.SpeedTrap => TargetScore < carLinearVelocity.Length(),
+
+            // TODO this doesn't work
             GoalType.AverageSpeedSection => TargetScore < (GlobalStartDistance + ZoneLength - ActualZoneStartDistance) / (gameTime - ActualZoneStartTime),
             GoalType.TimeTrial => TargetScore > (gameTime - ActualZoneStartTime),
-            GoalType.MinimumSpeed => TimeSpentBelowTargetSpeed > 5, // TODO
+            GoalType.MinimumSpeed => TimeSpentBelowTargetSpeed < 5, // TODO
             GoalType.SingularSpeed => TargetScore < HighestZoneSpeed,
             GoalType.Nothing => true,
             _ => throw new Exception("Unknown type " + Type),
@@ -58,6 +60,15 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
         }
     }
 
+    public string Description() {
+        var value = TargetScore;
+        if (Type.TargetIsSpeed()) {
+            value = MyMath.MsToKmh(value);
+        }
+
+        return string.Format(Type.GetDescriptionFormat(), value);
+    }
+
     public string ProgressString(double gameTime, float distance, float carLinearVelocity) {
         if (ZoneWon.HasValue) {
             var successString = ZoneWon.Value ? "" : "not ";
@@ -73,22 +84,34 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
 
         var remainingDistance = Math.Round(GlobalEndDistance - distance) / 1000;
 
+        var formatString = Type.GetActiveDetailFormat();
+
+        var args = new List<object>();
         switch (Type) {
             case GoalType.Nothing:
-                return "Nothing to do, Free win";
+                break;
             case GoalType.SpeedTrap:
-                return $"SpeedTrap: Hit {Math.Round(MyMath.MsToKmh(TargetScore))} km/h in {Math.Round(remainingDistance, 2)} km";
+                args.Add(MyMath.MsToKmh(TargetScore));
+                args.Add(remainingDistance);
+                break;
             case GoalType.AverageSpeedSection:
-                return $"AverageSpeed: Target {Math.Round(MyMath.MsToKmh(TargetScore))}km/h, current: {Math.Round(MyMath.MsToKmh(distance / gameTime), 1)}";
+                args.Add(MyMath.MsToKmh(TargetScore));
+                args.Add(MyMath.MsToKmh(distance / gameTime));
+                break;
             case GoalType.TimeTrial:
-                var timeDiff = gameTime - ActualZoneStartTime;
-                return $"Target {Math.Round(TargetScore)} sec, remaining: {Math.Round(TargetScore - timeDiff, 2)} sec, distance remaining {Math.Round(remainingDistance, 2)} km";
+                args.Add(TargetScore - (gameTime - ActualZoneStartTime));
+                args.Add(remainingDistance);
+                break;
             case GoalType.MinimumSpeed:
-                return $"Keep above {Math.Round(MyMath.MsToKmh(TargetScore))} km/h, Max time below 5 sec, current {Math.Round(TimeSpentBelowTargetSpeed, 2)} sec";
+                args.Add(MyMath.MsToKmh(TargetScore));
+                args.Add(TimeSpentBelowTargetSpeed);
+                break;
             case GoalType.SingularSpeed:
-                return $"Hit the speed of {Math.Round(MyMath.MsToKmh(TargetScore))} km/h once, current best: {Math.Round(MyMath.MsToKmh(HighestZoneSpeed))} km/h";
+                args.Add(MyMath.MsToKmh(TargetScore));
+                args.Add(MyMath.MsToKmh(HighestZoneSpeed));
+                break;
         }
 
-        return null;
+        return string.Format(formatString, args.ToArray());
     }
 };
