@@ -6,7 +6,7 @@ using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
-public class DriftScoreRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
+public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IDamagedRelic {
     public override string DescriptionBBCode => $"Get a drift score";
     private const float MIN_ANGLE = 10;
     private const float MIN_SPEED = 5;
@@ -27,7 +27,7 @@ public class DriftScoreRelic(RelicManager relicManager, float strength) : Relic(
     }
 }
 
-public class CollisionDamageReductionRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
+public class CollisionDamageReductionRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IDamagedRelic {
 
     public override string DescriptionBBCode => $"Reduce the damage taken by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
@@ -36,7 +36,7 @@ public class CollisionDamageReductionRelic(RelicManager relicManager, float stre
     }
 }
 
-public class BouncyRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IOnTrafficCollisionRelic {
+public class BouncyRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IOnTrafficCollisionRelic {
     private static readonly float MASS_MULT = 2f;
 
     public override string DescriptionBBCode => $"Other cars bounce off you at {Mathf.Round(InputStrength * MASS_MULT)} strength";
@@ -53,7 +53,7 @@ public class JumpRelic : Relic, IOnKeyRelic {
 
     public override string DescriptionBBCode => $"Allows you to jump on the {ACTION_NAME} button";
 
-    public JumpRelic(RelicManager relicManager, float strength) : base(relicManager, strength) {
+    public JumpRelic(RelicManager relicManager, RelicType relicType, float strength) : base(relicManager, relicType, strength) {
         DelaySeconds = 5;
     }
 
@@ -66,12 +66,10 @@ public class JumpRelic : Relic, IOnKeyRelic {
     }
 }
 
-public class BigFanRelic : Relic {
+public class BigFanRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength) {
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
     public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {Mathf.Round(MAX_SPEED)} km/h";
-
-    public BigFanRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
     public override void _PhysicsProcess(Car self, double delta) {
         base._PhysicsProcess(self, delta);
@@ -87,12 +85,10 @@ public class BigFanRelic : Relic {
     }
 }
 
-public class FuelReductionRelic : Relic, IOnPurchaseRelic {
+public class FuelReductionRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IOnPurchaseRelic {
     public override string DescriptionBBCode => $"Reduces fuel use down by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
     public bool Applied { get; private set; }
-
-    public FuelReductionRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
     public void CarUpdated(Car self) {
         self.Details.Engine.FuelByRpmRate *= 0.8f * (1f / InputStrength);
@@ -100,12 +96,10 @@ public class FuelReductionRelic : Relic, IOnPurchaseRelic {
     }
 }
 
-public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
+public class TyreWearReductionRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IOnPurchaseRelic {
     public override string DescriptionBBCode => $"Reduces tyre wear by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
     public bool Applied { get; private set; }
-
-    public TyreWearReductionRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
     public void CarUpdated(Car self) {
         foreach (var wheel in self.Wheels) {
@@ -115,7 +109,7 @@ public class TyreWearReductionRelic : Relic, IOnPurchaseRelic {
     }
 }
 
-public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
+public class MoneyInRivalRaceRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IRivalRaceRelic {
 
     public override string DescriptionBBCode => $"Generates ${Math.Round(MONEY_MULT * InputStrength, 2)} for every second in a rival race";
 
@@ -124,8 +118,6 @@ public class MoneyInRivalRaceRelic : Relic, IRivalRaceRelic {
     private static readonly float MONEY_MULT = 10f;
 
     private readonly Dictionary<Car, double> _startTimeTracking = [];
-
-    public MoneyInRivalRaceRelic(RelicManager relicManager, float strength) : base(relicManager, strength) { }
 
     public override void _Process(Car self, double delta) {
         base._Process(self, delta);

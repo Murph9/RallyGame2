@@ -24,7 +24,7 @@ public partial class RelicManager : Node {
     }
 
     public Relic GenerateRelic(RelicType type, float strength = 1) {
-        var relic = Activator.CreateInstance(Type.GetType(type), this, strength);
+        var relic = Activator.CreateInstance(Type.GetType(type), this, type, strength);
         if (relic != null)
             return relic as Relic;
 
@@ -46,6 +46,11 @@ public partial class RelicManager : Node {
         return RelicType.ALL_RELIC_CLASSES
             .Select(x => new RelicType(x.FullName))
             .Except(_relics.Select(x => new RelicType(x.GetType().FullName)))
+            .ToList();
+    }
+    public List<RelicType> GetAllRelics() {
+        return RelicType.ALL_RELIC_CLASSES
+            .Select(x => new RelicType(x.FullName))
             .ToList();
     }
 

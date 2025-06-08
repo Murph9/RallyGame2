@@ -1,10 +1,10 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
+using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -13,6 +13,7 @@ public partial class HundredUI : HBoxContainer {
     private readonly Dictionary<string, Tuple<Part, Control>> _partMappings = [];
     private readonly Dictionary<Car, HundredInProgressItem> _rivalDetails = [];
     private readonly Dictionary<HundredInProgressItem, Label> _uiLabelMap = [];
+    private readonly Dictionary<RelicType, Container> _relicMappings = [];
     private HundredInProgressItem _goalInProgress;
     private HundredInProgressUi _inProgressUi;
 
@@ -43,6 +44,27 @@ public partial class HundredUI : HBoxContainer {
 
             _partMappings.Add(part.Name, new(part, hbox));
             partContainer.AddChild(hbox);
+        }
+
+        var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");
+        foreach (var relic in state.RelicManager.GetAllRelics()) {
+            var hbox = new HBoxContainer();
+            hbox.AddChild(new ColorRect() {
+                Color = Colors.Aqua,
+                CustomMinimumSize = new Vector2(45, 45),
+            });
+            hbox.AddChild(new Label() {
+                Text = relic.GetType().Name
+            });
+            hbox.AddChild(new Label() {
+                Text = ""
+            });
+            hbox.AddChild(new Label() {
+                Text = ""
+            });
+            hbox.Visible = false;
+            _relicMappings.Add(relic, hbox);
+            relicContainer.AddChild(hbox);
         }
 
         _inProgressUi = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredInProgressUi))).Instantiate<HundredInProgressUi>();
@@ -85,30 +107,23 @@ public partial class HundredUI : HBoxContainer {
         }
 
         // update relic view
-        var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");
-        // TODO perf
-        foreach (var relicView in relicContainer.GetAllChildrenOfType<HBoxContainer>().ToArray()) {
-            relicContainer.RemoveChild(relicView);
-        }
-
         foreach (var relic in state.RelicManager.GetRelics()) {
-            var hbox = new HBoxContainer();
+            var hbox = _relicMappings[relic.RelicType];
+            hbox.Visible = true;
+            var children = hbox.GetChildren();
 
-            hbox.AddChild(new ColorRect() {
-                Color = Colors.Aqua,
-                CustomMinimumSize = new Vector2(45, 45),
-            });
-            hbox.AddChild(new Label() {
-                Text = relic.GetType().Name
-            });
-            hbox.AddChild(new Label() {
-                Text = relic.Delay > 0 ? Math.Round(relic.Delay, 1).ToString() : ""
-            });
-            hbox.AddChild(new Label() {
-                Text = relic.OutputStrength != 1 ? Math.Round(relic.OutputStrength, 1) + "" : ""
-            });
+            var color = children[0] as ColorRect;
+            color.Color = Colors.Aqua;
+            color.CustomMinimumSize = new Vector2(45, 45);
 
-            relicContainer.AddChild(hbox);
+            var nameLabel = children[1] as Label;
+            nameLabel.Text = relic.GetType().Name;
+
+            var delayLabel = children[2] as Label;
+            delayLabel.Text = relic.Delay > 0 ? Math.Round(relic.Delay, 1).ToString() : "";
+
+            var outputLabel = children[2] as Label;
+            outputLabel.Text = relic.OutputStrength != 1 ? Math.Round(relic.OutputStrength, 1) + "" : "";
         }
 
         if (_goalInProgress != null) {

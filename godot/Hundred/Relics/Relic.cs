@@ -3,7 +3,8 @@ using murph9.RallyGame2.godot.Cars.Sim;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
-public abstract class Relic(RelicManager relicManager, float inputStrength) {
+public abstract class Relic(RelicManager relicManager, RelicType relicType, float inputStrength) {
+    public RelicType RelicType { get; init; } = relicType;
     public float InputStrength { get; init; } = inputStrength;
     public float OutputStrength { get; protected set; }
     public abstract string DescriptionBBCode { get; }
