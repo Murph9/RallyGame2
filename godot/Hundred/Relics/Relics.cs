@@ -6,6 +6,26 @@ using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
+public class DriftScoreRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
+    public override string DescriptionBBCode => $"Get a drift score";
+    private const float MIN_ANGLE = 10;
+    private const float MIN_SPEED = 5;
+
+    public override void _PhysicsProcess(Car self, double delta) {
+        base._PhysicsProcess(self, delta);
+
+        var speed = self.RigidBody.LinearVelocity.Length();
+        if (Mathf.Abs(self.DriftAngle) > MIN_ANGLE && Mathf.Abs(speed) > MIN_SPEED) {
+            OutputStrength += (Mathf.Abs(self.DriftAngle) - MIN_ANGLE) * (float)delta * (speed - MIN_SPEED);
+        } else {
+            OutputStrength = 0;
+        }
+    }
+
+    public void DamageTaken(Car self, float amount) {
+        OutputStrength = 0;
+    }
+}
 
 public class CollisionDamageReductionRelic(RelicManager relicManager, float strength) : Relic(relicManager, strength), IDamagedRelic {
 

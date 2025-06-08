@@ -104,6 +104,9 @@ public partial class HundredUI : HBoxContainer {
             hbox.AddChild(new Label() {
                 Text = relic.Delay > 0 ? Math.Round(relic.Delay, 1).ToString() : ""
             });
+            hbox.AddChild(new Label() {
+                Text = relic.OutputStrength != 1 ? Math.Round(relic.OutputStrength, 1) + "" : ""
+            });
 
             relicContainer.AddChild(hbox);
         }
