@@ -17,22 +17,23 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private readonly IPieceGenerator _pieceGen;
     private readonly PiecePlacementStrategy _placementStrategy;
+    private readonly IPieceDecorator _pieceDecorator;
 
     private readonly List<Node3D> _placedPieces = [];
     private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
     private InfiniteCheckpoint _nextTransform;
-
-    private readonly MeshInstance3D _treeModel;
 
     private double _pieceDistanceLimit;
 
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 
-    public InfiniteWorldPieces(IPieceGenerator pieceGenerator, PiecePlacementStrategy strategy) {
+    public InfiniteWorldPieces(IPieceGenerator pieceGenerator, PiecePlacementStrategy strategy, IPieceDecorator pieceDecorator) {
         _pieceGen = pieceGenerator;
         _placementStrategy = strategy;
         _placementStrategy.NeedPiece += GeneratePiece;
+
+        _pieceDecorator = pieceDecorator;
 
         // generate a starting box so we don't spawn in the void
         var boxBody = new StaticBody3D();
@@ -56,9 +57,6 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
         // use the base location as the first checkpoint
         _checkpoints.Add(new(Transform3D.Identity, null, 0));
-
-        // TODO please load a model or make this better:
-        _treeModel = DebugHelper.BoxLine(Colors.Green, Vector3.Zero, Vector3.Up * 2);
     }
 
     public override void _Ready() {
@@ -118,7 +116,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             toAdd.AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkpoint, 2, 0.4f));
         }
 
-        GenerateWalls(toAdd, piece, outDirection);
+        _pieceDecorator.DecoratePiece(toAdd, piece, outDirection);
 
         _nextTransform = new InfiniteCheckpoint(piece.Name, _nextTransform.FinalTransform, _nextTransform.FinalTransform * outDirection.FinalTransform, Vector3.Zero);
 
@@ -154,90 +152,6 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             return checkpointTuple.Item3;
         }
         return -1;
-    }
-
-    private void GenerateWalls(Node3D node, WorldPiece piece, WorldPieceDir outDirection) {
-        // var transform = node.GlobalTransform;
-
-        // create some fences so stop falling off
-        var edgeMax = piece.GetZMaxOffsets(outDirection).ToArray();
-        var edgeMin = piece.GetZMinOffsets(outDirection).ToArray();
-        const float fenceHeight = 1.5f;
-        var fenceHeightVector = new Vector3(0, fenceHeight, 0);
-
-        // draw some 'trees' out of the track
-        foreach (var (First, Second) in edgeMin.Zip(edgeMax)) {
-            var diff = (First - Second).Normalized();
-
-            var pos = (First + diff * 2);
-            var model = (MeshInstance3D)_treeModel.Duplicate();
-            model.Transform = new Transform3D(model.Transform.Basis, pos);
-            node.AddChild(model);
-
-            pos = (Second - diff * 2);
-            model = (MeshInstance3D)_treeModel.Duplicate();
-            model.Transform = new Transform3D(model.Transform.Basis, pos);
-            node.AddChild(model);
-        }
-
-        // draw fence posts
-        foreach (var edgePoint in edgeMax.Concat(edgeMin)) {
-            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgePoint, edgePoint + fenceHeightVector, 0.2f));
-        }
-
-        for (var i = 0; i < edgeMax.Length - 1; i++) {
-            // draw fence side beams
-            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMax[i] + fenceHeightVector, edgeMax[i + 1] + fenceHeightVector, 0.2f));
-
-            // give collision
-            var body3d = new StaticBody3D() {
-                PhysicsMaterialOverride = new PhysicsMaterial() {
-                    Friction = 0,
-                    Bounce = 0
-                }
-            };
-            body3d.AddChild(new CollisionShape3D() {
-                Shape = new ConvexPolygonShape3D() {
-                    Points = [
-                        edgeMax[i],
-                        edgeMax[i + 1],
-                        edgeMax[i] + fenceHeightVector,
-
-                        edgeMax[i] + fenceHeightVector,
-                        edgeMax[i + 1],
-                        edgeMax[i + 1] + fenceHeightVector
-                    ]
-                }
-            });
-            node.AddChild(body3d);
-        }
-        for (var i = 0; i < edgeMin.Length - 1; i++) {
-            // draw fence side beams
-            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMin[i] + fenceHeightVector, edgeMin[i + 1] + fenceHeightVector, 0.2f));
-
-            // give collision
-            var body3d = new StaticBody3D() {
-                PhysicsMaterialOverride = new PhysicsMaterial() {
-                    Friction = 0,
-                    Bounce = 0
-                }
-            };
-            body3d.AddChild(new CollisionShape3D() {
-                Shape = new ConvexPolygonShape3D() {
-                    Points = [
-                        edgeMin[i],
-                        edgeMin[i + 1],
-                        edgeMin[i] + fenceHeightVector,
-
-                        edgeMin[i] + fenceHeightVector,
-                        edgeMin[i + 1],
-                        edgeMin[i + 1] + fenceHeightVector
-                    ]
-                }
-            });
-
-            node.AddChild(body3d);
-        }
     }
 }
 
