@@ -33,6 +33,10 @@ public class DebugHelper {
         var mat = new StandardMaterial3D() {
             AlbedoColor = c
         };
+        if (c.A < 1) {
+            mat.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+            mat.CullMode = BaseMaterial3D.CullModeEnum.Disabled;
+        }
         var length = (end - start).Length();
 
         var mesh = new BoxMesh() {
@@ -48,10 +52,12 @@ public class DebugHelper {
 
     public static MeshInstance3D Box(Color c, Vector3 pos, float width = 1) {
         var mat = new StandardMaterial3D() {
-            AlbedoColor = c,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            AlbedoColor = c
         };
+        if (c.A < 1) {
+            mat.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+            mat.CullMode = BaseMaterial3D.CullModeEnum.Disabled;
+        }
 
         var mesh = new BoxMesh() {
             Size = new Vector3(width, width, width),
@@ -66,21 +72,22 @@ public class DebugHelper {
 
     public static MeshInstance3D Sphere(Color c, Vector3 pos, float radius) {
         var mat = new StandardMaterial3D() {
-            AlbedoColor = c,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            AlbedoColor = c
         };
+        if (c.A < 1) {
+            mat.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+            mat.CullMode = BaseMaterial3D.CullModeEnum.Disabled;
+        }
 
         var mesh = new SphereMesh() {
-            Radius = 1,
-            Height = 1,
+            Radius = radius,
+            Height = radius * 2,
             Material = mat
         };
 
         return new MeshInstance3D {
             Transform = new Transform3D(Basis.Identity, pos),
-            Mesh = mesh,
-            Scale = new Vector3(radius, radius, radius)
+            Mesh = mesh
         };
     }
 }
