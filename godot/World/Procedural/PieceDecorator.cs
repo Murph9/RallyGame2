@@ -83,7 +83,7 @@ public partial class PieceDecorator : IPieceDecorator {
         // draw fence posts
         foreach (var edgePoint in edgeMax.Concat(edgeMin)) {
             var fence = (Node3D)_fencePost.Duplicate();
-            fence.Transform = new Transform3D(fence.Transform.Basis, edgePoint);
+            fence.Transform = new Transform3D(fence.Transform.Basis, edgePoint + fenceUpVector * 0.5f);
             node.AddChild(fence);
         }
 
