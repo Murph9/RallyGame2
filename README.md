@@ -8,13 +8,7 @@ Download godot, setup the .vscode launch.json script to point to its location
 
 ## 100km Distance Game Idea:
 
-An infinite world
-
-Ideas for goals:
-
--   just hit a high speed once (not just at the end of the zone)
--   flip your car somewhere
--   hit like 5 different traffic (with colours?)
+An infinite world that has:
 
 -   spawn next to the road with a goal of driving 100km
     -   at some fixed amount X km you will have a goal to reach:
@@ -46,8 +40,9 @@ Ideas for goals:
 -   relic that upgrades the road type
     -   you know how peglin has 3 phases? why don't we have upgraded road types
     -   or road types are a part of the challenge, pick directions and it may slowly get there
+-   relics allow you to buy certain upgrades only
 
-Ideas for relics:
+Ideas for relics not created yet:
 
 -   nos refils while idling (no accel/braking)
 -   nos refills based on speed
@@ -55,14 +50,7 @@ Ideas for relics:
 -   reduced damage from collisions
 -   money for near misses
 -   a big helpful fan
--   hopping ability
--   super bouncy
--   drift points (with no benefit)
--   money from style points (making the drift points relic useful)
--   money per second spent in races
--   increased money per race won
--   reduction in tyre wear
--   reduction in fuel use
+    -   completed: but we need a car model so you can see it
 
 Some relic categories:
 
@@ -75,13 +63,16 @@ Some relic categories:
 
 Ideas for the world generation:
 
--   generate mesh pieces instead of loading them from blender
--   use array mesh to generate some pieces
 -   use MeshDataTool to perturb them a little for better variance
 
 Graphics ideas:
 
 -   https://www.reddit.com/r/ImaginaryTechnology/comments/1gko5z4/back_to_the_future_3d_animation_by_me/
+
+Ideas for more goals:
+
+-   flip your car somewhere
+-   hit like 5 different traffic (with colours?)
 
 ---
 
