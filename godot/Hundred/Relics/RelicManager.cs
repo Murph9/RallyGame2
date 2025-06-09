@@ -88,66 +88,56 @@ public partial class RelicManager : Node {
     private void CarDamaged(float amount) {
         if (_hundredGlobalState.Car.RigidBody.Freeze) return;
 
-        foreach (var relic in _relics) {
-            if (relic is IDamagedRelic t) {
-                t.DamageTaken(_hundredGlobalState.Car, amount);
-            }
+        foreach (var damaged in AllRelicsOfType<IDamagedRelic>()) {
+            damaged.DamageTaken(_hundredGlobalState.Car, amount);
         }
     }
 
     private void TrafficCollision(Car otherCar, Vector3 apparentVelocity) {
         if (_hundredGlobalState.Car.RigidBody.Freeze) return;
 
-        foreach (var relic in _relics) {
-            if (relic is IOnTrafficCollisionRelic t) {
-                t.TrafficCollision(_hundredGlobalState.Car, otherCar, apparentVelocity);
-            }
+        foreach (var trafficCollision in AllRelicsOfType<IOnTrafficCollisionRelic>()) {
+            trafficCollision.TrafficCollision(_hundredGlobalState.Car, otherCar, apparentVelocity);
         }
     }
 
     private void ActionPressed(string action) {
         if (_hundredGlobalState.Car.RigidBody.Freeze) return;
 
-        foreach (var relic in _relics) {
-            if (relic is IOnKeyRelic key) {
-                key.ActionPressed(_hundredGlobalState.Car, action);
-            }
+        foreach (var onKey in AllRelicsOfType<IOnKeyRelic>()) {
+            onKey.ActionPressed(_hundredGlobalState.Car, action);
         }
     }
 
 
     private void CarDetailsChanged(bool onlyNew) {
-        foreach (var relic in _relics) {
-            if (relic is IOnPurchaseRelic key) {
-                // if onlyNew is called we check if its applied first (i.e. when a new relic is added)
-                if (onlyNew && key.Applied) continue;
+        foreach (var onPurchace in AllRelicsOfType<IOnPurchaseRelic>()) {
+            // if onlyNew is called we check if its applied first (i.e. when a new relic is added)
+            if (onlyNew && onPurchace.Applied) continue;
 
-                key.CarUpdated(_hundredGlobalState.Car);
-            }
+            onPurchace.CarUpdated(_hundredGlobalState.Car);
         }
     }
 
     private void RivalRaceStarted(Car rival) {
-        foreach (var relic in _relics) {
-            if (relic is IRivalRaceRelic rivalRelic) {
-                rivalRelic.RivalRaceStarted(rival);
-            }
+        foreach (var rr in AllRelicsOfType<IRivalRaceRelic>()) {
+            rr.RivalRaceStarted(rival);
         }
     }
 
     private void RivalRaceWon(Car rival, double moneyWon) {
-        foreach (var relic in _relics) {
-            if (relic is IRivalRaceRelic rivalRelic) {
-                rivalRelic.RivalRaceWon(rival, moneyWon);
-            }
+        foreach (var rr in AllRelicsOfType<IRivalRaceRelic>()) {
+            rr.RivalRaceWon(rival, moneyWon);
         }
     }
 
     private void RivalRaceLost(Car rival, double moneyWon) {
-        foreach (var relic in _relics) {
-            if (relic is IRivalRaceRelic rivalRelic) {
-                rivalRelic.RivalRaceLost(rival, moneyWon);
-            }
+        foreach (var rr in AllRelicsOfType<IRivalRaceRelic>()) {
+            rr.RivalRaceLost(rival, moneyWon);
         }
+    }
+
+    private IEnumerable<T> AllRelicsOfType<T>() where T : class {
+        return _relics.Where(x => x is T t).Select(x => x as T);
     }
 }
