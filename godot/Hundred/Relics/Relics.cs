@@ -7,6 +7,35 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
+public class MoneyFromDriftingRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength) {
+    private const float MIN_DRIFT_FOR_MONEY = 100;
+    public override string DescriptionBBCode => $"Generate small money from drifting, at {InputStrength * 0.05f}x the value above {MIN_DRIFT_FOR_MONEY}";
+
+    public override RelicType[] RequiredRelics => [((RelicType)typeof(DriftScoreRelic).FullName)];
+
+    private float _lastDriftValue;
+
+    public override void _Process(Car self, double delta) {
+        base._Process(self, delta);
+
+        var driftScoreRelic = _relicManager.GetRelics().FirstOrDefault(x => x is DriftScoreRelic);
+        if (driftScoreRelic == null) {
+            return; // filtering probably isn't working
+        }
+
+        var lastScore = ((DriftScoreRelic)driftScoreRelic).LastDriftScore;
+        if (lastScore != _lastDriftValue) {
+            // i.e. its a new score - changed in the last frame, this could collide but its a float
+            _lastDriftValue = lastScore;
+
+            if (_lastDriftValue > MIN_DRIFT_FOR_MONEY) {
+                // add the last drift score as money (with offset)
+                _relicManager.HundredGlobalState.AddMoney((_lastDriftValue - MIN_DRIFT_FOR_MONEY) * InputStrength * 0.05f);
+            }
+        }
+    }
+}
+
 public class RivalRaceMoneyIncreaseRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IRivalRaceRelic {
     public override string DescriptionBBCode => $"Get {InputStrength}x more money against rivals";
 

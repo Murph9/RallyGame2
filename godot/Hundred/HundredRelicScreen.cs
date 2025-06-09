@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Hundred.Relics;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
@@ -15,7 +16,7 @@ public partial class HundredRelicScreen : CenterContainer {
 
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
 
-        var allRelics = state.RelicManager.GetValidRelics();
+        var allRelics = state.RelicManager.GetAvailableRelics().ToList();
 
         for (int i = 0; i < state.ShopRelicCount; i++) {
             if (allRelics.Count <= 0) {

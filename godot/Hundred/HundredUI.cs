@@ -47,7 +47,7 @@ public partial class HundredUI : HBoxContainer {
         }
 
         var relicContainer = GetNode<VBoxContainer>("VBoxContainerLeft/VBoxContainerRelics");
-        foreach (var relic in state.RelicManager.GetAllRelics()) {
+        foreach (var relic in state.RelicManager.GetAllPossibleRelics()) {
             var hbox = new HBoxContainer();
             hbox.AddChild(new ColorRect() {
                 Color = Colors.Aqua,

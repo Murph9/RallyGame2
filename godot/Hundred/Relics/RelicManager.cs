@@ -21,6 +21,20 @@ public partial class RelicManager : Node {
         _hundredGlobalState.RivalRaceStarted += RivalRaceStarted;
         _hundredGlobalState.RivalRaceWon += RivalRaceWon;
         _hundredGlobalState.RivalRaceLost += RivalRaceLost;
+
+        // a little validation of all relics
+        var allRelics = GetAllPossibleRelics();
+        foreach (var relic in allRelics) {
+            var relicClass = GenerateRelic(relic);
+
+            if (relicClass.RequiredRelics.Length == 0) {
+                continue;
+            }
+
+            if (relicClass.RequiredRelics.Any(x => !x.Name.Contains('.'))) {
+                throw new ArgumentException(relicClass.GetType().Name + " has a required relic with just a class name. Please use typeof(<relicclass>).FullName");
+            }
+        }
     }
 
     public Relic GenerateRelic(RelicType type, float strength = 1) {
@@ -42,13 +56,29 @@ public partial class RelicManager : Node {
 
     public List<Relic> GetRelics() => _relics;
 
-    public List<RelicType> GetValidRelics() {
-        return RelicType.ALL_RELIC_CLASSES
+    public IEnumerable<RelicType> GetAvailableRelics() {
+        var currentRelics = _relics.Select(x => new RelicType(x.GetType().FullName));
+        var allMinusCurrent = RelicType.ALL_RELIC_CLASSES
             .Select(x => new RelicType(x.FullName))
-            .Except(_relics.Select(x => new RelicType(x.GetType().FullName)))
+            .Except(currentRelics)
             .ToList();
+
+        foreach (var relicOption in allMinusCurrent) {
+            var option = GenerateRelic(relicOption);
+
+            if (option.RequiredRelics.Length == 0) {
+                yield return relicOption;
+                continue;
+            }
+
+            // figure out if all the required relics are in the current relics
+            if (!option.RequiredRelics.Except(currentRelics).Any()) {
+                yield return relicOption;
+            }
+        }
     }
-    public List<RelicType> GetAllRelics() {
+
+    public List<RelicType> GetAllPossibleRelics() {
         return RelicType.ALL_RELIC_CLASSES
             .Select(x => new RelicType(x.FullName))
             .ToList();
