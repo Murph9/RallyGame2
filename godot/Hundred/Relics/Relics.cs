@@ -1,10 +1,23 @@
-using System;
-using System.Collections.Generic;
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred.Relics;
+
+public class RivalRaceMoneyIncreaseRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IRivalRaceRelic {
+    public override string DescriptionBBCode => $"Get {InputStrength}x more money against rivals";
+
+    public void RivalRaceStarted(Car rival) { }
+
+    public void RivalRaceWon(Car rival, double moneyDiff) {
+        _relicManager.HundredGlobalState.AddMoney((float)moneyDiff * InputStrength);
+    }
+
+    public void RivalRaceLost(Car rival, double moneyDiff) { }
+}
 
 public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IDamagedRelic {
     public override string DescriptionBBCode => $"Get a drift score";
@@ -126,16 +139,21 @@ public class MoneyInRivalRaceRelic(RelicManager relicManager, RelicType relicTyp
     public override void _Process(Car self, double delta) {
         base._Process(self, delta);
 
+        var strength = InputStrength;
+        var moneyIncreasedRelic = _relicManager.GetRelics().FirstOrDefault(x => x is RivalRaceMoneyIncreaseRelic);
+        if (moneyIncreasedRelic != null) {
+            strength *= moneyIncreasedRelic.InputStrength;
+        }
+
         foreach (var rivalRace in _startTimeTracking) {
             // don't give out after 2 mins
-            if (OutputStrength > 0 && _relicManager.HundredGlobalState.TotalTimePassed - rivalRace.Value > 120 * InputStrength) {
-                GD.Print(".. but its going too long");
+            if (OutputStrength > 0 && _relicManager.HundredGlobalState.TotalTimePassed - rivalRace.Value > 120 * strength) {
                 OutputStrength = 0;
                 continue;
             }
 
-            _relicManager.HundredGlobalState.AddMoney(MONEY_MULT * InputStrength * (float)delta);
-            OutputStrength = MONEY_MULT * InputStrength;
+            _relicManager.HundredGlobalState.AddMoney(MONEY_MULT * strength * (float)delta);
+            OutputStrength = MONEY_MULT * strength;
         }
     }
 
