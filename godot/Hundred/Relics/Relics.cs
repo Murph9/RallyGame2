@@ -11,6 +11,8 @@ public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, flo
     private const float MIN_ANGLE = 10;
     private const float MIN_SPEED = 5;
 
+    public float LastDriftScore { get; private set; }
+
     public override void _PhysicsProcess(Car self, double delta) {
         base._PhysicsProcess(self, delta);
 
@@ -18,6 +20,8 @@ public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, flo
         if (Mathf.Abs(self.DriftAngle) > MIN_ANGLE && Mathf.Abs(speed) > MIN_SPEED) {
             OutputStrength += (Mathf.Abs(self.DriftAngle) - MIN_ANGLE) * (float)delta * (speed - MIN_SPEED);
         } else {
+            if (OutputStrength > 0)
+                LastDriftScore = OutputStrength;
             OutputStrength = 0;
         }
     }
