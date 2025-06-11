@@ -81,7 +81,7 @@ public partial class HundredRallyGame : Node {
                 CallDeferred(MethodName.ShowShop);
             }
             if (Input.IsKeyPressed(Key.Key9)) {
-                CallDeferred(MethodName.ShowRelicShop);
+                CallDeferred(MethodName.ShowRelicShop, false);
             }
 #endif
         }
@@ -206,7 +206,7 @@ public partial class HundredRallyGame : Node {
         rival.ChangeInputsTo(oldAi);
     }
 
-    private void ShowRelicShop() {
+    private void ShowRelicShop(bool showShop = true) {
         SetPauseState(true);
 
         var relics = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRelicScreen))).Instantiate<HundredRelicScreen>();
@@ -216,7 +216,7 @@ public partial class HundredRallyGame : Node {
 
             // check if the current goal is not active
             var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-            if (!state.Goal.ZoneActive) {
+            if (showShop) {
                 CallDeferred(MethodName.ShowGoalSelect);
             }
         };
