@@ -206,17 +206,12 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private static int[] GetNextCheckpointIndexes(InfiniteCheckpoint[] checkpoints, Vector3 pos, bool inReverse) {
         var closestIndex = GetClosestToPieceIndex(checkpoints, pos);
 
-        if (inReverse) {
-            if (closestIndex <= 0) {
-                return [0];
-            }
-        } else if (closestIndex >= checkpoints.Length - 1) {
-            return [closestIndex];
-        } else if (closestIndex <= 1) {
-            return [closestIndex + 1]; // its the next one
-        }
-
-        var reverseOffset = inReverse ? -1 : 1;
+        var offset = inReverse ? -1 : 1;
+        // obvious bounds:
+        if (closestIndex + offset <= 1) // too close to the start
+            return [Math.Min(1, checkpoints.Length - 1)];
+        if (closestIndex + offset >= checkpoints.Length - 1) //too close to the end
+            return [checkpoints.Length - 1];
 
         var firstIndex = closestIndex;
 
@@ -224,15 +219,15 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         // we get fake an angle bisector of the 3 checkpoints around the closest one
         // then figure out which side we are closer to compared with the distance bewteen the checkpoints
         var curCheckpoint = checkpoints[closestIndex].StartTransform.Origin;
-        var beforeCheckpoint = checkpoints[closestIndex + reverseOffset * -1].StartTransform.Origin;
-        var afterCheckpoint = checkpoints[closestIndex + reverseOffset].StartTransform.Origin;
+        var beforeCheckpoint = checkpoints[closestIndex + offset * -1].StartTransform.Origin;
+        var afterCheckpoint = checkpoints[closestIndex + offset].StartTransform.Origin;
 
         var beforeDistanceDiff = beforeCheckpoint.DistanceTo(curCheckpoint) - beforeCheckpoint.DistanceTo(pos);
         var afterDistanceDiff = afterCheckpoint.DistanceTo(curCheckpoint) - afterCheckpoint.DistanceTo(pos);
 
         if (beforeDistanceDiff < afterDistanceDiff) {
             // this means that we have passed the closest checkpoint and need to return the next one
-            firstIndex = closestIndex + reverseOffset;
+            firstIndex = closestIndex + offset;
         }
 
         var result = Enumerable.Range(firstIndex, checkpoints.Length - firstIndex).ToArray();
