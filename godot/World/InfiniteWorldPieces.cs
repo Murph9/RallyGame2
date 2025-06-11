@@ -10,8 +10,11 @@ namespace murph9.RallyGame2.godot.World;
 // tracks the world pieces
 public partial class InfiniteWorldPieces : Node3D, IWorld {
 
+    record PrivateCheckpoint(Transform3D Transform3D, Node3D Node, float Distance);
+
     private const int REMOVE_PIECES_BEHIND_CAMERA_DISTANCE = 50;
     private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
+    private readonly Transform3D _spawnPoint = Transform3D.Identity;
 
     private readonly RandomNumberGenerator _rand = new();
 
@@ -20,7 +23,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     private readonly IPieceDecorator _pieceDecorator;
 
     private readonly List<Node3D> _placedPieces = [];
-    private readonly List<Tuple<Transform3D, Node3D, float>> _checkpoints = [];
+    private readonly List<PrivateCheckpoint> _checkpoints = [];
     private InfiniteCheckpoint _nextTransform;
 
     private double _pieceDistanceLimit;
@@ -54,9 +57,6 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         AddChild(boxBody);
 
         _nextTransform = new InfiniteCheckpoint(null, Transform3D.Identity, Transform3D.Identity, Vector3.Zero);
-
-        // use the base location as the first checkpoint
-        _checkpoints.Add(new(Transform3D.Identity, null, 0));
     }
 
     public override void _Ready() {
@@ -77,7 +77,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         var cameraPos = GetViewport().GetCamera3D().GlobalPosition;
         if (firstPiece != null && firstPiece.GlobalPosition.DistanceTo(cameraPos) > REMOVE_PIECES_BEHIND_CAMERA_DISTANCE) {
             _placedPieces.Remove(firstPiece);
-            _checkpoints.RemoveAll(x => x.Item2 == firstPiece);
+            _checkpoints.RemoveAll(x => x.Node == firstPiece);
             RemoveChild(firstPiece);
         }
 
@@ -87,7 +87,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     private void GeneratePiece() {
-        if (_pieceDistanceLimit > 0 && _checkpoints.Last().Item3 > _pieceDistanceLimit) {
+        if (_pieceDistanceLimit > 0 && _checkpoints.Last().Distance > _pieceDistanceLimit) {
             return; // no more generating
         }
 
@@ -106,8 +106,11 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
         var outDirection = piece.Directions.Skip(outIndex).First();
 
-        var checkpointDistance = _checkpoints.Last().Item3;
-        checkpointDistance += outDirection.FinalTransform.Origin.Length();
+        var checkpointDistance = 0f;
+        if (_checkpoints.Count > 0) {
+            checkpointDistance = _checkpoints.Last().Distance;
+            checkpointDistance += outDirection.FinalTransform.Origin.Length();
+        }
 
         foreach (var checkpoint in outDirection.Transforms) {
             var checkTransform = transform * checkpoint;
@@ -125,8 +128,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     public InfiniteCheckpoint GetInitialSpawn() {
-        if (_placedPieces == null || _placedPieces.Count() == 0) {
-            return new InfiniteCheckpoint("start", CAR_ROTATION_OFFSET, Transform3D.Identity, Vector3.Zero);
+        if (_checkpoints.Count == 0) {
+            return CheckPointToInfiniteCheckpoint(_spawnPoint);
         }
 
         return GetAllCurrentCheckpoints().First();
@@ -138,20 +141,27 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     }
 
     public IEnumerable<InfiniteCheckpoint> GetAllCurrentCheckpoints() {
-        // rotate everything by CAR_ROTATION_OFFSET so its pointing the correct way for cars
+        if (_checkpoints.Count == 0) {
+            return [CheckPointToInfiniteCheckpoint(_spawnPoint)];
+        }
+
         return _checkpoints
-            .Select(x => x.Item1)
+            .Select(x => x.Transform3D)
             .Append(_nextTransform.FinalTransform)
-            .Select(x => new InfiniteCheckpoint(null, new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), new Transform3D(CAR_ROTATION_OFFSET.Basis * x.Basis, x.Origin), x.Basis * _pieceGen.TrafficLeftSideOffset))
+            .Select(CheckPointToInfiniteCheckpoint)
             .ToList();
     }
 
+    private InfiniteCheckpoint CheckPointToInfiniteCheckpoint(Transform3D transform) {
+        // rotate everything by CAR_ROTATION_OFFSET so its pointing the correct way for cars' models
+        return new InfiniteCheckpoint(null, new Transform3D(CAR_ROTATION_OFFSET.Basis * transform.Basis, transform.Origin), new Transform3D(CAR_ROTATION_OFFSET.Basis * transform.Basis, transform.Origin), transform.Basis * _pieceGen.TrafficLeftSideOffset);
+    }
+
     public float TotalDistanceFromCheckpoint(Vector3 position) {
-        var checkpointTuple = _checkpoints.FirstOrDefault(x => x.Item1.Origin.IsEqualApprox(position));
+        var checkpointTuple = _checkpoints.FirstOrDefault(x => x.Transform3D.Origin.IsEqualApprox(position));
         if (checkpointTuple != null) {
-            return checkpointTuple.Item3;
+            return checkpointTuple.Distance;
         }
         return -1;
     }
 }
-
