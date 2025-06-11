@@ -147,6 +147,13 @@ public partial class RelicManager : Node {
 
             onPurchace.CarUpdated(_hundredGlobalState.Car);
         }
+
+        // enable any models required
+        foreach (var relic in _relics) {
+            foreach (var addition in relic.CarModelAdditions) {
+                _hundredGlobalState.Car.ToggleAddition(addition, true);
+            }
+        }
     }
 
     private void RivalRaceStarted(Car rival) {

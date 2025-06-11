@@ -116,6 +116,7 @@ public class BigFanRelic(RelicManager relicManager, RelicType relicType, float s
     private static readonly float MASS_MULT = 0.1f;
     private static readonly float MAX_SPEED = MyMath.KmhToMs(150);
     public override string DescriptionBBCode => $"Adds thrust which pushes you forward up to {Mathf.Round(MAX_SPEED)} km/h";
+    public override CarModelAddition[] CarModelAdditions => [CarModelAddition.Fan];
 
     public override void _PhysicsProcess(Car self, double delta) {
         base._PhysicsProcess(self, delta);

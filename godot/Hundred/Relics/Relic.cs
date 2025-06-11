@@ -9,6 +9,7 @@ public abstract class Relic(RelicManager relicManager, RelicType relicType, floa
     public float OutputStrength { get; protected set; }
     public abstract string DescriptionBBCode { get; }
     public virtual RelicType[] RequiredRelics { get; } = [];
+    public virtual CarModelAddition[] CarModelAdditions { get; } = [];
 
     // would love to use an entity system here
     public double DelaySeconds { get; init; }

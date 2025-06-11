@@ -8,15 +8,16 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.Cars.Sim;
 
 public partial class Car : Node3D {
-    public RigidBody3D RigidBody { get; }
+    public RigidBody3D RigidBody { get; } // shouldn't the car class be the rigidbody?
     public CarDetails Details { get; }
     public CarEngine Engine { get; }
-
 
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
     private readonly AudioStreamPlayer _engineAudio;
     public readonly Color _colour;
+
+    private readonly Dictionary<CarModelAddition, Node3D> _additions = [];
 
     public ICarInputs Inputs { get; private set; }
 
@@ -141,6 +142,26 @@ public partial class Car : Node3D {
             };
             AddChild(_engineAudio);
         }
+
+        var additionNode = carScene.GetChildren().FirstOrDefault(x => x.Name == "additions");
+        if (additionNode != null) {
+            foreach (var additionType in Enum.GetValues<CarModelAddition>()) {
+                var models = additionNode
+                    .GetAllChildrenOfType<MeshInstance3D>()
+                    .Where(x => x.Name.ToString().Contains(additionType.ToString(), StringComparison.InvariantCultureIgnoreCase));
+
+                if (models.Any()) {
+                    _additions[additionType] = new Node3D();
+                    foreach (var model in models) {
+                        model.GetParent().RemoveChild(model);
+                        model.Owner = null;
+                        _additions[additionType].AddChild(model);
+                    }
+                    _additions[additionType].Visible = false;
+                    RigidBody.AddChild(_additions[additionType]);
+                }
+            }
+        }
     }
 
     public override void _Process(double delta) {
@@ -188,6 +209,12 @@ public partial class Car : Node3D {
 
         // track last velocity for collision purposes
         _lastVelocity = RigidBody.LinearVelocity;
+    }
+
+    public void ToggleAddition(CarModelAddition addition, bool active) {
+        if (_additions.TryGetValue(addition, out Node3D? value)) {
+            value.Visible = active;
+        }
     }
 
     private void CalcSuspension(Wheel w) {
