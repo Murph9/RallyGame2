@@ -184,7 +184,7 @@ public partial class HundredRallyGame : Node {
 
                 state.Goal.SetSuccessful(state.TotalTimePassed, _racingScene.PlayerCarLinearVelocity);
 
-                CallDeferred(MethodName.ShowRelicShop);
+                CallDeferred(MethodName.ShowRelicShop, true);
                 return true;
             });
         }
@@ -206,7 +206,7 @@ public partial class HundredRallyGame : Node {
         rival.ChangeInputsTo(oldAi);
     }
 
-    private void ShowRelicShop(bool showShop = true) {
+    private void ShowRelicShop(bool showShop) {
         SetPauseState(true);
 
         var relics = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRelicScreen))).Instantiate<HundredRelicScreen>();
