@@ -10,18 +10,22 @@ Download godot, setup the .vscode launch.json script to point to its location
 
 An infinite world that has:
 
--   spawn next to the road with a goal of driving 100km
-    -   at some fixed amount X km you will have a goal to reach:
-        -   a speed trap target
-        -   an average speed section
-        -   time trial section
-        -   ???
-    -   at every new section you must pick a new world section:
-        -   pick between like 2 kinds of new road type
-        -   each have a specific category of reward to make you pick certain kinds
-        -   possibly a weather condition like wind/air density/rain/slippery/more expensive
-            -   more built up, i.e. more things but costs more
-        -   the next goal should be known for each one as well
+-   goal of driving 100km
+-   spawn next to an infinite road
+-   at some fixed amount X km you will have a goal to reach:
+    -   a speed trap target
+    -   an average speed section
+    -   time trial section
+    -   ???
+-   at every new section you must pick a new world section:
+    -   pick between like 2 kinds of new road type
+    -   each have a specific category of reward to make you pick certain kinds
+    -   possibly a weather condition like wind/air density/rain/slippery/more expensive
+        -   more built up, i.e. more things but costs more
+    -   the next goal should be known for each one as well
+-   NEW: it might be better to force racing other cars
+    -   and boss cars which are faster get you relics
+    -   a top speed/accel/handling estimate performance numbers for rivals
 -   start with a base car but slowly make it better
 -   come across cars to race along the road for $
     -   match their speed and challenge them
@@ -30,36 +34,33 @@ An infinite world that has:
     -   also get money per race
     -   maybe they see you and try and match your speed
 -   traffic
--   get money from making it distance or find along road
 -   shops spawn along route
--   nos doesn't come back by default
+    -   maybe you can open a shop at any point
+-   nos comes back by driving dangerously (arcade nos)
 -   tyre wear
 -   fuel use
--   body damage from collisions (which affects aero and performance somehow)
--   a top speed/accel/handling estimate performance numbers
+-   body damage from collisions (which affects performance somehow)
+
+Ideas for relics not created yet:
+
 -   relic that upgrades the road type
     -   you know how peglin has 3 phases? why don't we have upgraded road types
     -   or road types are a part of the challenge, pick directions and it may slowly get there
 -   relics allow you to buy certain upgrades only
-
-Ideas for relics not created yet:
-
 -   nos refils while idling (no accel/braking)
 -   nos refills based on speed
 -   money for continually accelerating
 -   reduced damage from collisions
 -   money for near misses
--   a big helpful fan
-    -   completed: but we need a car model so you can see it
 
-Some relic categories:
+-   Some relic misc categories:
 
--   that get unlocked by having certain parts (and maybe not others?)
--   that need distance travelled to get better
--   improve based on part branding based on the amount of a brand of parts you have
--   every 5 minutes your power/grip/drag gets randomized in some range
--   temporarily upgrades your car for a limited amount of time
--   parts that break after certain time
+    -   that get unlocked by having certain parts (and maybe not others?)
+    -   that need distance travelled to get better
+    -   improve based on part branding based on the amount of a brand of parts you have
+    -   every 5 minutes your power/grip/drag gets randomized in some range
+    -   temporarily upgrades your car for a limited amount of time
+    -   parts that break after certain time
 
 Ideas for the world generation:
 
