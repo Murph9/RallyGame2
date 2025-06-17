@@ -47,7 +47,7 @@ Ideas for relics not created yet:
     -   you know how peglin has 3 phases? why don't we have upgraded road types
     -   or road types are a part of the challenge, pick directions and it may slowly get there
 -   relics allow you to buy certain upgrades only
--   nos refils while idling (no accel/braking)
+-   nos refills while idling (no accel/braking)
 -   nos refills based on speed
 -   money for continually accelerating
 -   reduced damage from collisions

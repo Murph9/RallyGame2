@@ -132,6 +132,25 @@ public class BigFanRelic(RelicManager relicManager, RelicType relicType, float s
     }
 }
 
+public class DashForwardRelic : Relic, IOnKeyRelic {
+    private const string ACTION_NAME = "car_action_2";
+    private static readonly float MASS_MULT = 10f;
+
+    public override string DescriptionBBCode => $"Gives you a large push fowards when you press the {ACTION_NAME} button";
+
+    public DashForwardRelic(RelicManager relicManager, RelicType relicType, float strength) : base(relicManager, relicType, strength) {
+        DelaySeconds = 5;
+    }
+
+    public void ActionPressed(Car self, string actionName) {
+        if (Delay <= 0 && actionName == ACTION_NAME) {
+            Delay = DelaySeconds;
+            OutputStrength = (float)self.Details.TotalMass * MASS_MULT;
+            self.RigidBody.ApplyCentralImpulse(self.RigidBody.Transform.Basis * new Vector3(0, 0, OutputStrength));
+        }
+    }
+}
+
 public class FuelReductionRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IOnPurchaseRelic {
     public override string DescriptionBBCode => $"Reduces fuel use down by {Mathf.Round((1 - 0.8f) * (1f / InputStrength) * 100)}%";
 
