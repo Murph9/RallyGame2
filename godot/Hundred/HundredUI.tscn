@@ -44,6 +44,16 @@ layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
+[node name="HBoxContainerShopTimer" type="HBoxContainer" parent="VBoxContainerLeft/VBoxContainerState"]
+layout_mode = 2
+
+[node name="ShopMessageLabel" type="Label" parent="VBoxContainerLeft/VBoxContainerState/HBoxContainerShopTimer"]
+layout_mode = 2
+text = "Tab to open shop (buy something then wait a minute)"
+
+[node name="TimerLabel" type="Label" parent="VBoxContainerLeft/VBoxContainerState/HBoxContainerShopTimer"]
+layout_mode = 2
+
 [node name="VBoxContainerRelics" type="VBoxContainer" parent="VBoxContainerLeft"]
 layout_mode = 2
 
@@ -68,10 +78,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainerCenter/CenterContainer"]
-layout_mode = 2
-
-[node name="ShopTimerLabel" type="Label" parent="VBoxContainerCenter/CenterContainer/VBoxContainer"]
-unique_name_in_owner = true
 layout_mode = 2
 
 [node name="VBoxContainerRight" type="VBoxContainer" parent="."]

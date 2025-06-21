@@ -283,18 +283,18 @@ public class CarDetails : IHaveParts {
         return cloned;
     }
 
-    public IEnumerable<PartResult> GetResultsInTree() {
+    public IEnumerable<PartResult> GetPartResultsInTree() {
         var details = new List<PartResult>();
         foreach (var result in PartReader.GetResults()) {
             details.Add(result);
         }
-        foreach (var result in Engine.GetResultsInTree()) {
+        foreach (var result in Engine.GetPartResultsInTree()) {
             details.Add(result);
         }
-        foreach (var result in TractionDetails.GetResultsInTree()) {
+        foreach (var result in TractionDetails.GetPartResultsInTree()) {
             details.Add(result);
         }
-        foreach (var result in SuspensionDetails.GetResultsInTree()) {
+        foreach (var result in SuspensionDetails.GetPartResultsInTree()) {
             details.Add(result);
         }
         return details;
@@ -315,5 +315,14 @@ public class CarDetails : IHaveParts {
             parts.Add(result);
         }
         return parts;
+    }
+
+    public void ApplyPartChange(Part part, int level) {
+        var selfPart = GetAllPartsInTree().Single(x => x.Name == part.Name);
+        selfPart.CurrentLevel = level;
+        LoadSelf(Main.DEFAULT_GRAVITY);
+    }
+    public int LevelOfPart(Part part) {
+        return GetAllPartsInTree().Single(x => x.Name == part.Name).CurrentLevel;
     }
 }

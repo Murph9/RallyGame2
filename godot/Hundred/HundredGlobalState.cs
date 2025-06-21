@@ -59,16 +59,13 @@ public partial class HundredGlobalState : Node {
 
     public int ShopPartCount { get; private set; }
     public int ShopRelicCount { get; private set; }
+    public float ShopCountdownAmount { get; private set; }
+    public double ShopResetTimer { get; private set; }
 
     public int GoalSelectCount { get; private set; }
     public float GoalSpread { get; private set; }
     public float GoalZoneLength { get; private set; }
     public GoalState Goal { get; private set; }
-
-    public double ShopStoppedTimer { get; set; }
-    public double ShopCooldownTimer { get; set; }
-    public double ShopStoppedTriggerAmount { get; private set; }
-    public double ShopCooldownTriggerAmount { get; private set; }
 
     public HundredGlobalState() {
         Reset();
@@ -100,9 +97,13 @@ public partial class HundredGlobalState : Node {
 
         ShopPartCount = 3;
         ShopRelicCount = 2;
+        ShopCountdownAmount = 60; // sec
+        ShopResetTimer = ShopCountdownAmount;
 
-        ShopStoppedTriggerAmount = 3;
-        ShopCooldownTriggerAmount = 5;
+#if DEBUG
+        ShopRelicCount = 5;
+        Money = 1000000;
+#endif
 
         GoalSpread = 1000;
         GoalZoneLength = 250;
@@ -163,6 +164,10 @@ public partial class HundredGlobalState : Node {
         if (Math.Floor(TotalTimePassed - delta) != Math.Floor(TotalTimePassed))
             EmitSignal(SignalName.SecondPassed, Math.Floor(TotalTimePassed));
     }
+
+    public void ShopTimerReduced(double delta) => ShopResetTimer -= delta;
+    public void ShopTimerReset() => ShopResetTimer = ShopCountdownAmount;
+
     public void SetDistanceTravelled(float newDistanceTravelled) {
         DistanceTravelled = Mathf.Max(DistanceTravelled, newDistanceTravelled); // please no negative progress
     }

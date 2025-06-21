@@ -60,8 +60,8 @@ public partial class UpgradeTestMenu : CenterContainer {
         stats.AppendText($"Max Power (kW): {double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm\n");
         stats.PushColor(Colors.White);
         stats.PushTable(4);
-        var prevDetails = _carDetailsPrevious.GetResultsInTree();
-        var details = _carDetails.GetResultsInTree();
+        var prevDetails = _carDetailsPrevious.GetPartResultsInTree();
+        var details = _carDetails.GetPartResultsInTree();
         foreach (var entry in details) {
             stats.PushCell();
             stats.AppendText(entry.Name);

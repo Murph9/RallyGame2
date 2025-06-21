@@ -3,6 +3,8 @@ using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
@@ -14,35 +16,42 @@ public partial class HundredUpgradeScreen : CenterContainer {
     [Signal]
     public delegate void ClosedEventHandler(bool carChanged);
 
-    private CarDetails _newCarDetails;
+    private ICollection<Part> _currentPartOptions = [];
+
     private Part _appliedPart;
     private float _moneyPaid;
+    private Button _buttonPressed;
 
-    public override void _Ready() {
+    public override void _EnterTree() {
+        // on enter tree so we can reset the buttons and current car details
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
 
         LoadOptions(state);
-        LoadStats(state);
+        ReloadStats(state);
     }
 
-    public (CarDetails, float) GetChangedDetails() => (_newCarDetails, _moneyPaid);
+    public override void _ExitTree() {
+        _appliedPart = null;
+        _moneyPaid = 0;
+        _buttonPressed = null;
+
+        var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
+        foreach (var child in optionsBox.GetChildren()) {
+            optionsBox.RemoveChild(child);
+            child.QueueFree();
+        }
+    }
+
+    public void SetParts(List<Part> parts) {
+        _currentPartOptions = [.. parts];
+    }
+
+    public (Part, float) GetChangedDetails() => (_appliedPart, _moneyPaid);
 
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
 
-        // clone it so we don't modify the original
-        _newCarDetails = state.CarDetails.Clone();
-
-        var allParts = _newCarDetails.GetAllPartsInTree().Where(x => x.CurrentLevel < x.Levels.Length - 1).ToList();
-
-        for (int i = 0; i < state.ShopPartCount; i++) {
-            if (allParts.Count <= 0) {
-                break;
-            }
-
-            var part = allParts[Mathf.Abs((int)(GD.Randi() % allParts.Count))];
-            allParts.Remove(part);
-
+        foreach (var part in _currentPartOptions) {
             var container = new HBoxContainer();
             container.AddChild(new TextureRect() {
                 Texture = part.IconImage,
@@ -50,24 +59,32 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
             });
-            container.AddChild(new Label() {
-                Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
-            });
+            var alreadyBought = part.CurrentLevel + 1 == state.CarDetails.LevelOfPart(part);
+
+            if (alreadyBought) {
+                container.AddChild(new Label() {
+                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} bought"
+                });
+            } else {
+                container.AddChild(new Label() {
+                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
+                });
+            }
             var optionButton = new Button() {
                 Text = "Choose",
-                Disabled = part.LevelCost[part.CurrentLevel + 1] > state.Money
+                Disabled = alreadyBought || part.LevelCost[part.CurrentLevel + 1] > state.Money
             };
             optionButton.Pressed += () => {
                 if (_appliedPart == part)
                     return;
-                if (_appliedPart != null) {
-                    _appliedPart.CurrentLevel--;
-                }
 
-                part.CurrentLevel++;
-                _newCarDetails.LoadSelf(Main.DEFAULT_GRAVITY);
+                // clone it so we don't modify the original
+                var currentClone = state.CarDetails.Clone();
+                currentClone.ApplyPartChange(part, part.CurrentLevel + 1);
+
                 _appliedPart = part;
-                LoadStats(state);
+                _buttonPressed = optionButton;
+                ReloadStats(state, currentClone);
             };
             container.AddChild(optionButton);
 
@@ -79,7 +96,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         };
         saveButton.Pressed += () => {
             if (_appliedPart != null) {
-                _moneyPaid = (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel];
+                _moneyPaid = (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel + 1];
             }
             EmitSignal(SignalName.Closed, _appliedPart != null);
         };
@@ -94,13 +111,16 @@ public partial class HundredUpgradeScreen : CenterContainer {
         optionsBox.AddChild(chooseNothing);
     }
 
-    private void LoadStats(HundredGlobalState state) {
+    private void ReloadStats(HundredGlobalState state, CarDetails currentClone = null) {
         var statsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerStats");
+
+        // if no changes yet, just duplicate it
+        currentClone ??= state.CarDetails;
 
         // remove any existing things because this is a dumb view for now
         foreach (var n in statsBox.GetChildren().ToArray()) {
             statsBox.RemoveChild(n);
-            n.Free();
+            n.QueueFree();
         }
 
         var stats = new RichTextLabel() {
@@ -114,8 +134,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
 
         stats.PushColor(Colors.White);
         stats.PushTable(3);
-        var prevDetails = state.CarDetails.GetResultsInTree();
-        var details = _newCarDetails.GetResultsInTree();
+        var prevDetails = state.CarDetails.GetPartResultsInTree();
+        var details = currentClone.GetPartResultsInTree();
 
         stats.PushCell();
         stats.Pop();
@@ -127,7 +147,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         stats.Pop();
 
         var maxTorquePrev = state.CarDetails.Engine.MaxTorque();
-        var maxTorque = _newCarDetails.Engine.MaxTorque();
+        var maxTorque = currentClone.Engine.MaxTorque();
         stats.PushCell();
         stats.AppendText($"Max Torque (Nm):");
         stats.Pop();
@@ -141,7 +161,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         stats.Pop();
 
         var maxKwPrev = state.CarDetails.Engine.MaxKw();
-        var maxKw = _newCarDetails.Engine.MaxKw();
+        var maxKw = currentClone.Engine.MaxKw();
         stats.PushCell();
         stats.AppendText("Max Power (kW):");
         stats.Pop();
@@ -187,7 +207,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         stats.Pop();
         stats.Pop();
 
-        var torqueCurveGraph = new TorqueCurveGraph(_newCarDetails, null, state.CarDetails, null);
+        var torqueCurveGraph = new TorqueCurveGraph(currentClone, null, state.CarDetails, null);
         statsBox.AddChild(torqueCurveGraph);
     }
 

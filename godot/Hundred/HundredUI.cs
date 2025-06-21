@@ -90,20 +90,14 @@ public partial class HundredUI : HBoxContainer {
         var moneyInfo = GetNode<Label>("VBoxContainerLeft/VBoxContainerState/VBoxContainerMoney/Label");
         moneyInfo.Text = "$" + state.Money;
 
+        var shopTimer = GetNode<Label>("VBoxContainerLeft/VBoxContainerState/HBoxContainerShopTimer/TimerLabel");
+        shopTimer.Text = Math.Round(state.ShopResetTimer, 1) + " sec till shop reset";
+
         // show the parts and their current levels
         var allParts = state.CarDetails.GetAllPartsInTree();
         foreach (var part in allParts) {
             var uiPart = _partMappings[part.Name];
             uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
-        }
-
-        var shopInfo = GetNode<Label>("%ShopTimerLabel");
-        if (state.ShopCooldownTimer > 0) {
-            shopInfo.Text = "Shop cooldown";
-        } else if (state.ShopStoppedTimer > 0) {
-            shopInfo.Text = "Opening Shop.. in " + Math.Round(state.ShopStoppedTriggerAmount - state.ShopStoppedTimer, 1) + "sec";
-        } else {
-            shopInfo.Text = "";
         }
 
         // update relic view

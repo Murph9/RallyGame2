@@ -19,9 +19,12 @@ public partial class HundredRallyGame : Node {
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;
+    private HundredUpgradeScreen _upgradeScreen;
     private HundredUI _ui;
 
     private LineDebug3D _playerLineDebug3D = new();
+
+    private bool _shopCountdownStarted;
 
     private bool _paused = false;
 
@@ -62,6 +65,16 @@ public partial class HundredRallyGame : Node {
         if (!_paused) {
             state.AddTotalTimePassed(delta);
 
+            if (_shopCountdownStarted) {
+                state.ShopTimerReduced(delta);
+                if (state.ShopResetTimer < 0) {
+                    _upgradeScreen = null; // TODO memory leak?
+
+                    state.ShopTimerReset();
+                    _shopCountdownStarted = false;
+                }
+            }
+
             if (Input.IsActionJustPressed("menu_back")) {
                 ShowPause();
             }
@@ -72,7 +85,7 @@ public partial class HundredRallyGame : Node {
                 _racingScene.ResetCarTo(pos);
             }
 
-            if (state.ShopStoppedTimer > state.ShopStoppedTriggerAmount && state.ShopCooldownTimer < 0) {
+            if (Input.IsKeyPressed(Key.Tab)) {
                 CallDeferred(MethodName.ShowShop);
             }
 
@@ -101,13 +114,6 @@ public partial class HundredRallyGame : Node {
 
         var currentPlayerSpeed = _racingScene.PlayerCarLinearVelocity.Length();
         state.SetCurrentSpeedMs(currentPlayerSpeed);
-
-        if (currentPlayerSpeed < 1 && !_racingScene.PlayerIsAccelerating)
-            state.ShopStoppedTimer += delta;
-        else {
-            state.ShopStoppedTimer = 0;
-            state.ShopCooldownTimer -= delta; // TODO you need to accel for 5 seconds for this
-        }
 
         // check the current race states
         foreach (var rival in state.RivalRaceDetails) {
@@ -226,22 +232,35 @@ public partial class HundredRallyGame : Node {
     private void ShowShop() {
         SetPauseState(true);
 
-        var upgrade = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
-        upgrade.Closed += (carChanged) => {
-            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-            if (carChanged) {
-                var changeDetails = upgrade.GetChangedDetails();
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        if (_upgradeScreen == null) {
+            _upgradeScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
+            _upgradeScreen.SetParts(state.Car.Details.GetAllPartsInTree()
+                .Where(x => x.CurrentLevel < x.Levels.Length - 1)
+                .OrderBy(x => GD.Randi())
+                .Take(state.ShopPartCount)
+                .ToList());
 
-                state.SetCarDetails(changeDetails.Item1);
-                state.AddMoney(-changeDetails.Item2);
-            }
+            _upgradeScreen.Closed += (carChanged) => {
+                var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+                if (carChanged) {
+                    _shopCountdownStarted = true;
 
-            SetPauseState(false);
-            state.ShopCooldownTimer = state.ShopCooldownTriggerAmount;
-            _racingScene.ReplaceCarWithState();
-            CallDeferred(MethodName.RemoveNode, upgrade);
-        };
-        AddChild(upgrade);
+                    var changedDetails = _upgradeScreen.GetChangedDetails();
+                    var newCarDetails = state.CarDetails.Clone();
+                    newCarDetails.ApplyPartChange(changedDetails.Item1, changedDetails.Item1.CurrentLevel + 1);
+
+                    state.SetCarDetails(newCarDetails);
+                    state.AddMoney(-changedDetails.Item2);
+                }
+
+                SetPauseState(false);
+                _racingScene.ReplaceCarWithState();
+                CallDeferred(MethodName.RemoveNode, _upgradeScreen);
+            };
+        }
+
+        AddChild(_upgradeScreen);
     }
 
     private void ShowGoalSelect() {
