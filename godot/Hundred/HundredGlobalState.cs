@@ -3,7 +3,6 @@ using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World.Procedural;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +20,11 @@ public class RivalRace(Car rival, float startDistance, float raceDistance) {
 public partial class HundredGlobalState : Node {
 
     [Signal]
-    public delegate void GoalChangedEventHandler();
+    public delegate void GoalAddedEventHandler();
+    [Signal]
+    public delegate void GoalWonEventHandler();
+    [Signal]
+    public delegate void GoalLostEventHandler();
 
     [Signal]
     public delegate void MoneyIncreasedEventHandler(float amount);
@@ -62,17 +65,33 @@ public partial class HundredGlobalState : Node {
     public float ShopCountdownAmount { get; private set; }
     public double ShopResetTimer { get; private set; }
 
-    public int GoalSelectCount { get; private set; }
-    public float GoalSpread { get; private set; }
-    public float GoalZoneLength { get; private set; }
-    public GoalState Goal { get; private set; }
+    public int GoalsWon { get; private set; }
+    public int GoalsLost { get; private set; }
+    public float GoalDistanceSpread { get; private set; }
+    public float GoalNextTriggerDistance { get; private set; }
+    public float GoalTimeoutSeconds { get; private set; }
+    public IReadOnlyCollection<GoalState> Goals { get; private set; } = [];
 
     public HundredGlobalState() {
         Reset();
     }
 
     public override void _PhysicsProcess(double delta) {
-        Goal._PhysicsProcess(delta, CurrentPlayerSpeed);
+        foreach (var goal in Goals) {
+            goal._PhysicsProcess(delta, CurrentPlayerSpeed);
+            var goalResult = goal.CheckSuccessful(TotalTimePassed, CurrentPlayerSpeed);
+
+            if (goalResult.HasValue) {
+                if (goalResult.Value) {
+                    EmitSignal(SignalName.GoalWon);
+                    GoalsWon++;
+                } else {
+                    EmitSignal(SignalName.GoalLost);
+                    GoalsLost++;
+                }
+                RemoveGoal(goal);
+            }
+        }
     }
 
     public void Reset() {
@@ -105,39 +124,33 @@ public partial class HundredGlobalState : Node {
         Money = 1000000;
 #endif
 
-        GoalSpread = 1000;
-        GoalZoneLength = 250;
-        GoalSelectCount = 2;
-
-        var randGoal = RandHelper.RandFromList(Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToArray());
-        Goal = new(randGoal, WorldType.Simple2, 0, GoalSpread, GoalZoneLength);
+        GoalTimeoutSeconds = 5 * 60; // sec
+        GoalDistanceSpread = 200; // m
+        GoalsWon = 0;
+        GoalsLost = 0;
 
         RelicManager = new RelicManager(this);
         AddChild(RelicManager);
     }
 
-    public void SetGoal(GoalState goal) {
-        if (goal is null) {
-            GD.Print("Updated goal is null, please dont");
+    public void AddNewGoal() {
+        GoalNextTriggerDistance = DistanceTravelled + GoalDistanceSpread;
+
+        var validNewGoals = Enum.GetValues<GoalType>()
+            .Except([GoalType.Nothing])
+            .Except(Goals.Select(x => x.Type))
+            .ToList();
+        if (validNewGoals.Count == 0) {
+            return;
         }
 
-        Goal = goal;
-        EmitSignal(SignalName.GoalChanged);
+        Goals = Goals.Append(new GoalState(RandHelper.RandFromList(validNewGoals), DistanceTravelled, (float)TotalTimePassed + GoalTimeoutSeconds)).ToList();
+
+        EmitSignal(SignalName.GoalAdded);
     }
 
-    public IEnumerable<GoalState> GenerateNewGoals(int count) {
-        var goalsWithoutNothing = Enum.GetValues<GoalType>().Except([GoalType.Nothing]).ToList();
-        var roadTypes = Enum.GetValues<WorldType>().ToList();
-        for (var i = 0; i < count; i++) {
-
-            var goalType = RandHelper.RandFromList(goalsWithoutNothing);
-            goalsWithoutNothing.Remove(goalType);
-
-            var roadType = RandHelper.RandFromList(roadTypes);
-            roadTypes.Remove(roadType);
-
-            yield return new GoalState(goalType, roadType, Goal.GlobalEndDistance, GoalSpread, GoalZoneLength);
-        }
+    public void RemoveGoal(GoalState goalState) {
+        Goals = Goals.Except([goalState]).ToList();
     }
 
     public void AddMoney(float delta) {
@@ -163,6 +176,10 @@ public partial class HundredGlobalState : Node {
 
         if (Math.Floor(TotalTimePassed - delta) != Math.Floor(TotalTimePassed))
             EmitSignal(SignalName.SecondPassed, Math.Floor(TotalTimePassed));
+
+        if (GoalNextTriggerDistance < DistanceTravelled) {
+            AddNewGoal();
+        }
     }
 
     public void ShopTimerReduced(double delta) => ShopResetTimer -= delta;

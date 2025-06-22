@@ -5,21 +5,27 @@ using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredUI : HBoxContainer {
 
+    // perf to map things in one place
+    private readonly Dictionary<HundredInProgressItem, Label> _uiLabelMap = [];
+
     private readonly Dictionary<string, Tuple<Part, Control>> _partMappings = [];
     private readonly Dictionary<Car, HundredInProgressItem> _rivalDetails = [];
-    private readonly Dictionary<HundredInProgressItem, Label> _uiLabelMap = [];
     private readonly Dictionary<RelicType, Container> _relicMappings = [];
-    private HundredInProgressItem _goalInProgress;
+    private readonly Dictionary<GoalState, HundredInProgressItem> _goalsInProgress = [];
+
     private HundredInProgressUi _inProgressUi;
 
     public override void _Ready() {
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-        state.GoalChanged += GoalChanged;
+        state.GoalAdded += GoalAdded;
+        state.GoalLost += GoalRemoved;
+        state.GoalWon += GoalRemoved;
         state.RivalRaceStarted += RivalStarted;
         state.RivalRaceStopped += RivalStopped;
 
@@ -71,7 +77,7 @@ public partial class HundredUI : HBoxContainer {
         GetNode<VBoxContainer>("VBoxContainerRight").AddChild(_inProgressUi);
 
         // and initialize the UI with the goal
-        GoalChanged();
+        GoalsChanged();
     }
 
     public override void _Process(double delta) {
@@ -120,8 +126,8 @@ public partial class HundredUI : HBoxContainer {
             outputLabel.Text = relic.OutputStrength != 1 ? Math.Round(relic.OutputStrength, 1) + "" : "";
         }
 
-        if (_goalInProgress != null) {
-            _uiLabelMap[_goalInProgress].Text = state.Goal.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
+        foreach (var goal in _goalsInProgress) {
+            _uiLabelMap[goal.Value].Text = goal.Key.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
         }
 
         foreach (var rivalRaceUi in _rivalDetails) {
@@ -141,15 +147,42 @@ public partial class HundredUI : HBoxContainer {
         return output + ((int)time % 60) + " sec";
     }
 
-    private void GoalChanged() {
-        if (_goalInProgress is not null) {
-            _uiLabelMap.Remove(_goalInProgress);
-            _inProgressUi.Remove(_goalInProgress);
+    private void GoalsChanged() {
+        // just blindly re-write the whole list everytime
+        foreach (var goal in _goalsInProgress) {
+            _uiLabelMap.Remove(goal.Value);
+            _inProgressUi.Remove(goal.Value);
         }
-        _goalInProgress = _inProgressUi.Add();
+        _goalsInProgress.Clear();
 
-        _uiLabelMap[_goalInProgress] = new Label();
-        _goalInProgress.AddChild(_uiLabelMap[_goalInProgress]);
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        foreach (var goal in state.Goals) {
+            var uiElement = _inProgressUi.Add();
+            _goalsInProgress.Add(goal, uiElement);
+
+            _uiLabelMap[uiElement] = new Label();
+            uiElement.AddChild(_uiLabelMap[uiElement]);
+        }
+    }
+
+    private void GoalAdded() {
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        var newGoal = state.Goals.Except(_goalsInProgress.Keys).Single();
+
+        var uiElement = _inProgressUi.Add();
+        _goalsInProgress.Add(newGoal, uiElement);
+
+        _uiLabelMap[uiElement] = new Label();
+        uiElement.AddChild(_uiLabelMap[uiElement]);
+    }
+    private void GoalRemoved() {
+        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        foreach (var goal in state.Goals.Where(x => x.Successful.HasValue)) {
+            var uiElement = _goalsInProgress[goal];
+            _inProgressUi.Remove(uiElement);
+            _goalsInProgress.Remove(goal);
+            _uiLabelMap.Remove(uiElement);
+        }
     }
 
     private void RivalStarted(Car rival) {

@@ -1,61 +1,54 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.World.Procedural;
 using System;
 using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public class GoalState(GoalType goal, WorldType roadType, float startDistance, float goalLength, float goalZoneLength) {
+public class GoalState(GoalType goal, float startDistance, float timeoutTime) {
     public GoalType Type { get; } = goal;
-    public WorldType RoadType { get; } = roadType;
 
-    public float ZoneLength { get; } = goalZoneLength;
-    public float FullLength { get; } = goalLength;
-    public float GlobalStartDistance { get; } = startDistance;
-    public float GlobalZoneStartDistance { get; } = startDistance + goalLength - goalZoneLength;
-    public float GlobalEndDistance => GlobalStartDistance + FullLength;
+    public float TimeoutTime { get; } = timeoutTime;
+    public float StartDistance { get; } = startDistance;
 
-    public float ActualZoneStartDistance { get; set; }
-    public double ActualZoneStartTime { get; private set; }
-
-    public bool ZoneActive { get; set; }
-    public bool? ZoneWon { get; private set; }
-
+    // goal specific tracking:
     public double TimeSpentBelowTargetSpeed { get; private set; }
     public double HighestZoneSpeed { get; private set; }
+    public double DistanceToHitSpeed { get; private set; } = timeoutTime - 10;
 
-    public double TargetScore => Type.GoalValue(GlobalZoneStartDistance, ZoneLength);
+    public double GoalActiveFor { get; private set; }
+    public bool? Successful { get; private set; } = null;
 
-    public void ZoneStartHit(double totalTimePassed) {
-        ZoneActive = true;
-        ActualZoneStartTime = totalTimePassed;
-    }
+    public double TargetScore => Type.GoalValue(StartDistance);
 
-    public bool SetSuccessful(double gameTime, Vector3 carLinearVelocity) {
-        ZoneActive = false;
+    public bool? CheckSuccessful(double gameTime, float carSpeed) {
+        if (gameTime > TimeoutTime) {
+            Successful = false;
+        } else {
+            var successful = Type switch {
+                GoalType.SpeedTrap => GoalActiveFor > (TimeoutTime - 1) && TargetScore < carSpeed,
+                GoalType.MinimumSpeed => GoalActiveFor > (TimeoutTime - 1) && TimeSpentBelowTargetSpeed < 5,
+                GoalType.SingularSpeed => TargetScore < HighestZoneSpeed,
+                GoalType.Nothing => true,
+                _ => throw new Exception("Unknown type " + Type),
+            };
 
-        ZoneWon = Type switch {
-            GoalType.SpeedTrap => TargetScore < carLinearVelocity.Length(),
+            if (successful) {
+                Successful = true;
+            }
+        }
 
-            // TODO this doesn't work
-            GoalType.AverageSpeedSection => TargetScore < (GlobalStartDistance + ZoneLength - ActualZoneStartDistance) / (gameTime - ActualZoneStartTime),
-            GoalType.TimeTrial => TargetScore > (gameTime - ActualZoneStartTime),
-            GoalType.MinimumSpeed => TimeSpentBelowTargetSpeed < 5, // TODO
-            GoalType.SingularSpeed => TargetScore < HighestZoneSpeed,
-            GoalType.Nothing => true,
-            _ => throw new Exception("Unknown type " + Type),
-        };
-
-        return ZoneWon.Value;
+        return Successful;
     }
 
     public void _PhysicsProcess(double delta, float carLinearVelocity) {
-        if (ZoneActive) {
-            if (carLinearVelocity < TargetScore) {
-                TimeSpentBelowTargetSpeed += delta;
-            }
+        GoalActiveFor += delta;
 
+        if (Type == GoalType.MinimumSpeed && carLinearVelocity < TargetScore) {
+            TimeSpentBelowTargetSpeed += delta;
+        }
+
+        if (Type == GoalType.SingularSpeed) {
             HighestZoneSpeed = Mathf.Max(carLinearVelocity, HighestZoneSpeed);
         }
     }
@@ -69,20 +62,13 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
         return string.Format(Type.GetDescriptionFormat(), value);
     }
 
-    public string ProgressString(double gameTime, float distance, float carLinearVelocity) {
-        if (ZoneWon.HasValue) {
-            var successString = ZoneWon.Value ? "" : "not ";
+    public string ProgressString(double gameTime, float currentDistance, float carLinearVelocity) {
+        if (Successful.HasValue && Successful.Value) {
+            var successString = Successful.Value ? "" : "not ";
             return $"Goal {Type}: Was {successString}successful";
         }
 
-        if (!ZoneActive) {
-            var text = $"Goal {Type} starts at {Math.Round(GlobalZoneStartDistance / 1000f, 1)} km";
-            if (ActualZoneStartDistance > 0) // its set, so show the distance to the start of it
-                text += $" in {Math.Round(ActualZoneStartDistance - distance)}m";
-            return text;
-        }
-
-        var remainingDistance = Math.Round(GlobalEndDistance - distance) / 1000;
+        var remainingDistance = Math.Round(DistanceToHitSpeed - currentDistance) / 1000;
 
         var formatString = Type.GetActiveDetailFormat();
 
@@ -92,15 +78,7 @@ public class GoalState(GoalType goal, WorldType roadType, float startDistance, f
                 break;
             case GoalType.SpeedTrap:
                 args.Add(MyMath.MsToKmh(TargetScore));
-                args.Add(remainingDistance);
-                break;
-            case GoalType.AverageSpeedSection:
-                args.Add(MyMath.MsToKmh(TargetScore));
-                args.Add(MyMath.MsToKmh(distance / gameTime));
-                break;
-            case GoalType.TimeTrial:
-                args.Add(TargetScore - (gameTime - ActualZoneStartTime));
-                args.Add(remainingDistance);
+                args.Add(TimeoutTime - GoalActiveFor);
                 break;
             case GoalType.MinimumSpeed:
                 args.Add(MyMath.MsToKmh(TargetScore));

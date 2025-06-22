@@ -90,11 +90,8 @@ public partial class HundredRallyGame : Node {
             }
 
 #if DEBUG
-            if (Input.IsKeyPressed(Key.Key8)) {
-                CallDeferred(MethodName.ShowShop);
-            }
             if (Input.IsKeyPressed(Key.Key9)) {
-                CallDeferred(MethodName.ShowRelicShop, false);
+                CallDeferred(MethodName.ShowRelicShop);
             }
 #endif
         }
@@ -165,35 +162,7 @@ public partial class HundredRallyGame : Node {
     }
 
     private void RoadPlacedAt(float distanceAtPos, Transform3D transform) {
-        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-
-        // create the trigger area for the start of the goal zone
-        if (state.Goal.ActualZoneStartDistance == 0 && state.Goal.GlobalZoneStartDistance < distanceAtPos) {
-            state.Goal.ActualZoneStartDistance = distanceAtPos;
-
-            CreateCheckpoint(transform, (node) => {
-                if (!_racingScene.IsMainCar(node)) return false;
-                GD.Print("Starting the goal: " + state.Goal.Type);
-
-                state.Goal.ZoneStartHit(state.TotalTimePassed);
-                return true;
-            });
-        }
-
-        // create the trigger for the end of the zone
-        if (!state.Goal.ZoneActive && state.Goal.GlobalEndDistance < distanceAtPos) {
-            GD.Print("Creating end trigger for the goal: " + state.Goal.Type);
-            _roadManager.StopAfter(state.Goal.GlobalEndDistance); // stop roads from being created after this point
-
-            CreateCheckpoint(transform, (node) => {
-                if (!_racingScene.IsMainCar(node)) return false;
-
-                state.Goal.SetSuccessful(state.TotalTimePassed, _racingScene.PlayerCarLinearVelocity);
-
-                CallDeferred(MethodName.ShowRelicShop, true);
-                return true;
-            });
-        }
+        // TODO generate new roads occasionally
     }
 
     private void ResetRivalRace(Car rival) {
@@ -212,19 +181,13 @@ public partial class HundredRallyGame : Node {
         rival.ChangeInputsTo(oldAi);
     }
 
-    private void ShowRelicShop(bool showShop) {
+    private void ShowRelicShop() {
         SetPauseState(true);
 
         var relics = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRelicScreen))).Instantiate<HundredRelicScreen>();
         relics.Closed += () => {
             SetPauseState(false);
             CallDeferred(MethodName.RemoveNode, relics);
-
-            // check if the current goal is not active
-            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-            if (showShop) {
-                CallDeferred(MethodName.ShowGoalSelect);
-            }
         };
         AddChild(relics);
     }
@@ -261,22 +224,6 @@ public partial class HundredRallyGame : Node {
         }
 
         AddChild(_upgradeScreen);
-    }
-
-    private void ShowGoalSelect() {
-        SetPauseState(true);
-
-        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-
-        var goalSelect = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredGoalSelectScreen))).Instantiate<HundredGoalSelectScreen>();
-        goalSelect.Closed += () => {
-            SetPauseState(false);
-            CallDeferred(MethodName.RemoveNode, goalSelect);
-
-            _roadManager.UpdateWorldType(state.Goal.RoadType);
-            _roadManager.StopAfter(0); // and continue placing new road
-        };
-        AddChild(goalSelect);
     }
 
     private void SetPauseState(bool paused) {
