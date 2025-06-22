@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
+using murph9.RallyGame2.godot.Hundred.Goals;
 using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
 using System;
@@ -78,11 +79,8 @@ public partial class HundredGlobalState : Node {
 
     public override void _PhysicsProcess(double delta) {
         foreach (var goal in Goals) {
-            goal._PhysicsProcess(delta, CurrentPlayerSpeed);
-            var goalResult = goal.CheckSuccessful(TotalTimePassed, CurrentPlayerSpeed);
-
-            if (goalResult.HasValue) {
-                if (goalResult.Value) {
+            if (goal.Successful.HasValue) {
+                if (goal.Successful.Value) {
                     EmitSignal(SignalName.GoalWon);
                     GoalsWon++;
                 } else {
@@ -144,7 +142,10 @@ public partial class HundredGlobalState : Node {
             return;
         }
 
-        Goals = Goals.Append(new GoalState(RandHelper.RandFromList(validNewGoals), DistanceTravelled, (float)TotalTimePassed + GoalTimeoutSeconds)).ToList();
+        var goal = RandHelper.RandFromList(validNewGoals).Generate(DistanceTravelled, (float)TotalTimePassed + GoalTimeoutSeconds);
+        AddChild(goal);
+
+        Goals = Goals.Append(goal).ToList();
 
         EmitSignal(SignalName.GoalAdded);
     }
