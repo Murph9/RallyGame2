@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.Hundred;
 
-public class GoalState(GoalType goal, float startDistance, float timeoutTime) {
+public class GoalState(GoalType goal, float startDistance, float timeoutTime) { // TODO abstract class
     public GoalType Type { get; } = goal;
 
     public float TimeoutTime { get; } = timeoutTime;
@@ -14,7 +14,6 @@ public class GoalState(GoalType goal, float startDistance, float timeoutTime) {
     // goal specific tracking:
     public double TimeSpentBelowTargetSpeed { get; private set; }
     public double HighestZoneSpeed { get; private set; }
-    public double DistanceToHitSpeed { get; private set; } = timeoutTime - 10;
 
     public double GoalActiveFor { get; private set; }
     public bool? Successful { get; private set; } = null;
@@ -68,8 +67,6 @@ public class GoalState(GoalType goal, float startDistance, float timeoutTime) {
             return $"Goal {Type}: Was {successString}successful";
         }
 
-        var remainingDistance = Math.Round(DistanceToHitSpeed - currentDistance) / 1000;
-
         var formatString = Type.GetActiveDetailFormat();
 
         var args = new List<object>();
@@ -78,7 +75,7 @@ public class GoalState(GoalType goal, float startDistance, float timeoutTime) {
                 break;
             case GoalType.SpeedTrap:
                 args.Add(MyMath.MsToKmh(TargetScore));
-                args.Add(TimeoutTime - GoalActiveFor);
+                args.Add(TimeoutTime - gameTime);
                 break;
             case GoalType.MinimumSpeed:
                 args.Add(MyMath.MsToKmh(TargetScore));

@@ -127,7 +127,7 @@ public partial class HundredUI : HBoxContainer {
         }
 
         foreach (var goal in _goalsInProgress) {
-            _uiLabelMap[goal.Value].Text = goal.Key.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
+            _uiLabelMap[goal.Value].Text = Math.Round(goal.Key.TimeoutTime - state.TotalTimePassed) + " sec: " + goal.Key.ProgressString(state.TotalTimePassed, state.DistanceTravelled, state.CurrentPlayerSpeed);
         }
 
         foreach (var rivalRaceUi in _rivalDetails) {
