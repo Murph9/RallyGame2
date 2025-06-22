@@ -231,11 +231,20 @@ public partial class HundredGlobalState : Node {
 
     [Signal]
     public delegate void CarDamageEventHandler(float amount);
+    [Signal]
+    public delegate void CarAnyCollisionEventHandler();
     public void CollisionWithOther(Vector3 resultVelocityDifference) {
         var amount = resultVelocityDifference.Length();
-        if (amount < 2)
+        if (amount < 0.01f) {
+            // we'll be nice to the physics engine
             return;
-        Car.Damage += amount;
-        EmitSignal(SignalName.CarDamage, amount);
+        }
+
+        EmitSignal(SignalName.CarAnyCollision);
+
+        if (amount >= 2) {
+            Car.Damage += amount;
+            EmitSignal(SignalName.CarDamage, amount);
+        }
     }
 }

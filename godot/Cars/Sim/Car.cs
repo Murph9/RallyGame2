@@ -486,4 +486,15 @@ public partial class Car : Node3D {
 
         return RigidBody.LinearVelocity - _lastVelocity.Value;
     }
+
+    private const float DRIFT_MIN_ANGLE = 10;
+    private const float DRIFT_MIN_SPEED = 5;
+    public bool IsDrifting() {
+        var speed = RigidBody.LinearVelocity.Length();
+        return Mathf.Abs(DriftAngle) > DRIFT_MIN_ANGLE && Mathf.Abs(speed) > DRIFT_MIN_SPEED;
+    }
+    public double DriftFrameAmount(double delta) {
+        var speed = RigidBody.LinearVelocity.Length();
+        return (Mathf.Abs(DriftAngle) - DRIFT_MIN_ANGLE) * (float)delta * (speed - DRIFT_MIN_SPEED);
+    }
 }

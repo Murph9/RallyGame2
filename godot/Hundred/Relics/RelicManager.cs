@@ -17,6 +17,7 @@ public partial class RelicManager : Node {
 
         _hundredGlobalState.TrafficCollision += TrafficCollision;
         _hundredGlobalState.CarDamage += CarDamaged;
+        _hundredGlobalState.CarAnyCollision += CarAnyCollision;
         _hundredGlobalState.CarDetailsChanged += () => CarDetailsChanged(false);
         _hundredGlobalState.RivalRaceStarted += RivalRaceStarted;
         _hundredGlobalState.RivalRaceWon += RivalRaceWon;
@@ -128,6 +129,14 @@ public partial class RelicManager : Node {
 
         foreach (var trafficCollision in AllRelicsOfType<IOnTrafficCollisionRelic>()) {
             trafficCollision.TrafficCollision(_hundredGlobalState.Car, otherCar, apparentVelocity);
+        }
+    }
+
+    private void CarAnyCollision() {
+        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+
+        foreach (var trafficCollision in AllRelicsOfType<IAnyCollisionRelic>()) {
+            trafficCollision.AnyCollision(_hundredGlobalState.Car);
         }
     }
 

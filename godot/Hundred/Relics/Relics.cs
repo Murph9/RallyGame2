@@ -48,19 +48,15 @@ public class RivalRaceMoneyIncreaseRelic(RelicManager relicManager, RelicType re
     public void RivalRaceLost(Car rival, double moneyDiff) { }
 }
 
-public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IDamagedRelic {
+public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, float strength) : Relic(relicManager, relicType, strength), IAnyCollisionRelic {
     public override string DescriptionBBCode => $"Get a drift score";
-    private const float MIN_ANGLE = 10;
-    private const float MIN_SPEED = 5;
-
     public float LastDriftScore { get; private set; }
 
     public override void _PhysicsProcess(Car self, double delta) {
         base._PhysicsProcess(self, delta);
 
-        var speed = self.RigidBody.LinearVelocity.Length();
-        if (Mathf.Abs(self.DriftAngle) > MIN_ANGLE && Mathf.Abs(speed) > MIN_SPEED) {
-            OutputStrength += (Mathf.Abs(self.DriftAngle) - MIN_ANGLE) * (float)delta * (speed - MIN_SPEED);
+        if (self.IsDrifting()) {
+            OutputStrength += (float)self.DriftFrameAmount(delta);
         } else {
             if (OutputStrength > 0)
                 LastDriftScore = OutputStrength;
@@ -68,7 +64,7 @@ public class DriftScoreRelic(RelicManager relicManager, RelicType relicType, flo
         }
     }
 
-    public void DamageTaken(Car self, float amount) {
+    public void AnyCollision(Car self) {
         OutputStrength = 0;
     }
 }

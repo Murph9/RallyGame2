@@ -7,6 +7,7 @@ public enum GoalType {
     SingularSpeed,
     TrafficCollisions,
     RivalWins,
+    DriftScore,
 }
 
 public static class GoalTypeExtensions {
@@ -17,6 +18,7 @@ public static class GoalTypeExtensions {
         GoalType.SpeedTrap => new SpeedTrapGoal(startDistance, timeoutSeconds),
         GoalType.TrafficCollisions => new TrafficCollisionsGoal(startDistance, timeoutSeconds),
         GoalType.RivalWins => new RivalWinsGoal(startDistance, timeoutSeconds),
+        GoalType.DriftScore => new DriftScoreGoal(startDistance, timeoutSeconds),
         _ => null
     };
 }
