@@ -7,7 +7,6 @@ namespace murph9.RallyGame2.godot.Hundred.Goals;
 public partial class SpeedTrapGoal(float startDistance, float timeoutTime) : GoalState(startDistance, timeoutTime) {
     public override GoalType Type => GoalType.SpeedTrap;
 
-    public override string Description() => $"Hit the speed trap at least {TargetScore():0.#} km/h";
     // forumla: start at 50km/h -> 150km/h at the end
     public override double TargetScore() => MyMath.KmhToMs(50 + 100 * (StartDistance / (100 * 1000f)));
 

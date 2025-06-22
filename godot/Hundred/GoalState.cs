@@ -12,7 +12,6 @@ public abstract partial class GoalState(float startDistance, float timeoutTime) 
 
     public abstract GoalType Type { get; }
     public abstract double TargetScore();
-    public abstract string Description();
 
     protected abstract bool CheckSuccessful(double gameTime, float carSpeed);
 
@@ -22,10 +21,9 @@ public abstract partial class GoalState(float startDistance, float timeoutTime) 
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         if (state.TotalTimePassed > TimeoutTime) {
             Successful = false;
-        } else if (CheckSuccessful(state.TotalTimePassed, state.CurrentPlayerSpeed)) {
+        } else if (!Successful.HasValue && CheckSuccessful(state.TotalTimePassed, state.CurrentPlayerSpeed)) {
             Successful = true;
         }
-        // TODO create abstract failure
     }
 
     public string ProgressString(double gameTime, float currentDistance, float carLinearVelocity) {

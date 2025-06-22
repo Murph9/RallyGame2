@@ -11,7 +11,6 @@ public partial class SingularSpeedGoal(float startDistance, float timeoutTime) :
 
     // forumla: start at 100km/h -> 250km/h at the end
     public override double TargetScore() => MyMath.KmhToMs(100 + 150 * (StartDistance / (100 * 1000f)));
-    public override string Description() => $"Hit {TargetScore():0.#} km/h at any point";
 
     protected override bool CheckSuccessful(double gameTime, float carSpeed) => TargetScore() < HighestZoneSpeed;
 
@@ -23,8 +22,6 @@ public partial class SingularSpeedGoal(float startDistance, float timeoutTime) :
         base._PhysicsProcess(delta);
 
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-        if (Type == GoalType.SingularSpeed) {
-            HighestZoneSpeed = Mathf.Max(state.CurrentPlayerSpeed, HighestZoneSpeed);
-        }
+        HighestZoneSpeed = Mathf.Max(state.CurrentPlayerSpeed, HighestZoneSpeed);
     }
 }
