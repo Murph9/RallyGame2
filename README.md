@@ -73,7 +73,8 @@ Graphics ideas:
 Ideas for more goals:
 
 -   flip your car somewhere
--   hit like 5 different traffic (with colours?)
+-   hit differently coloured traffic
+-   certain goal counts get you relics
 
 ---
 
