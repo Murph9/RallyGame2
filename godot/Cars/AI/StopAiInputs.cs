@@ -6,10 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public partial class StopAiInputs : CarAi {
-    public StopAiInputs(IRoadManager roadManager) : base(roadManager) {
-    }
-
+public partial class StopAiInputs(IRoadManager roadManager) : CarAi(roadManager) {
     public override void _PhysicsProcess(double delta) {
         BrakingCur = 1;
         Steering = 0;

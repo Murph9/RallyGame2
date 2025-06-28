@@ -7,17 +7,13 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public partial class TrafficAiInputs : CarAi {
+public partial class TrafficAiInputs(IRoadManager roadManager, bool inReverse) : CarAi(roadManager) {
 
     private static readonly float BASE_TARGET_SPEED_MS = MyMath.KmhToMs(30);
 
     public float TargetSpeedMs { get; set; } = BASE_TARGET_SPEED_MS;
 
-    public bool InReverse { get; init; }
-
-    public TrafficAiInputs(IRoadManager roadManager, bool inReverse) : base(roadManager) {
-        InReverse = inReverse;
-    }
+    public bool InReverse { get; init; } = inReverse;
 
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
@@ -29,16 +25,17 @@ public partial class TrafficAiInputs : CarAi {
         SteerAt(nextCheckPoints.First());
 
         var tooSlowForTarget = IsTooSlowForPoint(nextCheckPoints.First());
-        var isDrifting = IsDrifting();
-        var targetInfront = true;
+
+        var targetInfront = true; // TODO
         if (tooSlowForTarget && targetInfront) {
             AccelCur = 1f;
             BrakingCur = 0;
-            if (isDrifting) {
-                AccelCur = 0;
-            }
         } else {
             BrakingCur = 0.3f;
+            AccelCur = 0;
+        }
+
+        if (IsDrifting()) {
             AccelCur = 0;
         }
 

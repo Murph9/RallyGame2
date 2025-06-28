@@ -6,10 +6,9 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public partial class RacingAiInputs : CarAi {
+public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManager) {
 
     public float RoadWidth { get; set; } = 5;
-    public RacingAiInputs(IRoadManager roadManager) : base(roadManager) { }
 
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;

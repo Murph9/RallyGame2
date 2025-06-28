@@ -7,18 +7,18 @@ using System;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public abstract partial class CarAi : Node3D, ICarInputs {
+public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInputs {
 
     private const float POINT_TARGET_BUFFER = 3; // car width used in TooFast calc
 
-    protected readonly IRoadManager _roadManager;
+    protected readonly IRoadManager _roadManager = roadManager;
 
     private Car _car;
     public Car Car {
         get { return _car; }
         set {
-            value.Details.TractionControl = true; // my ai is not good enough to ignore traction control
             _car = value;
+            _car.Details.TractionControl = true; // my ai is not good enough to ignore traction control
         }
     }
 
@@ -33,10 +33,6 @@ public abstract partial class CarAi : Node3D, ICarInputs {
     public float Steering { get; protected set; }
 
     protected bool _listeningToInputs = true;
-
-    public CarAi(IRoadManager roadManager) {
-        _roadManager = roadManager;
-    }
 
     public void AcceptInputs() => _listeningToInputs = true;
     public void IgnoreInputs() => _listeningToInputs = false;
