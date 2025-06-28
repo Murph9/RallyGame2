@@ -74,6 +74,16 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
         return targetDistanceToLeftCenter > currentMaxTurnRadius && targetDistanceToRightCenter > currentMaxTurnRadius;
     }
 
+    protected void FlipIfSlowUpsideDown() {
+        if (Car.RigidBody.LinearVelocity.Length() > 10)
+            return;
+        if (Car.RigidBody.GlobalTransform.Basis.Y.AngleTo(Vector3.Up) > Mathf.Pi / 2) {
+            // TODO this isn't quite right but its pretty close to the direction they want to go
+            var nextCheckPoints = _roadManager.GetPassedCheckpoint(Car.RigidBody.GlobalPosition);
+            Car.ResetCarTo(new Transform3D(nextCheckPoints.Basis, Car.RigidBody.Transform.Origin));
+        }
+    }
+
     protected bool IsDrifting() {
         if (Car.RigidBody.LinearVelocity.Length() < 3 * 3)
             return false; // prevent this from blocking all moving

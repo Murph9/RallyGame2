@@ -32,6 +32,8 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
             AccelCur = 0;
             Steering /= 2f; // turn less than wanted
         }
+
+        FlipIfSlowUpsideDown();
     }
 
     private (Vector3, Vector3) GetOuterWallFromCheckpoints(Vector3 checkpoint1, Vector3 checkpoint2) {

@@ -37,11 +37,14 @@ public partial class TrafficAiInputs(IRoadManager roadManager, bool inReverse) :
 
         if (IsDrifting()) {
             AccelCur = 0;
+            Steering /= 2f; // turn less than wanted
         }
 
         // if going too fast slow down a little
         if (Car.RigidBody.LinearVelocity.Length() > TargetSpeedMs) {
             AccelCur = 0;
         }
+
+        FlipIfSlowUpsideDown();
     }
 }
