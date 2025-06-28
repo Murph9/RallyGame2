@@ -10,4 +10,5 @@ public interface IPieceGenerator {
 
     List<string> IgnoredList { get; }
     Vector3 TrafficLeftSideOffset { get; }
+    WorldType CurrentWorldType { get; }
 }

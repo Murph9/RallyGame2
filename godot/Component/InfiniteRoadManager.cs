@@ -37,6 +37,9 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
 
+    public WorldType CurrentWorldType => _world.CurrentWorldType;
+    public int PiecesPlaced { get; private set; }
+
     public InfiniteRoadManager(int spawnDistance, WorldType initialWorldType) {
         UpdateWorldType(initialWorldType);
 
@@ -62,7 +65,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         return (WorldType[])Enum.GetValues(typeof(WorldType));
     }
 
-    public void StopAfter(double distance) {
+    public void StopPlacingRoadAfter(double distance) {
         _world.LimitPlacingAfterDistance(distance);
     }
 
@@ -135,6 +138,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     private void PiecePlacedListener(Transform3D checkpointTransform) {
+        PiecesPlaced++;
+
         EmitSignal(SignalName.RoadNextPoint, _world.TotalDistanceFromCheckpoint(checkpointTransform.Origin), checkpointTransform);
     }
 

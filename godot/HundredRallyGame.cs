@@ -14,8 +14,9 @@ using System.Threading.Tasks;
 namespace murph9.RallyGame2.godot;
 
 public partial class HundredRallyGame : Node {
-
     // The manager of the game
+
+    private const int ROAD_TYPE_CHANGE_COUNT = 25;
 
     private InfiniteRoadManager _roadManager;
     private HundredRacingScene _racingScene;
@@ -35,7 +36,7 @@ public partial class HundredRallyGame : Node {
     }
 
     public override void _Ready() {
-        DebugGUI.IsActive = false; // TODO
+        DebugGUI.IsActive = false;
 
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         if (state.CarDetails != null) {
@@ -98,9 +99,6 @@ public partial class HundredRallyGame : Node {
 
         _playerLineDebug3D.Start = _racingScene.PlayerCarPos;
         _playerLineDebug3D.End = _roadManager.GetNextCheckpoint(_racingScene.PlayerCarPos).Origin;
-
-        var newDistanceTravelled = _roadManager.TotalDistanceFromCheckpoint(_playerLineDebug3D.End);
-        state.SetDistanceTravelled(newDistanceTravelled);
     }
 
     public override void _PhysicsProcess(double delta) {
@@ -108,6 +106,9 @@ public partial class HundredRallyGame : Node {
 
         // update state object for this physics frame
         var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+
+        var newDistanceTravelled = _roadManager.TotalDistanceFromCheckpoint(_playerLineDebug3D.End);
+        state.SetDistanceTravelled(newDistanceTravelled);
 
         var currentPlayerSpeed = _racingScene.PlayerCarLinearVelocity.Length();
         state.SetCurrentSpeedMs(currentPlayerSpeed);
@@ -162,7 +163,14 @@ public partial class HundredRallyGame : Node {
     }
 
     private void RoadPlacedAt(float distanceAtPos, Transform3D transform) {
-        // TODO generate new roads occasionally
+        if (_roadManager.PiecesPlaced % ROAD_TYPE_CHANGE_COUNT != 0)
+            return;
+
+        // generate new road types occasionally
+        var otherTypesToPick = InfiniteRoadManager.GetWorldTypes().Where(x => x != _roadManager.CurrentWorldType);
+        var newRoadType = RandHelper.RandFromList(otherTypesToPick.ToArray());
+
+        _roadManager.UpdateWorldType(newRoadType);
     }
 
     private void ResetRivalRace(Car rival) {

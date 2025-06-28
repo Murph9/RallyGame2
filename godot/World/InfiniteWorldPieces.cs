@@ -28,6 +28,9 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     private double _pieceDistanceLimit;
 
+    public WorldType CurrentWorldType => _pieceGen.CurrentWorldType;
+
+
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 

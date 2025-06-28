@@ -24,6 +24,7 @@ public class ProceduralPieceGenerator : IPieceGenerator {
     private WorldType _currentType;
 
     public List<string> IgnoredList { get; init; } = [];
+    public WorldType CurrentWorldType => _currentType;
     public Vector3 TrafficLeftSideOffset => _types[_currentType].TrafficLeftSideOffset;
 
     public ProceduralPieceGenerator(WorldType type) {
