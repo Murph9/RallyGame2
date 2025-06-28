@@ -4,7 +4,7 @@ using System;
 namespace murph9.RallyGame2.godot.Hundred.Goals;
 
 public partial class MinimumSpeedGoal(float startDistance, float timeoutTime) : GoalState(startDistance, timeoutTime) {
-    private const float MAX_SLOW_SPEED_TIME = 5;
+    private const float MAX_SLOW_SPEED_TIME = 15;
     public override GoalType Type => GoalType.MinimumSpeed;
 
     public double TimeSpentBelowTargetSpeed { get; private set; }
