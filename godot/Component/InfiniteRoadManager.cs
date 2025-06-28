@@ -149,15 +149,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         var cameraPos = GetViewport().GetCamera3D().Position;
 
         var nextPieces = GetNextCheckpoints(cameraPos, false, 0);
-        // don't spawn them too close to the player
+        // attempt to spawn far from the player
         var aFewRoadPositionsAway = nextPieces.FirstOrDefault(x => x.Origin.DistanceTo(cameraPos) > TRAFFIC_SPAWN_PLAYER_DISTANCE);
-
-        // check if its too close to an existing traffic car
-        foreach (var opp in _normalTraffic) {
-            if (aFewRoadPositionsAway.Origin.DistanceTo(opp.RigidBody.GlobalPosition) < TRAFFIC_SPAWN_BUFFER_DISTANCE) {
-                return false;
-            }
-        }
 
         var isReverse = _rand.Randf() > 0.5f;
         var ai = new TrafficAiInputs(this, isReverse);
@@ -165,6 +158,18 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         var realPosition = GetNextCheckpoint(aFewRoadPositionsAway.Origin, isReverse, isReverse ? -1 : 1);
         if (isReverse) {
             realPosition = new Transform3D(realPosition.Basis.Rotated(Vector3.Up, Mathf.Pi), realPosition.Origin);
+        }
+
+        // don't spawn them too close to the player
+        if (realPosition.Origin.DistanceTo(cameraPos) < TRAFFIC_SPAWN_BUFFER_DISTANCE) {
+            return false;
+        }
+
+        // check if its too close to an existing traffic car or the player
+        foreach (var opp in _normalTraffic) {
+            if (realPosition.Origin.DistanceTo(opp.RigidBody.GlobalPosition) < TRAFFIC_SPAWN_BUFFER_DISTANCE) {
+                return false;
+            }
         }
 
         var carMake = RandHelper.RandFromList(Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
