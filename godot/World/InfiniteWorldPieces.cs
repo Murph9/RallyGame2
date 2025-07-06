@@ -167,4 +167,6 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         }
         return -1;
     }
+
+    public float GetRoadWidth() => Mathf.Abs(_pieceGen.TrafficLeftSideOffset.Z * 2);
 }

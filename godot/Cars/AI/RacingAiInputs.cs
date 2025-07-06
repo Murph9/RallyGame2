@@ -8,8 +8,6 @@ namespace murph9.RallyGame2.godot.Cars.AI;
 
 public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManager) {
 
-    public float RoadWidth { get; set; } = 5;
-
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
@@ -41,8 +39,8 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
         var wallStart = checkpoint1;
 
         var normal = new Basis(Vector3.Up, Mathf.Pi / 2) * wallDir;
-        var newPosX = wallStart + normal.Normalized() * RoadWidth;
-        var newPosXM = wallStart + normal.Normalized() * -RoadWidth;
+        var newPosX = wallStart + normal.Normalized() * _roadManager.CurrentRoadWidth;
+        var newPosXM = wallStart + normal.Normalized() * -_roadManager.CurrentRoadWidth;
 
         // pick the futhest pos so its the opposite wall
         if (newPosX.DistanceTo(Car.RigidBody.GlobalPosition) < newPosXM.DistanceTo(Car.RigidBody.GlobalPosition)) {

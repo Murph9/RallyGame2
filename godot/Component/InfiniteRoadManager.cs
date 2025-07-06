@@ -14,6 +14,7 @@ namespace murph9.RallyGame2.godot.Component;
 public interface IRoadManager {
     Transform3D GetPassedCheckpoint(Vector3 pos);
     IReadOnlyCollection<Transform3D> GetNextCheckpoints(Vector3 pos, bool inReverse = false, int positionIndex = 0);
+    float CurrentRoadWidth { get; }
 }
 
 public partial class InfiniteRoadManager : Node3D, IRoadManager {
@@ -39,6 +40,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
     public WorldType CurrentWorldType => _world.CurrentWorldType;
     public int PiecesPlaced { get; private set; }
+    public float CurrentRoadWidth { get; private set; }
 
     public InfiniteRoadManager(int spawnDistance, WorldType initialWorldType) {
         UpdateWorldType(initialWorldType);
@@ -48,6 +50,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         _world = new InfiniteWorldPieces(new ProceduralPieceGenerator(initialWorldType), strat, new PieceDecorator());
         _world.PieceAdded += PiecePlacedListener;
         _world.SetIgnoredPieces(["station"]);
+
+        CurrentRoadWidth = _world.GetRoadWidth();
     }
 
     public override void _Ready() {
@@ -59,6 +63,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         if (_world == null) return;
 
         _world.UpdateWorldType(name);
+
+        CurrentRoadWidth = _world.GetRoadWidth();
     }
 
     public static IEnumerable<WorldType> GetWorldTypes() {

@@ -151,10 +151,7 @@ public partial class HundredRallyGame : Node {
             if (closestRival.RigidBody.GlobalPosition.DistanceTo(_racingScene.PlayerCarPos) < 10 && (closestRival.RigidBody.LinearVelocity - _racingScene.PlayerCarLinearVelocity).Length() < state.RivalRaceSpeedDiff) {
                 state.RivalStarted(new RivalRace(closestRival, _racingScene.PlayerDistanceTravelled, state.RivalRaceDistance), "Rival race started, dist: " + state.RivalRaceDistance + "m");
 
-                var newAi = new RacingAiInputs(_roadManager) {
-                    RoadWidth = 10
-                };
-                closestRival.ChangeInputsTo(newAi);
+                closestRival.ChangeInputsTo(new RacingAiInputs(_roadManager));
             }
         }
     }
