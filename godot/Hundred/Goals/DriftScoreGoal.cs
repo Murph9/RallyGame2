@@ -31,6 +31,9 @@ public partial class DriftScoreGoal(float startDistance, float timeoutTime) : Go
         base._PhysicsProcess(delta);
 
         var state = GetNode<GlobalState>("/root/GlobalState");
+        if (state is null)
+            return;
+
         if (state.PlayerCar.IsDrifting()) {
             _currentDrift += (float)state.PlayerCar.DriftFrameAmount(delta);
         } else {
