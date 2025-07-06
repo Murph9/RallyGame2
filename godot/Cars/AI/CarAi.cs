@@ -4,6 +4,7 @@ using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
 using System;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
@@ -90,6 +91,12 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
 
         if (Car.RigidBody.AngularVelocity.LengthSquared() > 0.7 * 0.7)
             return true; // starting a drift
+
+        // check if the drive wheels are spinning
+        var driveWheelSlipRatioTotal = Car.Wheels.Where(x => Car.Details.IsIdADriveWheel(x.Details.Id)).Sum(x => x.SlipRatio);
+        if (driveWheelSlipRatioTotal * 5 > Car.Wheels.Length) {
+            return true;
+        }
 
         // in a drift
         return Car.DriftAngle > Car.Details.MinDriftAngle;
