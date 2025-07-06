@@ -52,15 +52,14 @@ public class HumanCarInputs : ICarInputs {
     public void ReadInputs() {
         if (!_listeningToInputs) return;
 
-        // TODO speed factor
         _steeringLeftRaw = Input.GetActionStrength("car_left") * Car.Details.MaxSteerAngle;
         _steeringRightRaw = Input.GetActionStrength("car_right") * Car.Details.MaxSteerAngle;
 
         var steeringWant = 0f;
         if (_steeringLeftRaw != 0) //left
-            steeringWant += GetBestTurnAngle(_steeringLeftRaw, 1);
+            steeringWant += GetBestTurnAngle(_steeringLeftRaw);
         if (_steeringRightRaw != 0) //right
-            steeringWant -= GetBestTurnAngle(_steeringRightRaw, -1);
+            steeringWant += GetBestTurnAngle(-_steeringRightRaw);
         Steering = Mathf.Clamp(steeringWant, -Car.Details.MaxSteerAngle, Car.Details.MaxSteerAngle);
 
         HandbrakeCur = Input.IsActionPressed("car_handbrake");
@@ -69,7 +68,8 @@ public class HumanCarInputs : ICarInputs {
         AccelCur = Input.GetActionStrength("car_accel");
     }
 
-    private float GetBestTurnAngle(float steeringRaw, int sign) {
+    private float GetBestTurnAngle(float steeringRaw) {
+        var sign = Mathf.Sign(steeringRaw);
         var localVel = Car.RigidBody.LinearVelocity * Car.RigidBody.GlobalBasis;
         if (localVel.Z < 0 || ((-sign * Car.DriftAngle) < 0 && Mathf.Abs(Car.DriftAngle) > Mathf.DegToRad(Car.Details.MinDriftAngle))) {
             //when going backwards, slow or needing to turning against drift, you get no speed factor
@@ -83,6 +83,6 @@ public class HumanCarInputs : ICarInputs {
 
         // this is magic, but: minimum should be best slip angle, but it doesn't catch up to the turning angle required
         // so we just add some of the angular vel value to it
-        return (float)Car.Details.TractionDetails.LatMaxSlip + Car.RigidBody.AngularVelocity.Length() * 0.125f;
+        return sign * ((float)Car.Details.TractionDetails.LatMaxSlip + Car.RigidBody.AngularVelocity.Length() * 0.125f);
     }
 }
