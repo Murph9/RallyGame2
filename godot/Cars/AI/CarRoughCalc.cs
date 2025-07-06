@@ -19,9 +19,10 @@ public class CarRoughCalc {
 
     public static double BestRadiusAtSpeed(CarDetails carDetails, float carVelocity) {
         // r = (m*v*v)/f
-        // but m cancels out of f as f is (LatGripMax * m)
+        // f = (LatGripMax * m)
+        // r = (m*v*v)/(LatGripMax * m)
         // so r = v*v / LatGripmax
-        return carVelocity * carVelocity / carDetails.TractionDetails.LatGripMax;
+        return carVelocity * carVelocity / carDetails.TractionDetails.LatGripMax / Mathf.Abs(Main.DEFAULT_GRAVITY.Y);
     }
 
     public static double BestSpeedAtRadius(CarDetails carDetails, double radius) {

@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
@@ -11,16 +12,22 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
     public override void _PhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
-        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition).ToArray();
-
-        SteerAt(nextCheckPoints.First());
-
-        DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "checkpoint target", nextCheckPoints.First().Origin, Car.RigidBody.GlobalPosition, Colors.Blue);
+        var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition)
+            .Where(x => x.Origin.DistanceTo(Car.RigidBody.GlobalPosition) > 5)
+            .Take(3);
+        if (!nextCheckPoints.Any()) {
+            return;
+        }
 
         AccelCur = 1;
         BrakingCur = 0;
 
-        if (TooFastForNextCheckpoints(nextCheckPoints.Take(3).ToArray())) {
+        SteerAt(nextCheckPoints.First().Origin);
+
+        DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "checkpoint target", nextCheckPoints.First().Origin, Car.RigidBody.GlobalPosition, Colors.Blue);
+
+        if (TooFastForNextCheckpoints((Car.RigidBody.GlobalPosition - nextCheckPoints.First().Origin).Normalized(),
+                [.. nextCheckPoints.Prepend(_roadManager.GetPassedCheckpoint(Car.RigidBody.GlobalPosition))])) {
             BrakingCur = 1;
             AccelCur = 0;
         }
@@ -28,7 +35,7 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
         var isDrifting = IsDrifting();
         if (isDrifting) {
             AccelCur = 0;
-            Steering /= 2f; // turn less than wanted
+            BrakingCur = 0.5f;
         }
 
         FlipIfSlowUpsideDown();
@@ -38,23 +45,26 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
         var wallDir = checkpoint2 - checkpoint1;
         var wallStart = checkpoint1;
 
-        var normal = new Basis(Vector3.Up, Mathf.Pi / 2) * wallDir;
-        var newPosX = wallStart + normal.Normalized() * _roadManager.CurrentRoadWidth;
-        var newPosXM = wallStart + normal.Normalized() * -_roadManager.CurrentRoadWidth;
+        var normal = new Basis(Vector3.Up, Mathf.Pi / 2) * wallDir.Normalized();
 
-        // pick the futhest pos so its the opposite wall
-        if (newPosX.DistanceTo(Car.RigidBody.GlobalPosition) < newPosXM.DistanceTo(Car.RigidBody.GlobalPosition)) {
+        if (ShouldTurnLeftFor(checkpoint1)) {
+            var newPosXM = wallStart + normal * -_roadManager.CurrentRoadWidth;
             return (newPosXM, wallDir);
         }
 
+        var newPosX = wallStart + normal * _roadManager.CurrentRoadWidth;
         return (newPosX, wallDir);
     }
 
-    private bool TooFastForNextCheckpoints(Transform3D[] nextCheckpoints) {
-
+    private bool TooFastForNextCheckpoints(Vector3 targetDir, Transform3D[] nextCheckpoints) {
         for (var i = 0; i < nextCheckpoints.Length - 1; i++) {
+            if ((nextCheckpoints[i].Origin - nextCheckpoints[i + 1].Origin).Normalized().Dot(targetDir) > 0.9f) {
+                // pretty co-linear
+                continue;
+            }
+
             var wall = GetOuterWallFromCheckpoints(nextCheckpoints[i].Origin, nextCheckpoints[i + 1].Origin);
-            var tooFast = IsTooFastForWall(wall.Item1, wall.Item2);
+            var tooFast = IsTooFastForWall(nextCheckpoints[i].Origin, wall.Item1, wall.Item2);
             if (tooFast) {
                 DebugShapes.INSTANCE.AddLineDebug3D(ToString() + "wall", wall.Item1, wall.Item1 + wall.Item2, Colors.Red);
                 return true;

@@ -136,7 +136,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
         // give them basic ai for now
         var ai = new TrafficAiInputs(this, false);
         ai.TargetSpeedMs += 10; // a little more than the default AI
-        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, position, RandHelper.GetRandColour(_rand));
+        var car = new Car(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY), ai, false, position, RandHelper.GetRandColour(_rand));
         car.RigidBody.LinearVelocity = position.Basis * Vector3.Back * 10; // TODO
 
         AddChild(car);
@@ -180,7 +180,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         var carMake = RandHelper.RandFromList(Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
 
-        var car = new Car(carMake.LoadFromFile(Main.DEFAULT_GRAVITY), ai, realPosition, RandHelper.GetRandColour(_rand));
+        var car = new Car(carMake.LoadFromFile(Main.DEFAULT_GRAVITY), ai, false, realPosition, RandHelper.GetRandColour(_rand));
         car.RigidBody.LinearVelocity = realPosition.Basis * Vector3.Back * ai.TargetSpeedMs;
 
         AddChild(car);

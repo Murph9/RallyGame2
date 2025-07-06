@@ -25,7 +25,7 @@ public partial class HundredRacingScene : Node3D {
         // load from global state
         var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         var state = GetNode<GlobalState>("/root/GlobalState");
-        _car = new Car(hundredState.CarDetails, new RacingAiInputs(state.RoadManager), true, InitialPosition);
+        _car = new Car(hundredState.CarDetails, null, true, InitialPosition);
 
         UpdateWithNewCar(hundredState);
     }

@@ -39,15 +39,19 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
     public void IgnoreInputs() => _listeningToInputs = false;
     public void ReadInputs() { }
 
-    protected void SteerAt(Transform3D pos) => SteerAt(pos.Origin);
-    protected void SteerAt(Vector3 pos) {
+    private float GetWantSteerAngleToTarget(Vector3 pos) {
         var curPos = Car.RigidBody.GlobalPosition;
         var curDir = Car.RigidBody.GlobalTransform.Basis * Vector3.Back;
 
-        var steeringWant = (pos - curPos).ToV2XZ().AngleTo(curDir.ToV2XZ());
-
+        return (pos - curPos).ToV2XZ().AngleTo(curDir.ToV2XZ());
+    }
+    protected void SteerAt(Transform3D pos) => SteerAt(pos.Origin);
+    protected void SteerAt(Vector3 pos) {
+        var steeringWant = GetWantSteerAngleToTarget(pos);
         Steering = Mathf.Clamp(steeringWant, -Car.Details.MaxSteerAngle, Car.Details.MaxSteerAngle);
     }
+    protected bool ShouldTurnLeftFor(Vector3 pos) => GetWantSteerAngleToTarget(pos) > 0;
+    protected bool ShouldTurnRightFor(Vector3 pos) => GetWantSteerAngleToTarget(pos) < 0;
 
     protected bool IsTooSlowForPoint(Transform3D target) => IsTooSlowForPoint(target.Origin);
     protected bool IsTooSlowForPoint(Vector3 target) => IsTooSlowForPoint(target.ToV2XZ());
@@ -86,11 +90,14 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
     }
 
     protected bool IsDrifting() {
-        if (Car.RigidBody.LinearVelocity.Length() < 3 * 3)
+        if (Car.RigidBody.LinearVelocity.Length() < 2)
             return false; // prevent this from blocking all moving
 
-        if (Car.RigidBody.AngularVelocity.LengthSquared() > 0.7 * 0.7)
+        if (Car.RigidBody.AngularVelocity.LengthSquared() > 0.7)
             return true; // starting a drift
+
+        if (Car.RigidBody.LinearVelocity.Length() < 8 && Car.DriftAngle > 5)
+            return true; // drifting and has speed
 
         // check if the drive wheels are spinning
         var driveWheelSlipRatioTotal = Car.Wheels.Where(x => Car.Details.IsIdADriveWheel(x.Details.Id)).Sum(x => x.SlipRatio);
@@ -102,7 +109,7 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
         return Car.DriftAngle > Car.Details.MinDriftAngle;
     }
 
-    protected bool IsTooFastForWall(Vector3 wallStart, Vector3 wallDir) {
+    protected bool IsTooFastForWall(Vector3 checkpointPos, Vector3 wallStart, Vector3 wallDir) {
         // Similar to the point version but to avoid a wall
         var wallStartXZ = wallStart.ToV2XZ();
         var wallDirXZ = wallDir.ToV2XZ();
@@ -118,14 +125,17 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
         var leftCircleCenter = pos + circleOffsetPos;
         var rightCircleCenter = pos - circleOffsetPos;
 
-        var leftDistance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, leftCircleCenter);
-        var rightDistance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, rightCircleCenter);
-
-        var tooFast = currentMaxTurnRadius > Mathf.Max(leftDistance, rightDistance);
-        if (tooFast) {
-            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "leftcircle", leftCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 64, leftDistance > rightDistance ? Colors.Purple : Colors.Transparent);
-            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "rightcircle", rightCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 64, rightDistance > leftDistance ? Colors.Purple : Colors.Transparent);
+        float distance;
+        if (ShouldTurnLeftFor(checkpointPos)) {
+            distance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, leftCircleCenter);
+            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "fastcircle", leftCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 256, Colors.Purple);
+        } else {
+            distance = DistanceToRay(wallStartXZ, wallStartXZ + wallDirXZ, rightCircleCenter);
+            DebugShapes.INSTANCE.AddCircleXYDebug3D(ToString() + "fastcircle", rightCircleCenter.ToV3XZ(posY), currentMaxTurnRadius, 256, Colors.Purple);
         }
+
+        var tooFast = currentMaxTurnRadius > distance;
+
         return tooFast;
     }
 

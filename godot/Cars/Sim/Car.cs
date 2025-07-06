@@ -15,6 +15,7 @@ public partial class Car : Node3D {
     public readonly Wheel[] Wheels;
     private readonly List<WheelSkid> _skids = [];
     private readonly AudioStreamPlayer _engineAudio;
+    private readonly bool _isMainCar;
     public readonly Color Colour;
 
     private readonly Dictionary<CarModelAddition, Node3D> _additions = [];
@@ -36,7 +37,7 @@ public partial class Car : Node3D {
     private Vector3 _frozenVelocity;
     private Vector3 _frozenAngular;
 
-    public Car(CarDetails details, ICarInputs inputs = null, Transform3D? initialTransform = null, Color? initialColor = null) {
+    public Car(CarDetails details, ICarInputs inputs = null, bool isMainCar = false, Transform3D? initialTransform = null, Color? initialColor = null) {
         Details = details;
         Engine = new CarEngine(this);
         Colour = initialColor ?? new Color(0.8f, 0.8f, 0.8f, 1);
@@ -44,10 +45,13 @@ public partial class Car : Node3D {
         Inputs = inputs ?? new HumanCarInputs();
         Inputs.Car = this;
 
-        if (Inputs.IsAi) {
+        if (Inputs is not null) {
             var ai = Inputs as Node3D;
             AddChild(ai);
-        } else {
+        }
+
+        _isMainCar = Inputs is null || isMainCar;
+        if (_isMainCar) {
             var uiScene = GD.Load<PackedScene>("res://Cars/CarUI.tscn");
             var instance = uiScene.Instantiate<CarUI>();
             instance.Car = this;
@@ -77,7 +81,7 @@ public partial class Car : Node3D {
             }
         }
 
-        if (!Inputs.IsAi) {
+        if (_isMainCar) {
             // only report contacts on the player car
             RigidBody.ContactMonitor = true;
             RigidBody.MaxContactsReported = 2;
@@ -131,7 +135,7 @@ public partial class Car : Node3D {
             AddChild(skid);
         }
 
-        if (!Inputs.IsAi) {
+        if (_isMainCar) {
             // add audio
             var stream = GD.Load<AudioStreamWav>("res://assets/" + Details.Engine.Sound);
             _engineAudio = new AudioStreamPlayer() {
@@ -172,7 +176,7 @@ public partial class Car : Node3D {
             }
         }
 
-        if (!Inputs.IsAi) {
+        if (_isMainCar) {
             var audio = GetNode<AudioStreamPlayer>("engineAudioPlayer");
             if (audio != null) {
                 // set audio values
@@ -407,8 +411,12 @@ public partial class Car : Node3D {
 
 
     public Car CloneWithNewDetails(CarDetails details = null) {
+        if (Inputs is not null) {
+            RemoveChild(Inputs as Node3D);
+        }
+
         // clone into new car
-        var car = new Car(details ?? Details, null, RigidBody.Transform, Colour);
+        var car = new Car(details ?? Details, Inputs, _isMainCar, RigidBody.Transform, Colour);
         car.RigidBody.LinearVelocity = RigidBody.LinearVelocity;
         car.RigidBody.AngularVelocity = RigidBody.AngularVelocity;
 
