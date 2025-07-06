@@ -47,6 +47,7 @@ public partial class HundredRallyGame : Node {
         _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2);
         _roadManager.RoadNextPoint += RoadPlacedAt;
         AddChild(_roadManager);
+        GetNode<GlobalState>("/root/GlobalState").RoadManager = _roadManager;
 
         _racingScene = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredRacingScene))).Instantiate<HundredRacingScene>();
         _racingScene.InitialPosition = _roadManager.GetInitialSpawn();
@@ -203,13 +204,14 @@ public partial class HundredRallyGame : Node {
     private void ShowShop() {
         SetPauseState(true);
 
-        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
         if (_upgradeScreen == null) {
             _upgradeScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredUpgradeScreen))).Instantiate<HundredUpgradeScreen>();
-            _upgradeScreen.SetParts(state.Car.Details.GetAllPartsInTree()
+            var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+            var state = GetNode<GlobalState>("/root/GlobalState");
+            _upgradeScreen.SetParts(state.PlayerCar.Details.GetAllPartsInTree()
                 .Where(x => x.CurrentLevel < x.Levels.Length - 1)
                 .OrderBy(x => GD.Randi())
-                .Take(state.ShopPartCount)
+                .Take(hundredState.ShopPartCount)
                 .ToList());
 
             _upgradeScreen.Closed += (carChanged) => {

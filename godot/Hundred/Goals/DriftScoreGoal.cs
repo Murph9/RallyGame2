@@ -30,9 +30,9 @@ public partial class DriftScoreGoal(float startDistance, float timeoutTime) : Go
     public override void _PhysicsProcess(double delta) {
         base._PhysicsProcess(delta);
 
-        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-        if (state.Car.IsDrifting()) {
-            _currentDrift += (float)state.Car.DriftFrameAmount(delta);
+        var state = GetNode<GlobalState>("/root/GlobalState");
+        if (state.PlayerCar.IsDrifting()) {
+            _currentDrift += (float)state.PlayerCar.DriftFrameAmount(delta);
         } else {
             if (_currentDrift > 0) {
                 _lastDrift = _currentDrift;

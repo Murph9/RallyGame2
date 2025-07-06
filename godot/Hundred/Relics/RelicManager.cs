@@ -7,22 +7,12 @@ using System.Linq;
 namespace murph9.RallyGame2.godot.Hundred.Relics;
 
 public partial class RelicManager : Node {
-    private readonly HundredGlobalState _hundredGlobalState;
-    internal HundredGlobalState HundredGlobalState => _hundredGlobalState;
+    internal HundredGlobalState HundredGlobalState { get; private set; }
+    internal GlobalState GlobalState { get; private set; }
 
     private readonly List<Relic> _relics = [];
 
-    public RelicManager(HundredGlobalState hundredGlobalState) {
-        _hundredGlobalState = hundredGlobalState;
-
-        _hundredGlobalState.TrafficCollision += TrafficCollision;
-        _hundredGlobalState.CarDamage += CarDamaged;
-        _hundredGlobalState.CarAnyCollision += CarAnyCollision;
-        _hundredGlobalState.CarDetailsChanged += () => CarDetailsChanged(false);
-        _hundredGlobalState.RivalRaceStarted += RivalRaceStarted;
-        _hundredGlobalState.RivalRaceWon += RivalRaceWon;
-        _hundredGlobalState.RivalRaceLost += RivalRaceLost;
-
+    public RelicManager() {
         // a little validation of all relics
         var allRelics = GetAllPossibleRelics();
         foreach (var relic in allRelics) {
@@ -36,6 +26,19 @@ public partial class RelicManager : Node {
                 throw new ArgumentException(relicClass.GetType().Name + " has a required relic with just a class name. Please use typeof(<relicclass>).FullName");
             }
         }
+    }
+
+    public override void _Ready() {
+        HundredGlobalState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        GlobalState = GetNode<GlobalState>("/root/GlobalState");
+
+        HundredGlobalState.TrafficCollision += TrafficCollision;
+        HundredGlobalState.CarDamage += CarDamaged;
+        HundredGlobalState.CarAnyCollision += CarAnyCollision;
+        HundredGlobalState.CarDetailsChanged += () => CarDetailsChanged(false);
+        HundredGlobalState.RivalRaceStarted += RivalRaceStarted;
+        HundredGlobalState.RivalRaceWon += RivalRaceWon;
+        HundredGlobalState.RivalRaceLost += RivalRaceLost;
     }
 
     public Relic GenerateRelic(RelicType type, float strength = 1) {
@@ -86,8 +89,8 @@ public partial class RelicManager : Node {
     }
 
     public override void _Process(double delta) {
-        if (!IsInstanceValid(_hundredGlobalState.Car?.RigidBody)) return;
-        if (_hundredGlobalState.Car?.RigidBody.Freeze ?? true) return;
+        if (!IsInstanceValid(GlobalState.PlayerCar?.RigidBody)) return;
+        if (GlobalState.PlayerCar?.RigidBody.Freeze ?? true) return;
 
         if (Input.IsActionJustPressed("car_action_1")) {
             ActionPressed("car_action_1");
@@ -103,48 +106,48 @@ public partial class RelicManager : Node {
         }
 
         foreach (var relic in _relics) {
-            relic._Process(_hundredGlobalState.Car, delta);
+            relic._Process(GlobalState.PlayerCar, delta);
         }
     }
 
     public override void _PhysicsProcess(double delta) {
-        if (!IsInstanceValid(_hundredGlobalState.Car?.RigidBody)) return;
-        if (_hundredGlobalState.Car?.RigidBody?.Freeze ?? true) return;
+        if (!IsInstanceValid(GlobalState.PlayerCar?.RigidBody)) return;
+        if (GlobalState.PlayerCar?.RigidBody?.Freeze ?? true) return;
 
         foreach (var relic in _relics) {
-            relic._PhysicsProcess(_hundredGlobalState.Car, delta);
+            relic._PhysicsProcess(GlobalState.PlayerCar, delta);
         }
     }
 
     private void CarDamaged(float amount) {
-        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+        if (GlobalState.PlayerCar.RigidBody.Freeze) return;
 
         foreach (var damaged in AllRelicsOfType<IDamagedRelic>()) {
-            damaged.DamageTaken(_hundredGlobalState.Car, amount);
+            damaged.DamageTaken(GlobalState.PlayerCar, amount);
         }
     }
 
     private void TrafficCollision(Car otherCar, Vector3 apparentVelocity) {
-        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+        if (GlobalState.PlayerCar.RigidBody.Freeze) return;
 
         foreach (var trafficCollision in AllRelicsOfType<IOnTrafficCollisionRelic>()) {
-            trafficCollision.TrafficCollision(_hundredGlobalState.Car, otherCar, apparentVelocity);
+            trafficCollision.TrafficCollision(GlobalState.PlayerCar, otherCar, apparentVelocity);
         }
     }
 
     private void CarAnyCollision() {
-        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+        if (GlobalState.PlayerCar.RigidBody.Freeze) return;
 
         foreach (var trafficCollision in AllRelicsOfType<IAnyCollisionRelic>()) {
-            trafficCollision.AnyCollision(_hundredGlobalState.Car);
+            trafficCollision.AnyCollision(GlobalState.PlayerCar);
         }
     }
 
     private void ActionPressed(string action) {
-        if (_hundredGlobalState.Car.RigidBody.Freeze) return;
+        if (GlobalState.PlayerCar.RigidBody.Freeze) return;
 
         foreach (var onKey in AllRelicsOfType<IOnKeyRelic>()) {
-            onKey.ActionPressed(_hundredGlobalState.Car, action);
+            onKey.ActionPressed(GlobalState.PlayerCar, action);
         }
     }
 
@@ -154,13 +157,13 @@ public partial class RelicManager : Node {
             // if onlyNew is called we check if its applied first (i.e. when a new relic is added)
             if (onlyNew && onPurchace.Applied) continue;
 
-            onPurchace.CarUpdated(_hundredGlobalState.Car);
+            onPurchace.CarUpdated(GlobalState.PlayerCar);
         }
 
         // enable any models required
         foreach (var relic in _relics) {
             foreach (var addition in relic.CarModelAdditions) {
-                _hundredGlobalState.Car.ToggleAddition(addition, true);
+                GlobalState.PlayerCar.ToggleAddition(addition, true);
             }
         }
     }

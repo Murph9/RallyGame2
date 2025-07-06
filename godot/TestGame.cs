@@ -12,7 +12,7 @@ public partial class TestGame : Node3D {
     private Car _car;
     public override void _Ready() {
         var carDetails = CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY);
-        _car = new Car(carDetails, null, new Transform3D(Basis.FromEuler(new Vector3(0, -Mathf.Pi / 2, 0)), new Vector3(0, .4f, 27)));
+        _car = new Car(carDetails, null, true, new Transform3D(Basis.FromEuler(new Vector3(0, -Mathf.Pi / 2, 0)), new Vector3(0, .4f, 27)));
         AddChild(_car);
 
         var world = new StaticWorld() { WorldName = StaticWorld.GetList().First(x => x.StartsWith("roc")) };

@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Sim;
 using System;
 
@@ -22,14 +23,11 @@ public partial class HundredRacingScene : Node3D {
 
     public override void _Ready() {
         // load from global state
-        var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-        _car = new Car(state.CarDetails, null, InitialPosition);
+        var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+        var state = GetNode<GlobalState>("/root/GlobalState");
+        _car = new Car(hundredState.CarDetails, new RacingAiInputs(state.RoadManager), true, InitialPosition);
 
-        UpdateWithNewCar(state);
-    }
-
-    public override void _Process(double delta) {
-
+        UpdateWithNewCar(hundredState);
     }
 
     public void ReplaceCarWithState() {
@@ -37,13 +35,13 @@ public partial class HundredRacingScene : Node3D {
         if (_car.Details == state.CarDetails) return;
 
         Callable.From(() => {
-            var state = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-            var newCar = _car.CloneWithNewDetails(state.CarDetails);
+            var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
+            var newCar = _car.CloneWithNewDetails(hundredState.CarDetails);
             RemoveChild(_car);
             _car.QueueFree();
             _car = newCar;
 
-            UpdateWithNewCar(state);
+            UpdateWithNewCar(hundredState);
         }).CallDeferred();
     }
 
@@ -65,21 +63,23 @@ public partial class HundredRacingScene : Node3D {
 
     public bool IsMainCar(Node3D node) => _car.RigidBody == node;
 
-    private void UpdateWithNewCar(HundredGlobalState state) {
+    private void UpdateWithNewCar(HundredGlobalState hundredState) {
         AddChild(_car);
         _car.RigidBody.BodyEntered += (node) => {
             var car = node.GetParentOrNull<Car>();
             var collisionDiff = _car.CalcLastFrameVelocityDiff();
 
             if (car == null) {
-                state.CollisionWithOther(collisionDiff);
+                hundredState.CollisionWithOther(collisionDiff);
                 return;
             }
 
             // TODO we should use the details from the contact physics.GetContactLocalVelocityAtPosition from:
             // rid = _car.RigidBody.GetRid() and PhysicsServer3D.BodyGetDirectState(rid)
-            state.CollisionWithTraffic(car, _car.RigidBody.LinearVelocity - car.RigidBody.LinearVelocity, collisionDiff);
+            hundredState.CollisionWithTraffic(car, _car.RigidBody.LinearVelocity - car.RigidBody.LinearVelocity, collisionDiff);
         };
-        state.SetCar(_car);
+        hundredState.SetCarDetails(_car.Details);
+
+        GetNode<GlobalState>("/root/GlobalState").PlayerCar = _car;
     }
 }

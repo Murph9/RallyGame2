@@ -48,7 +48,6 @@ public partial class HundredGlobalState : Node {
 
     public float TargetDistance { get; private set; }
 
-    public Car Car { get; private set; }
     public CarDetails CarDetails { get; private set; }
     public double TotalTimePassed { get; private set; }
     public float Money { get; private set; }
@@ -99,7 +98,6 @@ public partial class HundredGlobalState : Node {
 
         TargetDistance = 100 * 1000; // m
 
-        Car = null;
         CarDetails = null;
 
         TotalTimePassed = 0; // s
@@ -127,7 +125,7 @@ public partial class HundredGlobalState : Node {
         GoalsWon = 0;
         GoalsLost = 0;
 
-        RelicManager = new RelicManager(this);
+        RelicManager = new RelicManager();
         AddChild(RelicManager);
     }
 
@@ -163,15 +161,11 @@ public partial class HundredGlobalState : Node {
             EmitSignal(SignalName.MoneyDecreased, Math.Abs(delta));
     }
 
-    public void SetCar(Car car) {
-        Car = car;
+    public void SetCarDetails(CarDetails carDetails) {
+        CarDetails = carDetails;
         EmitSignal(SignalName.CarDetailsChanged); // this is when the car object (and details) actually changes
     }
 
-    public void SetCarDetails(CarDetails carDetails) {
-        CarDetails = carDetails;
-        // not sure if this needs an event, its an internal detail
-    }
     public void AddTotalTimePassed(double delta) {
         TotalTimePassed += delta;
 
@@ -243,7 +237,8 @@ public partial class HundredGlobalState : Node {
         EmitSignal(SignalName.CarAnyCollision);
 
         if (amount >= 2) {
-            Car.Damage += amount;
+            var state = GetNode<GlobalState>("/root/GlobalState");
+            state.PlayerCar.Damage += amount;
             EmitSignal(SignalName.CarDamage, amount);
         }
     }
