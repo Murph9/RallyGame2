@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=3 uid="uid://dayendscreen01"]
+
+[ext_resource type="Script" path="res://PayDay/Loan/DayEndScreen.cs" id="1_dayend"]
+
+[node name="DayEndScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dayend")
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(600, 500)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="PrincipalLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Outstanding Balance: $5000.00"
+
+[node name="InterestLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Today's Rate: 8%"
+
+[node name="TomorrowLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Skip and tomorrow's balance: ..."
+
+[node name="FlavourLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Welcome to EZ Cash Solutions!"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="PayAllButton" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Pay All"
+
+[node name="PayMinimumButton" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Pay Minimum"
+
+[node name="SkipButton" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Skip (Loan Grows)"
+
+[connection signal="pressed" from="Panel/VBox/Buttons/PayAllButton" to="." method="PayAllButton_Pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/PayMinimumButton" to="." method="PayMinimumButton_Pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/SkipButton" to="." method="SkipButton_Pressed"]

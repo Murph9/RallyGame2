@@ -45,9 +45,8 @@ public partial class Car : Node3D {
         Inputs = inputs ?? new HumanCarInputs();
         Inputs.Car = this;
 
-        if (Inputs is not null) {
-            var ai = Inputs as Node3D;
-            AddChild(ai);
+        if (Inputs is Node3D input) {
+            AddChild(input);
         }
 
         _isMainCar = Inputs is null || isMainCar;

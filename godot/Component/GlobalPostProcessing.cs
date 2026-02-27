@@ -12,6 +12,10 @@ public partial class GlobalPostProcessing : Node3D {
     public override void _Ready() {
         _current3dCamera = GetViewport().GetCamera3D();
 
+        SetupShaderQuad();
+    }
+
+    private void SetupShaderQuad() {
         // create a quad and load the global shader from the docs
         // https://docs.godotengine.org/en/stable/tutorials/shaders/advanced_postprocessing.html#full-screen-quad
         _shaderQuad = new MeshInstance3D() {
@@ -36,11 +40,12 @@ public partial class GlobalPostProcessing : Node3D {
             return;
         }
 
-        // then clean up
-        _current3dCamera?.RemoveChild(_shaderQuad);
-
-        // add add it to the new camera
+        // then clean up the old one if required
+        if (IsInstanceValid(_current3dCamera) && IsInstanceValid(_shaderQuad)) {
+            _current3dCamera?.RemoveChild(_shaderQuad);
+        }
         _current3dCamera = currentCamera;
-        _current3dCamera?.AddChild(_shaderQuad);
+
+        SetupShaderQuad();
     }
 }

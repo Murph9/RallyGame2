@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://partapply00001"]
+
+[ext_resource type="Script" path="res://PayDay/Parts/PartApplyScreen.cs" id="1_partapply"]
+
+[node name="PartApplyScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_partapply")
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(500, 400)
+layout_mode = 2
+
+[node name="GlowPanel" type="Panel" parent="Panel"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="ExclamationLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "NICE! ..."
+horizontal_alignment = 1
+
+[node name="RarityLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "RARE"
+horizontal_alignment = 1
+
+[node name="PartNameLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Part Name"
+horizontal_alignment = 1
+
+[node name="NextButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Next Part"
+
+[connection signal="pressed" from="Panel/VBox/NextButton" to="." method="NextButton_Pressed"]

@@ -10,6 +10,10 @@ public partial class WorldDustParticles : Node3D {
     public override void _Ready() {
         _current3dCamera = GetViewport().GetCamera3D();
 
+        SetupParticles();
+    }
+
+    private void SetupParticles() {
         _particles = new GpuParticles3D() {
             ProcessMaterial = new ParticleProcessMaterial() {
                 EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Sphere,
@@ -21,6 +25,9 @@ public partial class WorldDustParticles : Node3D {
             Amount = 10000,
             DrawPass1 = new QuadMesh() { Size = new Vector2(0.05f, 0.05f) },
         };
+
+        // add add it to the new camera
+        _current3dCamera?.AddChild(_particles);
     }
 
     public override void _Process(double delta) {
@@ -31,11 +38,12 @@ public partial class WorldDustParticles : Node3D {
             return;
         }
 
-        // then clean up
-        _current3dCamera?.RemoveChild(_particles);
-
-        // add add it to the new camera
+        // then clean up the old one if required
+        if (IsInstanceValid(_current3dCamera) && IsInstanceValid(_particles)) {
+            _current3dCamera?.RemoveChild(_particles);
+        }
         _current3dCamera = currentCamera;
-        _current3dCamera?.AddChild(_particles);
+
+        SetupParticles();
     }
 }
