@@ -86,9 +86,7 @@ public partial class WheelUI : VBoxContainer {
         int defaultFontSize = ThemeDB.FallbackFontSize;
         var tyreWearPercentage = $"{float.Round(Wheel.TyreWear, 2) * 100}%";
         var textSize = defaultFont.GetStringSize(tyreWearPercentage);
-        // DrawString(defaultFont, controlCenter + new Vector2(-textSize.X / 2f, textSize.Y / 2f), tyreWearPercentage, fontSize: defaultFontSize);
-
-        DrawString(defaultFont, controlCenter + new Vector2(-textSize.X / 2f, textSize.Y / 2f), tyreWearPercentage);
+        DrawString(defaultFont, controlCenter + new Vector2(-textSize.X / 2f, textSize.Y / 2f), tyreWearPercentage, fontSize: defaultFontSize);
     }
 
     public static string GetTypeNameFromId(int id) => id switch {
