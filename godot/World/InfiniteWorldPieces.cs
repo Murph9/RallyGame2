@@ -122,7 +122,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             toAdd.AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkpoint, 2, 0.4f));
         }
 
-        _pieceDecorator.DecoratePiece(toAdd, piece, outDirection);
+        var allRoadPoints = _checkpoints.Select(x => x.Transform3D.Origin).ToList();
+        _pieceDecorator.DecoratePiece(toAdd, piece, outDirection, transform, allRoadPoints);
 
         _nextTransform = new InfiniteCheckpoint(piece.Name, _nextTransform.FinalTransform, _nextTransform.FinalTransform * outDirection.FinalTransform, Vector3.Zero);
 
