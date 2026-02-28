@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://ch7o1wchqjvkr"]
+[gd_scene format=3 uid="uid://cwx4nki05f34h"]
 
-[ext_resource type="Script" uid="uid://dunc8wxt3pjcs" path="res://Component/RacingPauseScreen.cs" id="1_jb31w"]
+[ext_resource type="Script" path="res://Component/RacingPauseScreen.cs" id="1_jb31w"]
 
-[node name="RacingPauseScreen" type="CenterContainer"]
+[node name="RacingPauseScreen" type="CenterContainer" unique_id=827284136]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -10,24 +10,24 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_jb31w")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1034176102]
 custom_minimum_size = Vector2(400, 400)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1724397133]
 layout_mode = 2
 alignment = 1
 
-[node name="HeadingLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+[node name="HeadingLabel" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1012417290]
 layout_mode = 2
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="PanelContainer/VBoxContainer"]
+[node name="ResumeButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=736894992]
 layout_mode = 2
 text = "Resume"
 
-[node name="QuitButton" type="Button" parent="PanelContainer/VBoxContainer"]
+[node name="QuitButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=1717134986]
 layout_mode = 2
 text = "Quit"
 

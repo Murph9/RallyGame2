@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://sie4bw2xxwy3"]
+[gd_scene format=3 uid="uid://4lvvfyksohmd"]
 
-[ext_resource type="Script" uid="uid://vnvyyckbajyi" path="res://PayDay/Racing/PayDayRacingScene.cs" id="1_pdrace"]
+[ext_resource type="Script" uid="uid://dvt54oi3qsmp7" path="res://PayDay/Racing/PayDayRacingScene.cs" id="1_pdrace"]
 
-[node name="PayDayRacingScene" type="Node3D"]
+[node name="PayDayRacingScene" type="Node3D" unique_id=1718490517]
 script = ExtResource("1_pdrace")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1525552744]
