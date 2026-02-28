@@ -3,9 +3,8 @@ using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.PayDay.Parts;
-using murph9.RallyGame2.godot.PayDay.Racing;
 
-namespace murph9.RallyGame2.godot.PayDay;
+namespace murph9.RallyGame2.godot.PayDay.Racing;
 
 /// <summary>
 /// Wraps InfiniteRoadManager + player Car for a Pay Day racing run.
@@ -63,4 +62,8 @@ public partial class PayDayRacingScene : Node3D {
     public void ResetCarTo(Transform3D transform) => _car.ResetCarTo(transform);
     public void SetActive(bool active) => _car.SetActive(active);
     public bool IsMainCar(Node3D node) => _car.RigidBody == node;
+    public void SetPaused(bool paused) {
+        _car.SetActive(!paused);
+        _roadManager.SetPaused(paused);
+    }
 }

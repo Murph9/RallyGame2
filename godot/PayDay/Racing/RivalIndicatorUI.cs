@@ -18,9 +18,6 @@ namespace murph9.RallyGame2.godot.PayDay.Racing;
 /// </summary>
 public partial class RivalIndicatorUI : CanvasLayer {
 
-    // How far the SPEED MATCH window is (must match RivalEncounterManager constant)
-    private const float SPEED_MATCH_WINDOW = 3f;
-
     private Car _playerCar;
     private Car _rivalCar;
     private PartRarity _rarity;
