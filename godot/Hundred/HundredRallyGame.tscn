@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ccadqvl0aayb0"]
+
+[ext_resource type="Script" uid="uid://crnijhcp0hrvl" path="res://Hundred/HundredRallyGame.cs" id="1_t1d5r"]
+
+[node name="HundredRallyGame" type="Node" unique_id=1528206128]
+script = ExtResource("1_t1d5r")

@@ -48,7 +48,7 @@ public partial class Main : Node {
     }
 
     public void _on_hundredstart_button_pressed() {
-        GetTree().ChangeSceneToFile("res://HundredRallyGame.tscn");
+        GetTree().ChangeSceneToFile("res://Hundred/HundredRallyGame.tscn");
     }
 
     public void _on_paydaystart_button_pressed() {

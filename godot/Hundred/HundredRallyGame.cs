@@ -3,7 +3,6 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
-using murph9.RallyGame2.godot.Hundred;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
@@ -11,7 +10,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace murph9.RallyGame2.godot;
+namespace murph9.RallyGame2.godot.Hundred;
 
 public partial class HundredRallyGame : Node {
     // The manager of the game
