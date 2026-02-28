@@ -478,7 +478,9 @@ public partial class Car : Node3D {
     }
 
     public void ChangeInputsTo(ICarInputs carInputs) {
-        RemoveChild(Inputs as Node3D);
+        if (Inputs != null) {
+            RemoveChild(Inputs as Node3D);
+        }
 
         Inputs = carInputs;
         Inputs.Car = this;

@@ -25,7 +25,7 @@ public partial class PayDayRacingScene : Node3D {
 
     private Car _car;
     private InfiniteRoadManager _roadManager;
-    private RivalEncounterManager _rivalManager;
+    private PaydayRivalEncounterManager _rivalManager;
 
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
@@ -40,11 +40,11 @@ public partial class PayDayRacingScene : Node3D {
         AddChild(_car);
 
         // Rival encounter manager sits as a sibling node
-        _rivalManager = new RivalEncounterManager();
+        _rivalManager = new PaydayRivalEncounterManager();
         AddChild(_rivalManager);
         _rivalManager.Init(_roadManager, _car, state.DayNumber);
         _rivalManager.RivalRaceStarted += (rival) => EmitSignal(SignalName.RivalRaceStarted, rival);
-        _rivalManager.RivalWon += (reward) => EmitSignal(SignalName.RivalWon, reward);
+        _rivalManager.RivalWonReward += (reward) => EmitSignal(SignalName.RivalWon, reward);
         _rivalManager.RivalLost += () => EmitSignal(SignalName.RivalLost);
     }
 

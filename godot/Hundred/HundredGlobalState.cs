@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
+using murph9.RallyGame2.godot.Component.Racing;
 using murph9.RallyGame2.godot.Hundred.Goals;
 using murph9.RallyGame2.godot.Hundred.Relics;
 using murph9.RallyGame2.godot.Utilities;
@@ -9,14 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Hundred;
-
-public class RivalRace(Car rival, float startDistance, float raceDistance) {
-    public Car Rival { get; init; } = rival;
-    public float StartDistance { get; init; } = startDistance;
-    public float RaceDistance { get; init; } = raceDistance;
-    public bool CheckpointSet { get; set; }
-    public string Message { get; set; }
-}
 
 public partial class HundredGlobalState : Node {
 

@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
+using murph9.RallyGame2.godot.Component.Racing;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
