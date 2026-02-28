@@ -1,9 +1,12 @@
+using System;
+using System.Linq;
 using Godot;
 using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.PayDay.Racing;
 
@@ -15,6 +18,8 @@ namespace murph9.RallyGame2.godot.PayDay.Racing;
 /// </summary>
 public partial class RivalEncounterManager : Node {
 
+    [Signal]
+    public delegate void RivalRaceStartedEventHandler(Car rival);
     [Signal]
     public delegate void RivalWonEventHandler(CollectedPart reward);
     [Signal]
@@ -38,6 +43,10 @@ public partial class RivalEncounterManager : Node {
     private float _rivalStartDist;
     private bool _raceActive;
     private double _speedMatchTimer;
+
+    // Visual highlighting
+    private RivalHighlighter _highlighter;
+    private RivalIndicatorUI _indicatorUI;
 
     public void Init(InfiniteRoadManager roadManager, Car playerCar, int dayNumber) {
         _roadManager = roadManager;
@@ -70,6 +79,8 @@ public partial class RivalEncounterManager : Node {
             } else {
                 _speedMatchTimer = 0;
             }
+
+            _indicatorUI?.UpdateSpeedMatchProgress(_speedMatchTimer / SPEED_MATCH_WINDOW);
         } else {
             float playerDist = _playerCar.DistanceTravelled - _playerStartDist;
             float rivalDist = _currentRival.DistanceTravelled - _rivalStartDist;
@@ -84,8 +95,7 @@ public partial class RivalEncounterManager : Node {
         _currentRivalRarity = PartRarityHelper.RollRarity(_dayNumber);
 
         // Pick a random car make; higher rarity rivals use faster CarMakes in future tuning
-        int makeCount = System.Enum.GetValues<CarMake>().Length;
-        var make = (CarMake)GD.RandRange(0, makeCount - 1);
+        var make = RandHelper.RandFromList(Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
         var details = make.LoadFromFile(Main.DEFAULT_GRAVITY);
 
         // Spawn offset to the side of the player
@@ -98,6 +108,16 @@ public partial class RivalEncounterManager : Node {
 
         _speedMatchTimer = 0;
         _raceActive = false;
+
+        // Attach world-space glow + billboard to the rival
+        _highlighter = new RivalHighlighter();
+        _highlighter.Init(_currentRival, _currentRivalRarity);
+        _currentRival.AddChild(_highlighter);
+
+        // Attach screen-space HUD indicators
+        _indicatorUI = new RivalIndicatorUI();
+        _indicatorUI.Init(_playerCar, _currentRival, _currentRivalRarity);
+        GetParent().AddChild(_indicatorUI);
     }
 
     private void StartRace() {
@@ -105,6 +125,9 @@ public partial class RivalEncounterManager : Node {
         _playerStartDist = _playerCar.DistanceTravelled;
         _rivalStartDist = _currentRival.DistanceTravelled;
         _currentRival.ChangeInputsTo(new RacingAiInputs(_roadManager));
+        _indicatorUI?.SetRaceActive(true);
+
+        EmitSignal(SignalName.RivalRaceStarted, _currentRival);
     }
 
     private void EndRace(bool playerWon) {
@@ -122,5 +145,11 @@ public partial class RivalEncounterManager : Node {
 
         _currentRival.ChangeInputsTo(new StopAiInputs(_roadManager));
         _currentRival = null;
+
+        // Clean up visual indicators
+        _highlighter?.QueueFree();
+        _highlighter = null;
+        _indicatorUI?.QueueFree();
+        _indicatorUI = null;
     }
 }

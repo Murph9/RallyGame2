@@ -1,35 +1,37 @@
-[gd_scene load_steps=2 format=3 uid="uid://paydayui00001"]
+[gd_scene format=3 uid="uid://doqqis3rcfeqq"]
 
-[ext_resource type="Script" path="res://PayDay/PayDayUI.cs" id="1_pdui"]
+[ext_resource type="Script" uid="uid://bsxpbjamrompi" path="res://PayDay/PayDayUI.cs" id="1_pdui"]
 
-[node name="PayDayUI" type="CanvasLayer"]
+[node name="PayDayUI" type="CanvasLayer" unique_id=2067548793]
 script = ExtResource("1_pdui")
 
-[node name="HUD" type="VBoxContainer" parent="."]
+[node name="HUD" type="VBoxContainer" parent="." unique_id=2078719486]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TopBar" type="HBoxContainer" parent="HUD"]
+[node name="TopBar" type="HBoxContainer" parent="HUD" unique_id=977296630]
 layout_mode = 2
+size_flags_horizontal = 4
 
-[node name="TimerLabel" type="Label" parent="HUD/TopBar"]
+[node name="TimerLabel" type="Label" parent="HUD/TopBar" unique_id=857770505]
 layout_mode = 2
 text = "3:00"
 
-[node name="MoneyLabel" type="Label" parent="HUD/TopBar"]
+[node name="MoneyLabel" type="Label" parent="HUD/TopBar" unique_id=190369895]
 layout_mode = 2
 text = "$0"
 
-[node name="PartsLabel" type="Label" parent="HUD/TopBar"]
+[node name="PartsLabel" type="Label" parent="HUD/TopBar" unique_id=361163706]
 layout_mode = 2
 text = "Parts: 0"
 
-[node name="SidePanel" type="VBoxContainer" parent="HUD"]
+[node name="SidePanel" type="VBoxContainer" parent="HUD" unique_id=744090799]
 layout_mode = 2
+size_flags_horizontal = 4
 
-[node name="RivalLabel" type="Label" parent="HUD/SidePanel"]
+[node name="RivalLabel" type="Label" parent="HUD/SidePanel" unique_id=1454890199]
 layout_mode = 2
 text = "No rival nearby"

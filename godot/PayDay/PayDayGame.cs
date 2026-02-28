@@ -90,6 +90,9 @@ public partial class PayDayGame : Node {
         _runMoney = 0f;
 
         var racing = LoadScene<PayDayRacingScene>();
+        racing.RivalRaceStarted += (rival) => {
+            _activeUI?.UpdateRivalStatus("Rival Race Started");
+        };
         racing.RivalWon += (reward) => {
             _runParts.Add(reward);
             _runMoney += 200f; // flat rivalry win bonus

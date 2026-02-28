@@ -14,6 +14,8 @@ namespace murph9.RallyGame2.godot.PayDay;
 public partial class PayDayRacingScene : Node3D {
 
     [Signal]
+    public delegate void RivalRaceStartedEventHandler(Car rival);
+    [Signal]
     public delegate void RivalWonEventHandler(CollectedPart reward);
     [Signal]
     public delegate void RivalLostEventHandler();
@@ -42,6 +44,7 @@ public partial class PayDayRacingScene : Node3D {
         _rivalManager = new RivalEncounterManager();
         AddChild(_rivalManager);
         _rivalManager.Init(_roadManager, _car, state.DayNumber);
+        _rivalManager.RivalRaceStarted += (rival) => EmitSignal(SignalName.RivalRaceStarted, rival);
         _rivalManager.RivalWon += (reward) => EmitSignal(SignalName.RivalWon, reward);
         _rivalManager.RivalLost += () => EmitSignal(SignalName.RivalLost);
     }
