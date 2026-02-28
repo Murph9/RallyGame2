@@ -30,6 +30,8 @@ public partial class GlobalPostProcessing : Node3D {
             Transform = new Transform3D(Basis.Identity, Vector3.Forward * (MAX_CULL_MARGIN - 1)),
             ExtraCullMargin = MAX_CULL_MARGIN
         };
+
+        _current3dCamera?.AddChild(_shaderQuad);
     }
 
     public override void _Process(double delta) {
