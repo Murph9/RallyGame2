@@ -31,10 +31,16 @@ public partial class RivalIndicatorUI : CanvasLayer {
     private Label _rarityLabel;
     private Label _stateLabel;
     private Label _distanceLabel;
+    private Label _raceProgressLabel;
     private ProgressBar _speedMatchBar;
     private Label _speedMatchTitle;
     private Label _onScreenMarker;
     private Label _arrowLabel;
+
+    // Race progress (updated by manager each frame)
+    private float _raceDistanceDriven;
+    private float _raceTotalDistance;
+    private float _raceCheckpointDist = -1f; // -1 = checkpoint not yet placed
 
     // ─── Init ─────────────────────────────────────────────────────────────────
 
@@ -46,6 +52,11 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
     public void UpdateSpeedMatchProgress(double progress) => _speedMatchProgress = progress;
     public void SetRaceActive(bool active) => _raceActive = active;
+    public void UpdateRaceProgress(float driven, float total, float checkpointDist) {
+        _raceDistanceDriven = driven;
+        _raceTotalDistance = total;
+        _raceCheckpointDist = checkpointDist;
+    }
 
     // ─── Ready ────────────────────────────────────────────────────────────────
 
@@ -78,13 +89,22 @@ public partial class RivalIndicatorUI : CanvasLayer {
         SetLabelStyle(_stateLabel, Colors.White, 13);
         vbox.AddChild(_stateLabel);
 
-        // Distance
+        // Distance to rival
         _distanceLabel = new Label {
             Text = "Dist: ---",
             HorizontalAlignment = HorizontalAlignment.Center,
         };
         SetLabelStyle(_distanceLabel, new Color(0.85f, 0.85f, 0.85f), 13);
         vbox.AddChild(_distanceLabel);
+
+        // Race progress (shown while race is active)
+        _raceProgressLabel = new Label {
+            Text = string.Empty,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Visible = false,
+        };
+        SetLabelStyle(_raceProgressLabel, new Color(0.9f, 0.9f, 0.5f), 13);
+        vbox.AddChild(_raceProgressLabel);
 
         // Speed-match title + bar
         _speedMatchTitle = new Label {
@@ -161,6 +181,26 @@ public partial class RivalIndicatorUI : CanvasLayer {
             _stateLabel.AddThemeColorOverride("font_color", PartRarityHelper.GetColour(_rarity));
             _speedMatchBar.Visible = false;
             _speedMatchTitle.Visible = false;
+
+            // Phase 1: checkpoint not yet placed — progress toward RACE_DISTANCE
+            // Phase 2: checkpoint placed — remaining = direct distance to checkpoint
+            bool checkpointPlaced = _raceCheckpointDist >= 0;
+            float remaining, pct;
+            string progressText;
+            if (!checkpointPlaced) {
+                remaining = Mathf.Max(0, _raceTotalDistance - _raceDistanceDriven);
+                pct = _raceTotalDistance > 0 ? Mathf.Clamp(_raceDistanceDriven / _raceTotalDistance, 0f, 1f) : 0f;
+                progressText = $"{pct * 100:F0}%  −{remaining:F0} m";
+            } else {
+                // Once the checkpoint is placed the remaining distance is authoritative
+                remaining = _raceCheckpointDist;
+                // Denominator = distance driven so far + remaining to checkpoint
+                float effectiveTotal = _raceDistanceDriven + remaining;
+                pct = effectiveTotal > 0 ? Mathf.Clamp(_raceDistanceDriven / effectiveTotal, 0f, 1f) : 1f;
+                progressText = $"{pct * 100:F0}%  −{remaining:F0} m ★";
+            }
+            _raceProgressLabel.Visible = true;
+            _raceProgressLabel.Text = progressText;
         } else {
             bool inTriggerRange = dist < 12f;
             _stateLabel.Text = inTriggerRange ? "▶  MATCH SPEED!" : "GET CLOSER";
@@ -168,6 +208,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
             _speedMatchBar.Visible = true;
             _speedMatchTitle.Visible = true;
             _speedMatchBar.Value = _speedMatchProgress;
+            _raceProgressLabel.Visible = false;
         }
 
         // ── On-screen / off-screen marker ─────────────────────────────────────

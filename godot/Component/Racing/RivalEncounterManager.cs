@@ -48,6 +48,15 @@ public partial class RivalEncounterManager : Node {
     /// <summary>Metres driven by the player since the race started (0 when no race is active).</summary>
     protected float RaceDistanceDriven => _raceActive ? _playerCar.DistanceTravelled - _playerStartDist : 0f;
 
+    /// <summary>
+    /// When the finish checkpoint has been placed, returns the straight-line distance
+    /// from the player to it. Returns -1 while the checkpoint has not yet spawned.
+    /// </summary>
+    protected float RaceCheckpointDistance =>
+        _checkpointSet && IsInstanceValid(_raceCheckpoint)
+            ? _playerCar.RigidBody.GlobalPosition.DistanceTo(_raceCheckpoint.GlobalPosition)
+            : -1f;
+
     public void Init(InfiniteRoadManager roadManager, Car playerCar) {
         _roadManager = roadManager;
         _playerCar = playerCar;

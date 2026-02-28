@@ -58,6 +58,8 @@ public partial class PaydayRivalEncounterManager : RivalEncounterManager {
 
         if (!_raceActive && _indicatorUI.IsInsideTree()) {
             _indicatorUI?.UpdateSpeedMatchProgress(_speedMatchTimer / SPEED_MATCH_WINDOW); // TODO func lookup in base
+        } else if (_raceActive && _indicatorUI.IsInsideTree()) {
+            _indicatorUI?.UpdateRaceProgress(RaceDistanceDriven, RACE_DISTANCE, RaceCheckpointDistance);
         }
     }
 

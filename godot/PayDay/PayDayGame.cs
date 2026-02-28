@@ -60,6 +60,11 @@ public partial class PayDayGame : Node {
 
     private void ShowIntroDialog() {
         var dialog = LoadScene<DialogScreen>();
+        dialog.Closed += () => {
+            RemoveScene();
+            CallDeferred(MethodName.GoToHub);
+        };
+        SwapScene(dialog);
         dialog.SetDialogLines([
             new DialogLine("Dave", Colors.LightBlue,
                 "Hey man... so I heard you got one of those rent-to-own deals on a TV?"),
@@ -70,11 +75,6 @@ public partial class PayDayGame : Node {
             new DialogLine("Dave", Colors.LightBlue,
                 "BAHAHAHA. You are so cooked. Well — racing pays decent. Get out there!"),
         ]);
-        dialog.Closed += () => {
-            RemoveScene();
-            CallDeferred(MethodName.GoToHub);
-        };
-        SwapScene(dialog);
     }
 
     private void GoToHub() {
@@ -120,9 +120,9 @@ public partial class PayDayGame : Node {
 
         _phase = Phase.RunEnd;
         var endScreen = LoadScene<RunEndScreen>();
-        endScreen.Populate(_runMoney, _runParts);
         endScreen.ReturnHome += () => CallDeferred(MethodName.GoToHubEvening);
         SwapScene(endScreen);
+        endScreen.Populate(_runMoney, _runParts);
     }
 
     private void GoToHubEvening() {
@@ -152,6 +152,8 @@ public partial class PayDayGame : Node {
 
     private void ShowFriendDialog() {
         var dialog = LoadScene<DialogScreen>();
+        dialog.Closed += () => CallDeferred(MethodName.GoToHub);
+        SwapScene(dialog);
         dialog.SetDialogLines([
             new DialogLine("Karen", Colors.LightPink,
                 "How's the debt going? I heard you got into that EZ Cash thing."),
@@ -160,8 +162,6 @@ public partial class PayDayGame : Node {
             new DialogLine("You", Colors.White,
                 "It's fine. It's fine. IT IS FINE."),
         ]);
-        dialog.Closed += () => CallDeferred(MethodName.GoToHub);
-        SwapScene(dialog);
     }
 
     private void GoToWin() {
