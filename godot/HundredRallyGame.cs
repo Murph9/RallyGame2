@@ -245,7 +245,7 @@ public partial class HundredRallyGame : Node {
     private void ShowPause() {
         SetPauseState(true);
 
-        var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(HundredPauseScreen))).Instantiate<HundredPauseScreen>();
+        var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
         pauseScreen.Resume += () => {
             SetPauseState(false);
             CallDeferred(MethodName.RemoveNode, pauseScreen);
