@@ -5,6 +5,7 @@ using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Component;
 
 namespace murph9.RallyGame2.godot.Component.Racing;
 
@@ -38,9 +39,11 @@ public partial class RivalEncounterManager : Node {
     protected Car _currentRival;
 
     protected float _playerStartDist;
-    protected float _rivalStartDist;
+    protected bool _checkpointSet;
     protected bool _raceActive;
     protected double _speedMatchTimer;
+
+    private Checkpoint _raceCheckpoint;
 
     public void Init(InfiniteRoadManager roadManager, Car playerCar) {
         _roadManager = roadManager;
@@ -73,11 +76,17 @@ public partial class RivalEncounterManager : Node {
                 _speedMatchTimer = 0;
             }
         } else {
-            float playerDist = _playerCar.DistanceTravelled - _playerStartDist;
-            float rivalDist = _currentRival.DistanceTravelled - _rivalStartDist;
+            if (!_checkpointSet && _playerCar.DistanceTravelled - _playerStartDist >= RACE_DISTANCE) {
+                _checkpointSet = true;
 
-            if (playerDist >= RACE_DISTANCE || rivalDist >= RACE_DISTANCE) {
-                EndRace(playerWon: playerDist >= rivalDist);
+                var checkpoints = _roadManager.GetNextCheckpoints(_playerCar.RigidBody.GlobalPosition, false, 0);
+                var checkpoint = checkpoints.Skip(10).FirstOrDefault();
+                if (checkpoint == default) {
+                    checkpoint = checkpoints.Last();
+                }
+
+                GD.Print("Placing rival race checkpoint at distance: " + _playerCar.DistanceTravelled);
+                CreateRaceCheckpoint(checkpoint);
             }
         }
     }
@@ -103,14 +112,36 @@ public partial class RivalEncounterManager : Node {
     private void StartRace() {
         _raceActive = true;
         _playerStartDist = _playerCar.DistanceTravelled;
-        _rivalStartDist = _currentRival.DistanceTravelled;
+        _checkpointSet = false;
         _currentRival.ChangeInputsTo(new RacingAiInputs(_roadManager));
 
         EmitSignal(SignalName.RivalRaceStarted, _currentRival);
     }
 
+    private void CreateRaceCheckpoint(Transform3D transform) {
+        _raceCheckpoint = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(1, 1, 1, 0.7f));
+        AddChild(_raceCheckpoint);
+        _raceCheckpoint.ThingEntered += node => {
+            if (node.GetParent() is not Car) return;
+            if (node == _playerCar.RigidBody) {
+                CallDeferred(MethodName.EndRaceDeferred, true);
+            } else if (node == _currentRival?.RigidBody) {
+                CallDeferred(MethodName.EndRaceDeferred, false);
+            }
+        };
+    }
+
+    private void EndRaceDeferred(bool playerWon) => EndRace(playerWon);
+
     private void EndRace(bool playerWon) {
+        if (!_raceActive) return; // guard against duplicate calls
         _raceActive = false;
+        _checkpointSet = false;
+
+        if (_raceCheckpoint != null) {
+            RemoveChild(_raceCheckpoint);
+            _raceCheckpoint = null;
+        }
 
         if (playerWon) {
             EmitSignal(SignalName.RivalWon);
