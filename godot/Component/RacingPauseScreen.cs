@@ -1,13 +1,8 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
-using murph9.RallyGame2.godot.Cars.Init.Parts;
-using murph9.RallyGame2.godot.Component;
-using murph9.RallyGame2.godot.Utilities;
-using System.Linq;
 
-namespace murph9.RallyGame2.godot.Hundred;
+namespace murph9.RallyGame2.godot.Component;
 
-public partial class HundredPauseScreen : CenterContainer {
+public partial class RacingPauseScreen : CenterContainer {
 
     [Signal]
     public delegate void ResumeEventHandler();

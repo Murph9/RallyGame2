@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.PayDay.Dialog;
 using murph9.RallyGame2.godot.PayDay.Hub;
 using murph9.RallyGame2.godot.PayDay.Loan;
@@ -25,6 +26,7 @@ public partial class PayDayGame : Node {
     private Phase _phase = Phase.Hub;
     private Node _currentScene;
     private PayDayUI _activeUI;
+    private bool _paused;
 
     // Accumulated during a single run
     private readonly List<CollectedPart> _runParts = [];
@@ -48,9 +50,9 @@ public partial class PayDayGame : Node {
     }
 
     public override void _Process(double delta) {
-        // Allow escaping back to main menu during a run
-        if (_phase == Phase.Racing && Input.IsActionJustPressed("menu_back")) {
-            GetTree().ChangeSceneToFile("res://Main.tscn");
+        // Show pause screen on Escape during a racing run
+        if (_phase == Phase.Racing && !_paused && Input.IsActionJustPressed("menu_back")) {
+            ShowPause();
         }
     }
 
@@ -209,7 +211,25 @@ public partial class PayDayGame : Node {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+    private void ShowPause() {
+        SetPauseState(true);
 
+        var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
+        pauseScreen.Resume += () => {
+            SetPauseState(false);
+            RemoveChild(pauseScreen);
+            pauseScreen.QueueFree();
+        };
+        pauseScreen.Quit += () => GetTree().ChangeSceneToFile("res://Main.tscn");
+        AddChild(pauseScreen);
+    }
+
+    private void SetPauseState(bool paused) {
+        _paused = paused;
+        if (_currentScene is PayDayRacingScene racing)
+            racing.SetPaused(paused);
+        _activeUI?.SetPaused(paused);
+    }
     private T LoadScene<T>() where T : Node {
         return GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(T))).Instantiate<T>();
     }
