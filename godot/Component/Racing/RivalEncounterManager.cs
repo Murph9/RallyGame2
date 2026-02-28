@@ -28,7 +28,7 @@ public partial class RivalEncounterManager : Node {
 
     private const float RIVAL_SPAWN_INTERVAL = 2f;  // seconds between spawn attempts
     private const float RACE_TRIGGER_DISTANCE = 10f;  // metres — must be this close
-    private const float RACE_DISTANCE = 500f; // metres of race length
+    protected const float RACE_DISTANCE = 500f; // metres of race length
     protected const float SPEED_MATCH_WINDOW = 3f;   // seconds both must hold matching speed
     private const float SPEED_MATCH_DIFF_MS = 5f;   // m/s tolerance for speed match
 
@@ -45,6 +45,9 @@ public partial class RivalEncounterManager : Node {
 
     private Checkpoint _raceCheckpoint;
 
+    /// <summary>Metres driven by the player since the race started (0 when no race is active).</summary>
+    protected float RaceDistanceDriven => _raceActive ? _playerCar.DistanceTravelled - _playerStartDist : 0f;
+
     public void Init(InfiniteRoadManager roadManager, Car playerCar) {
         _roadManager = roadManager;
         _playerCar = playerCar;
@@ -54,13 +57,26 @@ public partial class RivalEncounterManager : Node {
     public override void _PhysicsProcess(double delta) {
         if (_roadManager == null || _playerCar == null) return;
 
-        if (_currentRival == null) {
+        if (_currentRival == null || !IsInstanceValid(_currentRival.RigidBody)) {
+            if (_currentRival != null) {
+                // Node was freed externally (e.g. road culling) — reset without ending the race formally
+                _raceActive = false;
+                _checkpointSet = false;
+                if (_raceCheckpoint != null) { RemoveChild(_raceCheckpoint); _raceCheckpoint = null; }
+                _currentRival = null;
+            }
             _spawnTimer -= (float)delta;
             if (_spawnTimer <= 0) {
                 SpawnRival();
                 _spawnTimer = RIVAL_SPAWN_INTERVAL;
             }
             return;
+        }
+
+        // Respawn rival if it has fallen well below the road surface
+        var nextCheckpointY = _roadManager.GetNextCheckpoint(_currentRival.RigidBody.GlobalPosition, false, 0).Origin.Y;
+        if (_currentRival.RigidBody.GlobalPosition.Y + 20f < nextCheckpointY) {
+            RespawnRivalNearPlayer();
         }
 
         if (!_raceActive) {
@@ -89,6 +105,14 @@ public partial class RivalEncounterManager : Node {
                 CreateRaceCheckpoint(checkpoint);
             }
         }
+    }
+
+    private void RespawnRivalNearPlayer() {
+        var t = _playerCar.RigidBody.GlobalTransform;
+        t.Origin += t.Basis.X * 3f;
+        _currentRival.RigidBody.GlobalTransform = t;
+        _currentRival.RigidBody.LinearVelocity = _playerCar.RigidBody.LinearVelocity;
+        _currentRival.RigidBody.AngularVelocity = Vector3.Zero;
     }
 
     private void SpawnRival() {
