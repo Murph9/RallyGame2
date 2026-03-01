@@ -1,4 +1,4 @@
-namespace murph9.RallyGame2.godot.PayDay.Parts;
+namespace murph9.RallyGame2.godot.Component.Rarity;
 
 public enum PartRarity {
     Poor = 0,

@@ -1,7 +1,8 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Component;
-using murph9.RallyGame2.godot.PayDay.Dialog;
+using murph9.RallyGame2.godot.Component.Dialog;
+using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Hub;
 using murph9.RallyGame2.godot.PayDay.Loan;
 using murph9.RallyGame2.godot.PayDay.Parts;

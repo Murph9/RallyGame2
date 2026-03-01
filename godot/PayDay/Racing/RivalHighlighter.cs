@@ -1,6 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
-using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.PayDay.Racing;

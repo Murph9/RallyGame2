@@ -1,11 +1,10 @@
 using Godot;
 using System.Collections.Generic;
 
-namespace murph9.RallyGame2.godot.PayDay.Dialog;
+namespace murph9.RallyGame2.godot.Component.Dialog;
 
 /// <summary>
 /// A modal CanvasLayer that steps through a list of DialogLines on click/keypress.
-/// Used for the intro sequence and phone calls from the house hub.
 /// </summary>
 public partial class DialogScreen : CanvasLayer {
 
@@ -20,9 +19,9 @@ public partial class DialogScreen : CanvasLayer {
     private TextureRect _portrait;
 
     public override void _Ready() {
-        _speakerLabel = GetNodeOrNull<Label>("Panel/VBox/SpeakerLabel");
-        _textLabel = GetNodeOrNull<Label>("Panel/VBox/TextLabel");
-        _portrait = GetNodeOrNull<TextureRect>("Panel/Portrait");
+        _speakerLabel = GetNode<Label>("Panel/VBox/SpeakerLabel");
+        _textLabel = GetNode<Label>("Panel/VBox/TextLabel");
+        _portrait = GetNode<TextureRect>("Panel/Portrait");
     }
 
     public void SetDialogLines(List<DialogLine> lines) {

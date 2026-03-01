@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
+using murph9.RallyGame2.godot.Component.Rarity;
 
 namespace murph9.RallyGame2.godot.PayDay.Parts;
 

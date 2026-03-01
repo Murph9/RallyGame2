@@ -1,4 +1,5 @@
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.Utilities;
 using System.Linq;
 

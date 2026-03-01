@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
 using murph9.RallyGame2.godot.Utilities;
 using System;
@@ -57,7 +58,7 @@ public partial class HubScene : Node3D {
         if (state.PartInventory.Count == 0) return;
 
         // The house glows with the best rarity part collected so far
-        PartRarity best = PartRarity.Poor;
+        var best = PartRarity.Poor;
         foreach (var part in state.PartInventory) {
             if (part.Rarity > best) best = part.Rarity;
         }

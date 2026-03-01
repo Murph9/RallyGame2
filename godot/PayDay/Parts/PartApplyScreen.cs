@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
 using System.Collections.Generic;
 

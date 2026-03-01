@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace murph9.RallyGame2.godot.PayDay.Parts;
+namespace murph9.RallyGame2.godot.Component.Rarity;
 
 public static class PartRarityHelper {
     private static readonly Color[] Colours = [
