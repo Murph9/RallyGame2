@@ -34,26 +34,21 @@ public partial class PayDayUI : CanvasLayer {
 
     public void SetPaused(bool paused) => _paused = paused;
 
-    public void UpdateRivalStatus(string text) {
-        if (_rivalLabel != null)
-            _rivalLabel.Text = text;
-    }
+    public void UpdateRivalStatus(string text) => _rivalLabel.Text = text;
 
     public override void _Process(double delta) {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
-        if (_moneyLabel != null) _moneyLabel.Text = $"${state.Money:F0}";
-        if (_partsLabel != null) _partsLabel.Text = $"Parts: {state.PartInventory.Count}";
+        _moneyLabel.Text = $"${state.Money:F0}";
+        _partsLabel.Text = $"Parts: {state.PartInventory.Count}";
 
         if (!_running || _paused) return;
 
         _elapsed += delta;
         double remaining = Math.Max(0, _runDurationSeconds - _elapsed);
 
-        if (_timerLabel != null) {
-            int mins = (int)(remaining / 60);
-            int secs = (int)(remaining % 60);
-            _timerLabel.Text = $"{mins}:{secs:D2}";
-        }
+        int mins = (int)(remaining / 60);
+        int secs = (int)(remaining % 60);
+        _timerLabel.Text = $"{mins}:{secs:D2}";
 
         if (_elapsed >= _runDurationSeconds) {
             _running = false;

@@ -14,7 +14,8 @@ public partial class PartApplyScreen : CenterContainer {
     [Signal]
     public delegate void ClosedEventHandler();
 
-    private Queue<CollectedPart> _queue = new();
+    private readonly Queue<CollectedPart> _queue = new();
+
     private CollectedPart _current;
 
     private Label _rarityLabel;
@@ -51,30 +52,22 @@ public partial class PartApplyScreen : CenterContainer {
         var exclamation = PartRarityHelper.GetExclamation(_current.Rarity);
         var partName = _current.Part?.Name ?? "PART";
 
-        if (_rarityLabel != null) {
-            _rarityLabel.Text = rarityName.ToUpper();
-            _rarityLabel.AddThemeColorOverride("font_color", rarityColour);
-        }
+        _rarityLabel.Text = rarityName.ToUpper();
+        _rarityLabel.AddThemeColorOverride("font_color", rarityColour);
 
-        if (_partNameLabel != null)
-            _partNameLabel.Text = partName;
+        _partNameLabel.Text = partName;
 
-        if (_exclamationLabel != null) {
-            _exclamationLabel.Text = $"{exclamation} {rarityName.ToUpper()} {partName.ToUpper()}!";
-            _exclamationLabel.AddThemeColorOverride("font_color", rarityColour);
-        }
+        _exclamationLabel.Text = $"{exclamation} {rarityName.ToUpper()} {partName.ToUpper()}!";
+        _exclamationLabel.AddThemeColorOverride("font_color", rarityColour);
 
-        if (_glowPanel != null) {
-            var style = new StyleBoxFlat {
-                BgColor = rarityColour with { A = 0.2f },
-                BorderColor = rarityColour
-            };
-            style.SetBorderWidthAll(3);
-            _glowPanel.AddThemeStyleboxOverride("panel", style);
-        }
+        var style = new StyleBoxFlat {
+            BgColor = rarityColour with { A = 0.2f },
+            BorderColor = rarityColour
+        };
+        style.SetBorderWidthAll(3);
+        _glowPanel.AddThemeStyleboxOverride("panel", style);
 
-        if (_nextButton != null)
-            _nextButton.Text = _queue.Count > 0 ? "Next Part" : "Done";
+        _nextButton.Text = _queue.Count > 0 ? "Next Part" : "Done";
     }
 
     public void NextButton_Pressed() => ShowNext();

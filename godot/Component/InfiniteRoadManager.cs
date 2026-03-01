@@ -42,12 +42,12 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public int PiecesPlaced { get; private set; }
     public float CurrentRoadWidth { get; private set; }
 
-    public InfiniteRoadManager(int spawnDistance, WorldType initialWorldType) {
+    public InfiniteRoadManager(float spawnDistance, WorldType initialWorldType, float removePieceDistance) {
         UpdateWorldType(initialWorldType);
 
         var strat = new PiecePlacementStrategy(PiecePlacementStrategy.Type.Camera, spawnDistance);
 
-        _world = new InfiniteWorldPieces(new ProceduralPieceGenerator(initialWorldType), strat, new PieceDecorator());
+        _world = new InfiniteWorldPieces(new ProceduralPieceGenerator(initialWorldType), strat, new PieceDecorator(), removePieceDistance);
         _world.PieceAdded += PiecePlacedListener;
         _world.SetIgnoredPieces(["station"]);
 

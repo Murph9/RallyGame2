@@ -1,7 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.World.Procedural;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,12 +11,12 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     record PrivateCheckpoint(Transform3D Transform3D, Node3D Node, float Distance);
 
-    private const int REMOVE_PIECES_BEHIND_CAMERA_DISTANCE = 50;
     private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     private readonly Transform3D _spawnPoint = Transform3D.Identity;
 
     private readonly RandomNumberGenerator _rand = new();
 
+    private readonly float _removePieceDistance;
     private readonly IPieceGenerator _pieceGen;
     private readonly PiecePlacementStrategy _placementStrategy;
     private readonly IPieceDecorator _pieceDecorator;
@@ -34,10 +33,11 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     [Signal]
     public delegate void PieceAddedEventHandler(Transform3D checkpointTransform);
 
-    public InfiniteWorldPieces(IPieceGenerator pieceGenerator, PiecePlacementStrategy strategy, IPieceDecorator pieceDecorator) {
+    public InfiniteWorldPieces(IPieceGenerator pieceGenerator, PiecePlacementStrategy strategy, IPieceDecorator pieceDecorator, float removePieceDistance) {
         _pieceGen = pieceGenerator;
         _placementStrategy = strategy;
         _placementStrategy.NeedPiece += GeneratePiece;
+        _removePieceDistance = removePieceDistance;
 
         _pieceDecorator = pieceDecorator;
 
@@ -78,7 +78,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
         // attempt to remove the oldest piece
         var firstPiece = _placedPieces.FirstOrDefault();
         var cameraPos = GetViewport().GetCamera3D().GlobalPosition;
-        if (firstPiece != null && firstPiece.GlobalPosition.DistanceTo(cameraPos) > REMOVE_PIECES_BEHIND_CAMERA_DISTANCE) {
+        if (firstPiece != null && firstPiece.GlobalPosition.DistanceTo(cameraPos) > _removePieceDistance) {
             _placedPieces.Remove(firstPiece);
             _checkpoints.RemoveAll(x => x.Node == firstPiece);
             RemoveChild(firstPiece);

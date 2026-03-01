@@ -1,13 +1,13 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component.Rarity;
-using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Utilities;
 using System;
 
 namespace murph9.RallyGame2.godot.PayDay.Racing;
 
 /// <summary>
-/// Screen-space HUD overlay that makes it impossible to miss a rival:
+/// Screen-space HUD overlay to show Rivals
 ///
 ///  1. Status panel (right side) – rarity tier, race state, distance,
 ///     speed-match progress bar.
@@ -42,8 +42,6 @@ public partial class RivalIndicatorUI : CanvasLayer {
     private float _raceDistanceDriven;
     private float _raceTotalDistance;
     private float _raceCheckpointDist = -1f; // -1 = checkpoint not yet placed
-
-    // ─── Init ─────────────────────────────────────────────────────────────────
 
     public void Init(Car playerCar, Car rivalCar, PartRarity rarity) {
         _playerCar = playerCar;
@@ -233,30 +231,11 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
             var center = screenSize / 2f;
             var dir = (screenPos - center).Normalized();
-            var edgePos = ClampToScreenEdge(screenPos, screenSize, 44f);
+            var edgePos = ScreenHelper.ClampToScreenEdge(screenPos, screenSize, 44f);
             _arrowLabel.Position = edgePos - new Vector2(14, 14);
             // Rotate arrow to point toward the rival
             _arrowLabel.Rotation = dir.Angle();
         }
-    }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
-    /// <summary>Clamps a screen-space position to within margin of the screen edges.</summary>
-    private static Vector2 ClampToScreenEdge(Vector2 screenPos, Vector2 screenSize, float margin) {
-        var center = screenSize / 2f;
-        var dir = screenPos - center;
-        float halfW = screenSize.X / 2f - margin;
-        float halfH = screenSize.Y / 2f - margin;
-
-        float scaleX = dir.X != 0f ? halfW / Math.Abs(dir.X) : float.MaxValue;
-        float scaleY = dir.Y != 0f ? halfH / Math.Abs(dir.Y) : float.MaxValue;
-        float scale = Math.Min(scaleX, scaleY);
-
-        if (scale < 1f)
-            return center + dir * scale;
-        // Point is already inside – clamp it to edge
-        return center + dir.Normalized() * Math.Min(halfW, halfH);
     }
 
     private static void SetLabelStyle(Label label, Color color, int fontSize) {

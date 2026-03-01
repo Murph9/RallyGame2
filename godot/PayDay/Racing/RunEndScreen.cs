@@ -23,10 +23,7 @@ public partial class RunEndScreen : CenterContainer {
     }
 
     public void Populate(float moneyEarned, List<CollectedPart> parts) {
-        if (_moneyLabel != null)
-            _moneyLabel.Text = $"Money earned this run: ${moneyEarned:F0}";
-
-        if (_partsContainer == null) return;
+        _moneyLabel.Text = $"Money earned this run: ${moneyEarned:F0}";
 
         foreach (var child in _partsContainer.GetChildren())
             child.QueueFree();
@@ -40,14 +37,14 @@ public partial class RunEndScreen : CenterContainer {
         foreach (var part in parts) {
             var row = new HBoxContainer();
 
-            var swatch = new ColorRect();
-            swatch.CustomMinimumSize = new Vector2(20, 20);
-            swatch.Color = PartRarityHelper.GetColour(part.Rarity);
-            row.AddChild(swatch);
+            row.AddChild(new ColorRect {
+                CustomMinimumSize = new Vector2(20, 20),
+                Color = PartRarityHelper.GetColour(part.Rarity)
+            });
 
-            var label = new Label();
-            label.Text = $"  [{PartRarityHelper.GetDisplayName(part.Rarity)}]  {part.Part?.Name ?? "Unknown Part"}";
-            row.AddChild(label);
+            row.AddChild(new Label {
+                Text = $"  [{PartRarityHelper.GetDisplayName(part.Rarity)}]  {part.Part?.Name ?? "Unknown Part"}"
+            });
 
             _partsContainer.AddChild(row);
         }

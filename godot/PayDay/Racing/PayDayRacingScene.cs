@@ -8,7 +8,6 @@ namespace murph9.RallyGame2.godot.PayDay.Racing;
 
 /// <summary>
 /// Wraps InfiniteRoadManager + player Car for a Pay Day racing run.
-/// Mirrors HundredRacingScene but drives from PayDayGlobalState.
 /// </summary>
 public partial class PayDayRacingScene : Node3D {
 
@@ -27,7 +26,7 @@ public partial class PayDayRacingScene : Node3D {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
         // Build road first so we can get the correct spawn transform
-        _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2);
+        _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2, 150);
         AddChild(_roadManager);
         GetNode<GlobalState>("/root/GlobalState").RoadManager = _roadManager;
 
@@ -55,8 +54,6 @@ public partial class PayDayRacingScene : Node3D {
     }
 
     public void ResetCarTo(Transform3D transform) => _car.ResetCarTo(transform);
-    public void SetActive(bool active) => _car.SetActive(active);
-    public bool IsMainCar(Node3D node) => _car.RigidBody == node;
     public void SetPaused(bool paused) {
         _car.SetActive(!paused);
         _roadManager.SetPaused(paused);
