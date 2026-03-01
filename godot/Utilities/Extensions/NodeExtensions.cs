@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-namespace murph9.RallyGame2.godot.Utilities;
+namespace murph9.RallyGame2.godot.Utilities.Extensions;
 
 public static class NodeExtensions {
 

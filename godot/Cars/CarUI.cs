@@ -4,6 +4,7 @@ using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.DebugGUI;
+using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Linq;
 

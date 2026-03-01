@@ -24,7 +24,6 @@ public partial class HundredRacingScene : Node3D {
     public override void _Ready() {
         // load from global state
         var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
-        var state = GetNode<GlobalState>("/root/GlobalState");
         _car = new Car(hundredState.CarDetails, null, true, InitialPosition);
 
         UpdateWithNewCar(hundredState);

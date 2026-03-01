@@ -19,10 +19,6 @@ public partial class PayDayRacingScene : Node3D {
     [Signal]
     public delegate void RivalLostEventHandler();
 
-    public Vector3 PlayerCarPos => _car.RigidBody.GlobalPosition;
-    public Vector3 PlayerCarLinearVelocity => _car.RigidBody.LinearVelocity;
-    public float PlayerDistanceTravelled => _car.DistanceTravelled;
-
     private Car _car;
     private InfiniteRoadManager _roadManager;
     private PaydayRivalEncounterManager _rivalManager;
@@ -39,7 +35,7 @@ public partial class PayDayRacingScene : Node3D {
         _car = new Car(state.CarDetails, null, true, spawnTransform);
         AddChild(_car);
 
-        // Rival encounter manager sits as a sibling node
+        // create the rival placer
         _rivalManager = new PaydayRivalEncounterManager();
         AddChild(_rivalManager);
         _rivalManager.Init(_roadManager, _car, state.DayNumber);
@@ -48,7 +44,6 @@ public partial class PayDayRacingScene : Node3D {
         _rivalManager.RivalLost += () => EmitSignal(SignalName.RivalLost);
     }
 
-    /// <summary>Hot-swap the car with new details (e.g. after applying a part).</summary>
     public void ReplaceCarWithState(CarDetails newDetails) {
         Callable.From(() => {
             var newCar = _car.CloneWithNewDetails(newDetails);

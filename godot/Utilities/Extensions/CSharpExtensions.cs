@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace murph9.RallyGame2.godot.Utilities;
+namespace murph9.RallyGame2.godot.Utilities.Extensions;
 
 public static class CSharpExtensions {
     public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)

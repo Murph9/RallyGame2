@@ -1,7 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component.Rarity;
-using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.Extensions;
 
 namespace murph9.RallyGame2.godot.PayDay.Racing;
 
@@ -38,10 +38,14 @@ public partial class RivalHighlighter : Node3D {
         //    We duplicate each StandardMaterial3D surface and enable emission.
         float emission = EmissionForRarity(_rarity);
         foreach (var mesh in _rival.RigidBody.GetAllChildrenOfType<MeshInstance3D>()) {
-            if (mesh.Mesh == null || mesh.Mesh.GetSurfaceCount() == 0) continue;
+            if (mesh.Mesh == null || mesh.Mesh.GetSurfaceCount() == 0)
+                continue;
+
             for (int i = 0; i < mesh.Mesh.GetSurfaceCount(); i++) {
                 var activeMat = mesh.GetActiveMaterial(i);
-                if (activeMat is not StandardMaterial3D baseMat) continue;
+                if (activeMat is not StandardMaterial3D baseMat)
+                    continue;
+
                 var newMat = (StandardMaterial3D)baseMat.Duplicate();
                 newMat.EmissionEnabled = true;
                 newMat.Emission = color;

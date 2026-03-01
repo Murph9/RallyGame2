@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
