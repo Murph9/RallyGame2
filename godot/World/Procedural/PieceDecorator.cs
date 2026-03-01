@@ -24,7 +24,7 @@ public partial class PieceDecorator : IPieceDecorator {
     private readonly Node3D _fencePost;
 
     public PieceDecorator() {
-        _fencePost = DebugHelper.BoxLine(Colors.Brown, Vector3.Zero, new Vector3(0, FENCE_HEIGHT, 0), 0.2f);
+        _fencePost = ObjectHelper.BoxLine(Colors.Brown, Vector3.Zero, new Vector3(0, FENCE_HEIGHT, 0), 0.2f);
     }
 
     public void DecoratePiece(Node3D node, WorldPiece piece, WorldPieceDir outDirection, Transform3D pieceTransform, IReadOnlyList<Vector3> allRoadPoints) {
@@ -127,8 +127,8 @@ public partial class PieceDecorator : IPieceDecorator {
     }
 
     private static void PlaceTree(Node3D node, Vector3 pos) {
-        node.AddChild(DebugHelper.BoxLine(Colors.SaddleBrown, pos, pos + Vector3.Up * 2f, 0.4f));
-        node.AddChild(DebugHelper.Sphere(Colors.Green, pos + Vector3.Up * 3f, 2f));
+        node.AddChild(ObjectHelper.BoxLine(Colors.SaddleBrown, pos, pos + Vector3.Up * 2f, 0.4f));
+        node.AddChild(ObjectHelper.Sphere(Colors.Green, pos + Vector3.Up * 3f, 2f));
     }
 
     // -------------------------------------------------------------------
@@ -214,8 +214,8 @@ public partial class PieceDecorator : IPieceDecorator {
     private static void PlaceCourtyardProp(Node3D node, Vector3 pos, RandomNumberGenerator rand) {
         switch (rand.RandiRange(0, 2)) {
             case 0: // fountain / column
-                node.AddChild(DebugHelper.BoxLine(Colors.LightGray, pos, pos + Vector3.Up * 2f, 0.5f));
-                node.AddChild(DebugHelper.Sphere(new Color(0.5f, 0.7f, 1f, 0.8f), pos + Vector3.Up * 2.5f, 0.8f));
+                node.AddChild(ObjectHelper.BoxLine(Colors.LightGray, pos, pos + Vector3.Up * 2f, 0.5f));
+                node.AddChild(ObjectHelper.Sphere(new Color(0.5f, 0.7f, 1f, 0.8f), pos + Vector3.Up * 2.5f, 0.8f));
                 break;
             case 1: // tree cluster
                 PlaceTree(node, pos);
@@ -223,8 +223,8 @@ public partial class PieceDecorator : IPieceDecorator {
                 break;
             case 2: // low wall cross
                 var h = 0.5f;
-                node.AddChild(DebugHelper.BoxLine(Colors.SlateGray, pos + new Vector3(-2f, h, 0f), pos + new Vector3(2f, h, 0f), 0.3f));
-                node.AddChild(DebugHelper.BoxLine(Colors.SlateGray, pos + new Vector3(0f, h, -2f), pos + new Vector3(0f, h, 2f), 0.3f));
+                node.AddChild(ObjectHelper.BoxLine(Colors.SlateGray, pos + new Vector3(-2f, h, 0f), pos + new Vector3(2f, h, 0f), 0.3f));
+                node.AddChild(ObjectHelper.BoxLine(Colors.SlateGray, pos + new Vector3(0f, h, -2f), pos + new Vector3(0f, h, 2f), 0.3f));
                 break;
         }
     }
@@ -272,7 +272,7 @@ public partial class PieceDecorator : IPieceDecorator {
         });
 
         // Thin fence-line separating field from road
-        node.AddChild(DebugHelper.BoxLine(Colors.Peru,
+        node.AddChild(ObjectHelper.BoxLine(Colors.Peru,
             edgePt + outward * FIELD_SIDE_OFFSET,
             edgePtNext + outward * FIELD_SIDE_OFFSET, 0.15f));
     }
@@ -294,11 +294,11 @@ public partial class PieceDecorator : IPieceDecorator {
         var topMax = spanMax + Vector3.Up * OVERPASS_HEIGHT;
 
         // Horizontal beam
-        node.AddChild(DebugHelper.BoxLine(Colors.DarkGray, topMin, topMax, OVERPASS_THICKNESS));
+        node.AddChild(ObjectHelper.BoxLine(Colors.DarkGray, topMin, topMax, OVERPASS_THICKNESS));
 
         // Support pillars
-        node.AddChild(DebugHelper.BoxLine(Colors.Gray, spanMin, topMin, OVERPASS_THICKNESS));
-        node.AddChild(DebugHelper.BoxLine(Colors.Gray, spanMax, topMax, OVERPASS_THICKNESS));
+        node.AddChild(ObjectHelper.BoxLine(Colors.Gray, spanMin, topMin, OVERPASS_THICKNESS));
+        node.AddChild(ObjectHelper.BoxLine(Colors.Gray, spanMax, topMax, OVERPASS_THICKNESS));
 
         // Collision for the beam (cars can drive under, things can drive over)
         var spanDir = (spanMax - spanMin).Normalized();
@@ -414,9 +414,9 @@ public partial class PieceDecorator : IPieceDecorator {
             node.AddChild(fence);
         }
         for (var i = 0; i < edgeMax.Length - 1; i++)
-            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMax[i] + fenceUpVector, edgeMax[i + 1] + fenceUpVector, 0.2f));
+            node.AddChild(ObjectHelper.BoxLine(Colors.Brown, edgeMax[i] + fenceUpVector, edgeMax[i + 1] + fenceUpVector, 0.2f));
         for (var i = 0; i < edgeMin.Length - 1; i++)
-            node.AddChild(DebugHelper.BoxLine(Colors.Brown, edgeMin[i] + fenceUpVector, edgeMin[i + 1] + fenceUpVector, 0.2f));
+            node.AddChild(ObjectHelper.BoxLine(Colors.Brown, edgeMin[i] + fenceUpVector, edgeMin[i + 1] + fenceUpVector, 0.2f));
     }
 
     // -------------------------------------------------------------------

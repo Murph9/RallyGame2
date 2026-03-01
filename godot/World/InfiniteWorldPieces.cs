@@ -119,7 +119,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             var checkTransform = transform * checkpoint;
             _checkpoints.Add(new(checkTransform, toAdd, checkpointDistance));
 
-            toAdd.AddChild(DebugHelper.GenerateArrow(Colors.DeepPink, checkpoint, 2, 0.4f));
+            toAdd.AddChild(ObjectHelper.GenerateArrow(Colors.DeepPink, checkpoint, 2, 0.4f));
         }
 
         var allRoadPoints = _checkpoints.Select(x => x.Transform3D.Origin).ToList();

@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace murph9.RallyGame2.godot.Utilities;
@@ -36,10 +37,12 @@ public class MyMath {
         var uu = u.Dot(u);
 
         // result circle
-        Vector3 circCenter = p1 + (u * tt * (u.Dot(v)) - t * uu * (t.Dot(v))) * iwsl2;
-        var circRadius = Mathf.Sqrt(tt * uu * (v.Dot(v)) * iwsl2 * 0.5f);
-        Vector3 circAxis = w / Mathf.Sqrt(wsl);
+        return Mathf.Sqrt(tt * uu * v.Dot(v) * iwsl2 * 0.5f);
+    }
 
-        return circRadius;
+    public static bool IsNumeric(object o) {
+        var numType = typeof(System.Numerics.INumber<>);
+        return o.GetType().GetInterfaces().Any(iface =>
+            iface.IsGenericType && (iface.GetGenericTypeDefinition() == numType));
     }
 }

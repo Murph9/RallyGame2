@@ -81,7 +81,7 @@ public partial class DebugGUI : VBoxContainer {
         var objectProperties = nodeType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var objProp in objectProperties) {
             if (Attribute.GetCustomAttribute(objProp, typeof(DebugGUIGraphAttribute)) is DebugGUIGraphAttribute graphAttribute) {
-                if (DebugHelper.IsNumeric(objProp.GetValue(node))) {
+                if (ObjectHelper.IsNumeric(objProp.GetValue(node))) {
                     AddGraphMapping(node, graphAttribute, objProp, null);
                 } else {
                     GD.PrintErr("Field " + objProp.Name + " probably isn't a number, so not graphing it");
@@ -97,7 +97,7 @@ public partial class DebugGUI : VBoxContainer {
         var objectFields = nodeType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var objField in objectFields) {
             if (Attribute.GetCustomAttribute(objField, typeof(DebugGUIGraphAttribute)) is DebugGUIGraphAttribute graphAttribute) {
-                if (DebugHelper.IsNumeric(objField.GetValue(node))) {
+                if (ObjectHelper.IsNumeric(objField.GetValue(node))) {
                     AddGraphMapping(node, graphAttribute, null, objField);
                 } else {
                     GD.PrintErr("Field " + objField.Name + " probably isn't a number, so not graphing it");
