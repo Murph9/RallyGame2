@@ -83,4 +83,25 @@ public class ObjectHelper {
             Mesh = mesh
         };
     }
+
+    public static MeshInstance3D RingMesh(Color color, float radius) {
+        const int SEGMENTS = 32;
+        var immesh = new ImmediateMesh();
+        immesh.SurfaceBegin(Mesh.PrimitiveType.LineStrip);
+        for (int i = 0; i <= SEGMENTS; i++) {
+            float angle = Mathf.Tau * i / SEGMENTS;
+            immesh.SurfaceAddVertex(new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius));
+        }
+        immesh.SurfaceEnd();
+
+        var mat = new StandardMaterial3D {
+            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+            AlbedoColor = color,
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            NoDepthTest = true,
+        };
+        immesh.SurfaceSetMaterial(0, mat);
+
+        return new MeshInstance3D { Mesh = immesh };
+    }
 }

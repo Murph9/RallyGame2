@@ -1,6 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component.Rarity;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Extensions;
 
 namespace murph9.RallyGame2.godot.PayDay.Racing;
@@ -36,7 +37,7 @@ public partial class RivalHighlighter : Node3D {
 
         // 1. Apply rarity emission glow to all car body mesh surfaces.
         //    We duplicate each StandardMaterial3D surface and enable emission.
-        float emission = EmissionForRarity(_rarity);
+        float emission = PartRarityHelper.EmissionForRarity(_rarity);
         foreach (var mesh in _rival.RigidBody.GetAllChildrenOfType<MeshInstance3D>()) {
             if (mesh.Mesh == null || mesh.Mesh.GetSurfaceCount() == 0)
                 continue;
@@ -70,7 +71,7 @@ public partial class RivalHighlighter : Node3D {
         _label.Position = Vector3.Up * LABEL_HEIGHT;
 
         // 3. Overhead ring (ImmediateMesh circle) drawn in the rarity colour.
-        _ringMesh = BuildRingMesh(color);
+        _ringMesh = ObjectHelper.RingMesh(color, RING_RADIUS);
         _rival.RigidBody.AddChild(_ringMesh);
         _ringMesh.Position = Vector3.Up * RING_HEIGHT;
     }
@@ -93,40 +94,9 @@ public partial class RivalHighlighter : Node3D {
     }
 
     public override void _ExitTree() {
-        if (IsInstanceValid(_label)) _label.QueueFree();
-        if (IsInstanceValid(_ringMesh)) _ringMesh.QueueFree();
-    }
-
-    // ─── helpers ─────────────────────────────────────────────────────────────
-
-    private static float EmissionForRarity(PartRarity rarity) => rarity switch {
-        PartRarity.Poor => 0.20f,
-        PartRarity.Common => 0.35f,
-        PartRarity.Uncommon => 0.55f,
-        PartRarity.Rare => 0.80f,
-        PartRarity.Epic => 1.20f,
-        PartRarity.Legendary => 2.00f,
-        _ => 0.20f,
-    };
-
-    private static MeshInstance3D BuildRingMesh(Color color) {
-        const int SEGMENTS = 32;
-        var immesh = new ImmediateMesh();
-        immesh.SurfaceBegin(Mesh.PrimitiveType.LineStrip);
-        for (int i = 0; i <= SEGMENTS; i++) {
-            float angle = Mathf.Tau * i / SEGMENTS;
-            immesh.SurfaceAddVertex(new Vector3(Mathf.Cos(angle) * RING_RADIUS, 0, Mathf.Sin(angle) * RING_RADIUS));
-        }
-        immesh.SurfaceEnd();
-
-        var mat = new StandardMaterial3D {
-            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            AlbedoColor = color,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            NoDepthTest = true,
-        };
-        immesh.SurfaceSetMaterial(0, mat);
-
-        return new MeshInstance3D { Mesh = immesh };
+        if (IsInstanceValid(_label))
+            _label.QueueFree();
+        if (IsInstanceValid(_ringMesh))
+            _ringMesh.QueueFree();
     }
 }

@@ -82,4 +82,14 @@ public static class PartRarityHelper {
         PartRarity.Legendary => 0.80f,
         _ => 0.00f,
     };
+
+    public static float EmissionForRarity(PartRarity rarity) => rarity switch {
+        PartRarity.Poor => 0.20f,
+        PartRarity.Common => 0.35f,
+        PartRarity.Uncommon => 0.55f,
+        PartRarity.Rare => 0.80f,
+        PartRarity.Epic => 1.20f,
+        PartRarity.Legendary => 2.00f,
+        _ => 0.20f,
+    };
 }
