@@ -20,10 +20,10 @@ public partial class PayDayUI : CanvasLayer {
     private bool _paused;
 
     public override void _Ready() {
-        _timerLabel = GetNodeOrNull<Label>("HUD/TopBar/TimerLabel");
-        _moneyLabel = GetNodeOrNull<Label>("HUD/TopBar/MoneyLabel");
-        _partsLabel = GetNodeOrNull<Label>("HUD/TopBar/PartsLabel");
-        _rivalLabel = GetNodeOrNull<Label>("HUD/SidePanel/RivalLabel");
+        _timerLabel = GetNode<Label>("HUD/TopBar/TimerLabel");
+        _moneyLabel = GetNode<Label>("HUD/TopBar/MoneyLabel");
+        _partsLabel = GetNode<Label>("HUD/TopBar/PartsLabel");
+        _rivalLabel = GetNode<Label>("HUD/SidePanel/RivalLabel");
     }
 
     public void StartTimer(double durationSeconds) {

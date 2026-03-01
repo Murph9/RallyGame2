@@ -18,8 +18,8 @@ public partial class RunEndScreen : CenterContainer {
     private Label _moneyLabel;
 
     public override void _Ready() {
-        _partsContainer = GetNodeOrNull<VBoxContainer>("Panel/VBox/PartsContainer");
-        _moneyLabel = GetNodeOrNull<Label>("Panel/VBox/MoneyLabel");
+        _partsContainer = GetNode<VBoxContainer>("Panel/VBox/PartsContainer");
+        _moneyLabel = GetNode<Label>("Panel/VBox/MoneyLabel");
     }
 
     public void Populate(float moneyEarned, List<CollectedPart> parts) {

@@ -4,12 +4,11 @@ using murph9.RallyGame2.godot.PayDay.Parts;
 using murph9.RallyGame2.godot.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace murph9.RallyGame2.godot.PayDay.Hub;
 
 /// <summary>
-/// The 3D house hub scene that serves as the main menu between runs.
+/// The 3D house hub scene that serves as the menu between runs.
 /// Each HouseItem child emits Clicked; this node routes those to game-level signals.
 /// Decorative furniture glows with the best rarity part in the player's inventory.
 /// </summary>
@@ -69,7 +68,7 @@ public partial class HubScene : Node3D {
                       or HubItemType.Lounge or HubItemType.Lamp) {
             var meshes = item.GetAllChildrenOfType<MeshInstance3D>();
             foreach (var mesh in meshes) {
-                CollectedPart.ApplyRarityMaterial(mesh, best); // TODO should be its but chill
+                PartRarityHelper.ApplyRarityMaterial(mesh, best);
             }
         }
     }

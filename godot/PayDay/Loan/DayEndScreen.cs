@@ -1,5 +1,4 @@
 using Godot;
-using murph9.RallyGame2.godot.PayDay.Loan;
 
 namespace murph9.RallyGame2.godot.PayDay.Loan;
 
@@ -20,12 +19,12 @@ public partial class DayEndScreen : CenterContainer {
     private Button _payMinimumButton;
 
     public override void _Ready() {
-        _principalLabel = GetNodeOrNull<Label>("Panel/VBox/PrincipalLabel");
-        _interestLabel = GetNodeOrNull<Label>("Panel/VBox/InterestLabel");
-        _tomorrowLabel = GetNodeOrNull<Label>("Panel/VBox/TomorrowLabel");
-        _flavourLabel = GetNodeOrNull<Label>("Panel/VBox/FlavourLabel");
-        _payAllButton = GetNodeOrNull<Button>("Panel/VBox/Buttons/PayAllButton");
-        _payMinimumButton = GetNodeOrNull<Button>("Panel/VBox/Buttons/PayMinimumButton");
+        _principalLabel = GetNode<Label>("Panel/VBox/PrincipalLabel");
+        _interestLabel = GetNode<Label>("Panel/VBox/InterestLabel");
+        _tomorrowLabel = GetNode<Label>("Panel/VBox/TomorrowLabel");
+        _flavourLabel = GetNode<Label>("Panel/VBox/FlavourLabel");
+        _payAllButton = GetNode<Button>("Panel/VBox/Buttons/PayAllButton");
+        _payMinimumButton = GetNode<Button>("Panel/VBox/Buttons/PayMinimumButton");
         Refresh();
     }
 

@@ -60,4 +60,26 @@ public static class PartRarityHelper {
         var c = GetColour(rarity);
         return $"#{(int)(c.R * 255):X2}{(int)(c.G * 255):X2}{(int)(c.B * 255):X2}";
     }
+
+
+    /// <summary>Apply the rarity glow shader as a material override on the given mesh.</summary>
+    public static void ApplyRarityMaterial(MeshInstance3D mesh, PartRarity rarity) {
+        var shader = GD.Load<Shader>("res://RarityGlow.gdshader");
+        var mat = new ShaderMaterial {
+            Shader = shader
+        };
+        mat.SetShaderParameter("rarity_color", GetColour(rarity));
+        mat.SetShaderParameter("glow_strength", GlowStrengthForRarity(rarity));
+        mesh.MaterialOverride = mat;
+    }
+
+    private static float GlowStrengthForRarity(PartRarity rarity) => rarity switch {
+        PartRarity.Poor => 0.00f,
+        PartRarity.Common => 0.05f,
+        PartRarity.Uncommon => 0.15f,
+        PartRarity.Rare => 0.30f,
+        PartRarity.Epic => 0.50f,
+        PartRarity.Legendary => 0.80f,
+        _ => 0.00f,
+    };
 }

@@ -1,6 +1,5 @@
 using Godot;
 using murph9.RallyGame2.godot.Component.Rarity;
-using murph9.RallyGame2.godot.PayDay.Parts;
 using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.PayDay.Parts;
@@ -25,11 +24,11 @@ public partial class PartApplyScreen : CenterContainer {
     private Button _nextButton;
 
     public override void _Ready() {
-        _rarityLabel = GetNodeOrNull<Label>("Panel/VBox/RarityLabel");
-        _partNameLabel = GetNodeOrNull<Label>("Panel/VBox/PartNameLabel");
-        _exclamationLabel = GetNodeOrNull<Label>("Panel/VBox/ExclamationLabel");
-        _glowPanel = GetNodeOrNull<Panel>("Panel/GlowPanel");
-        _nextButton = GetNodeOrNull<Button>("Panel/VBox/NextButton");
+        _rarityLabel = GetNode<Label>("Panel/VBox/RarityLabel");
+        _partNameLabel = GetNode<Label>("Panel/VBox/PartNameLabel");
+        _exclamationLabel = GetNode<Label>("Panel/VBox/ExclamationLabel");
+        _glowPanel = GetNode<Panel>("Panel/GlowPanel");
+        _nextButton = GetNode<Button>("Panel/VBox/NextButton");
     }
 
     public void SetParts(List<CollectedPart> parts) {
@@ -66,9 +65,10 @@ public partial class PartApplyScreen : CenterContainer {
         }
 
         if (_glowPanel != null) {
-            var style = new StyleBoxFlat();
-            style.BgColor = rarityColour with { A = 0.2f };
-            style.BorderColor = rarityColour;
+            var style = new StyleBoxFlat {
+                BgColor = rarityColour with { A = 0.2f },
+                BorderColor = rarityColour
+            };
             style.SetBorderWidthAll(3);
             _glowPanel.AddThemeStyleboxOverride("panel", style);
         }
