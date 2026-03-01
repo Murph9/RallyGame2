@@ -52,8 +52,15 @@ public partial class PayDayGame : Node {
 
     public override void _Process(double delta) {
         // Show pause screen on Escape during a racing run
-        if (_phase == Phase.Racing && !_paused && Input.IsActionJustPressed("menu_back")) {
-            ShowPause();
+        if (_phase == Phase.Racing && !_paused) {
+            if (Input.IsActionJustPressed("menu_back")) {
+                ShowPause();
+            }
+            if (Input.IsActionJustPressed("car_reset")) {
+                var racingScene = _currentScene as PayDayRacingScene;
+                var pos = racingScene.RoadManager.GetPassedCheckpoint(GetViewport().GetCamera3D().Position);
+                racingScene.ResetCarTo(pos);
+            }
         }
     }
 
@@ -92,20 +99,20 @@ public partial class PayDayGame : Node {
         _runParts.Clear();
         _runMoney = 0f;
 
-        var racing = LoadScene<PayDayRacingScene>();
-        racing.RivalRaceStarted += (rival) => {
+        var racingScene = LoadScene<PayDayRacingScene>();
+        racingScene.RivalRaceStarted += (rival) => {
             _activeUI.UpdateRivalStatus("Rival Race In Progress");
         };
-        racing.RivalWon += (reward) => {
+        racingScene.RivalWon += (reward) => {
             _runParts.Add(reward);
             _runMoney += 200f; // flat rivalry win bonus
             _activeUI.UpdateRivalStatus($"{PartRarityHelper.GetExclamation(reward.Rarity)} {PartRarityHelper.GetDisplayName(reward.Rarity)} {reward.Part?.Name}!");
             GetNode<PayDayGlobalState>("/root/PayDayGlobalState").AddCollectedPart(reward);
         };
-        racing.RivalLost += () => {
+        racingScene.RivalLost += () => {
             _activeUI.UpdateRivalStatus("Lost the race...");
         };
-        SwapScene(racing);
+        SwapScene(racingScene);
 
         _activeUI = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(PayDayUI))).Instantiate<PayDayUI>();
         _activeUI.StartTimer(RUN_DURATION_SECONDS);
@@ -242,14 +249,16 @@ public partial class PayDayGame : Node {
     }
 
     private void RemoveScene() {
-        if (_currentScene == null) return;
+        if (_currentScene == null)
+            return;
         RemoveChild(_currentScene);
         _currentScene.QueueFree();
         _currentScene = null;
     }
 
     private void RemoveUI() {
-        if (_activeUI == null) return;
+        if (_activeUI == null)
+            return;
         RemoveChild(_activeUI);
         _activeUI.QueueFree();
         _activeUI = null;

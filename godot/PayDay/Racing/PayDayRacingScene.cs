@@ -22,6 +22,8 @@ public partial class PayDayRacingScene : Node3D {
     private InfiniteRoadManager _roadManager;
     private PaydayRivalEncounterManager _rivalManager;
 
+    public InfiniteRoadManager RoadManager => _roadManager;
+
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 

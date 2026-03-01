@@ -27,10 +27,10 @@ public partial class RivalEncounterManager : Node {
     public delegate void RivalLostEventHandler();
 
     private const float RIVAL_SPAWN_INTERVAL = 2f;  // seconds between spawn attempts
-    private const float RACE_TRIGGER_DISTANCE = 10f;  // metres — must be this close
+    private const float RACE_TRIGGER_DISTANCE = 6f;  // metres — must be this close
     protected const float RACE_DISTANCE = 500f; // metres of race length
     protected const float SPEED_MATCH_WINDOW = 3f;   // seconds both must hold matching speed
-    private const float SPEED_MATCH_DIFF_MS = 5f;   // m/s tolerance for speed match
+    private const float SPEED_MATCH_DIFF_MS = 1f;   // m/s tolerance for speed match
 
     protected InfiniteRoadManager _roadManager;
     protected Car _playerCar;
