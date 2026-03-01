@@ -29,7 +29,7 @@ public partial class RunEndScreen : CenterContainer {
             child.QueueFree();
 
         if (parts.Count == 0) {
-            var emptyLabel = new Label { Text = "No parts collected." };
+            var emptyLabel = new Label { Text = "No parts collected. :(" };
             _partsContainer.AddChild(emptyLabel);
             return;
         }

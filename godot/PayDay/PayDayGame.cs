@@ -128,8 +128,14 @@ public partial class PayDayGame : Node {
 
         _phase = Phase.RunEnd;
         var endScreen = LoadScene<RunEndScreen>();
-        endScreen.ReturnHome += () => CallDeferred(MethodName.GoToHubEvening);
-        SwapScene(endScreen);
+        endScreen.ReturnHome += () => {
+            // and remove the UI here first
+            RemoveChild(endScreen);
+            CallDeferred(MethodName.GoToHubEvening);
+        };
+        // keep the car scene in the background, but pause the racing scene
+        (_currentScene as PayDayRacingScene)?.SetPaused(true);
+        AddChild(endScreen);
         endScreen.Populate(_runMoney, _runParts);
     }
 

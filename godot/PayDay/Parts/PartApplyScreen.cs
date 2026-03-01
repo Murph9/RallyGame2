@@ -18,20 +18,6 @@ public partial class PartApplyScreen : CenterContainer {
 
     private CollectedPart _current;
 
-    private Label _rarityLabel;
-    private Label _partNameLabel;
-    private Label _exclamationLabel;
-    private Panel _glowPanel;
-    private Button _nextButton;
-
-    public override void _Ready() {
-        _rarityLabel = GetNode<Label>("Panel/VBox/RarityLabel");
-        _partNameLabel = GetNode<Label>("Panel/VBox/PartNameLabel");
-        _exclamationLabel = GetNode<Label>("Panel/VBox/ExclamationLabel");
-        _glowPanel = GetNode<Panel>("Panel/GlowPanel");
-        _nextButton = GetNode<Button>("Panel/VBox/NextButton");
-    }
-
     public void SetParts(List<CollectedPart> parts) {
         _queue.Clear();
         foreach (var p in parts)
@@ -52,22 +38,27 @@ public partial class PartApplyScreen : CenterContainer {
         var exclamation = PartRarityHelper.GetExclamation(_current.Rarity);
         var partName = _current.Part?.Name ?? "PART";
 
-        _rarityLabel.Text = rarityName.ToUpper();
-        _rarityLabel.AddThemeColorOverride("font_color", rarityColour);
+        var rarityLabel = GetNode<Label>("Panel/VBox/RarityLabel");
+        rarityLabel.Text = rarityName.ToUpper();
+        rarityLabel.AddThemeColorOverride("font_color", rarityColour);
 
-        _partNameLabel.Text = partName;
+        var partNameLabel = GetNode<Label>("Panel/VBox/PartNameLabel");
+        partNameLabel.Text = partName;
 
-        _exclamationLabel.Text = $"{exclamation} {rarityName.ToUpper()} {partName.ToUpper()}!";
-        _exclamationLabel.AddThemeColorOverride("font_color", rarityColour);
+        var exclamationLabel = GetNode<Label>("Panel/VBox/ExclamationLabel");
+        exclamationLabel.Text = $"{exclamation} {rarityName.ToUpper()} {partName.ToUpper()}!";
+        exclamationLabel.AddThemeColorOverride("font_color", rarityColour);
 
         var style = new StyleBoxFlat {
             BgColor = rarityColour with { A = 0.2f },
             BorderColor = rarityColour
         };
         style.SetBorderWidthAll(3);
-        _glowPanel.AddThemeStyleboxOverride("panel", style);
+        var glowPanel = GetNode<Panel>("Panel/GlowPanel");
+        glowPanel.AddThemeStyleboxOverride("panel", style);
 
-        _nextButton.Text = _queue.Count > 0 ? "Next Part" : "Done";
+        var nextButton = GetNode<Button>("Panel/VBox/NextButton");
+        nextButton.Text = _queue.Count > 0 ? "Next Part" : "Done";
     }
 
     public void NextButton_Pressed() => ShowNext();
