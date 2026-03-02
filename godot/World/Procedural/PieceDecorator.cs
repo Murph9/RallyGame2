@@ -319,7 +319,6 @@ public partial class PieceDecorator : IPieceDecorator {
     /// <summary>
     /// Builds a flat quad-strip of <see cref="GROUND_WIDTH"/> extending outward from each road edge.
     /// Each segment between consecutive edge points becomes one quad so the strip follows curves.
-    /// A matching <see cref="StaticBody3D"/> is added so objects/cars don't fall through.
     /// </summary>
     private static void GenerateGroundStrips(Node3D node, Vector3[] edgeMin, Vector3[] edgeMax) {
         GenerateGroundStrip(node, edgeMin, edgeMax, minSide: true);
@@ -375,11 +374,11 @@ public partial class PieceDecorator : IPieceDecorator {
         node.AddChild(new MeshInstance3D() { Mesh = mesh });
 
         // Matching static collision so it's solid underfoot
-        var body = new StaticBody3D();
-        var shape = new ConcavePolygonShape3D();
-        shape.SetFaces(mesh.GetFaces());
-        body.AddChild(new CollisionShape3D() { Shape = shape });
-        node.AddChild(body);
+        // var body = new StaticBody3D();
+        // var shape = new ConcavePolygonShape3D();
+        // shape.SetFaces(mesh.GetFaces());
+        // body.AddChild(new CollisionShape3D() { Shape = shape });
+        // node.AddChild(body);
     }
 
     // -------------------------------------------------------------------
