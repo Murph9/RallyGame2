@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3 uid="uid://carmodify00001"]
+
+[ext_resource type="Script" path="res://PayDay/Hub/CarModifyScreen.cs" id="1_carmodify"]
+
+[node name="CarModifyScreen" type="CenterContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_carmodify")
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(900, 600)
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(420, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="Panel/HBox/SubViewportContainer"]
+size = Vector2i(420, 560)
+
+[node name="Camera3D" type="Camera3D" parent="Panel/HBox/SubViewportContainer/SubViewport"]
+transform = Transform3D(0.66379577, 0, 0.747914, 0, 1, 0, -0.747914, 0, 0.66379577, 6.0, 2.5, 4.0)
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(420, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/HBox/VBox"]
+text = "Modify Car"
+horizontal_alignment = 1
+
+[node name="InventoryLabel" type="Label" parent="Panel/HBox/VBox"]
+text = "Your Parts"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBox/VBox"]
+size_flags_vertical = 3
+
+[node name="PartsList" type="VBoxContainer" parent="Panel/HBox/VBox/ScrollContainer"]
+size_flags_horizontal = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/HBox/VBox"]
+
+[node name="StartRaceButton" type="Button" parent="Panel/HBox/VBox/ButtonRow"]
+size_flags_horizontal = 3
+text = "Start Race"
+
+[node name="CloseButton" type="Button" parent="Panel/HBox/VBox/ButtonRow"]
+size_flags_horizontal = 3
+text = "Close"
+
+[connection signal="pressed" from="Panel/HBox/VBox/ButtonRow/StartRaceButton" to="." method="StartRaceButton_Pressed"]
+[connection signal="pressed" from="Panel/HBox/VBox/ButtonRow/CloseButton" to="." method="CloseButton_Pressed"]

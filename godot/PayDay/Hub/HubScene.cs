@@ -12,6 +12,8 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 /// The 3D house hub scene that serves as the menu between runs.
 /// Each HouseItem child emits Clicked; this node routes those to game-level signals.
 /// Decorative furniture glows with the best rarity part in the player's inventory.
+/// Clicking the Car item opens CarModifyScreen where parts can be applied and racing started.
+/// Clicking the Race item starts a racing run immediately.
 /// When parts were collected during the previous run, SetEveningParts() shows the
 /// PartApplyScreen as an overlay before hub interaction is enabled.
 /// </summary>
@@ -28,6 +30,15 @@ public partial class HubScene : Node3D {
 
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
+
+        // Spawn the live car mesh at the Car StaticBody3D's position
+        if (state.CarDetails != null) {
+            var carDisplay = new CarDisplayNode();
+            carDisplay.Initialise(state.CarDetails);
+            // Match the transform of StaticBody3D2 in HubScene.tscn
+            carDisplay.Position = new Vector3(3.1767545f, 0f, 0f);
+            AddChild(carDisplay);
+        }
 
         foreach (var item in GetAllHubItems()) {
             item.InputEvent += (camera, @event, eventPosition, normal, shapeIdx) => {
@@ -46,6 +57,9 @@ public partial class HubScene : Node3D {
 
                 switch (type) {
                     case HubItemType.Car:
+                        OpenCarModifyScreen();
+                        break;
+                    case HubItemType.Race:
                         EmitSignal(SignalName.StartRacing);
                         break;
                     case HubItemType.LoanPaperwork:
@@ -81,6 +95,24 @@ public partial class HubScene : Node3D {
         };
         AddChild(applyScreen);
         applyScreen.SetParts(parts);
+    }
+
+    private void OpenCarModifyScreen() {
+        _hubInteractionEnabled = false;
+
+        var modifyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(CarModifyScreen))).Instantiate<CarModifyScreen>();
+        modifyScreen.Closed += () => {
+            RemoveChild(modifyScreen);
+            modifyScreen.QueueFree();
+            _hubInteractionEnabled = true;
+        };
+        modifyScreen.StartRacing += () => {
+            RemoveChild(modifyScreen);
+            modifyScreen.QueueFree();
+            _hubInteractionEnabled = true;
+            EmitSignal(SignalName.StartRacing);
+        };
+        AddChild(modifyScreen);
     }
 
     private static void UpdateItemRarity(StaticBody3D item, PayDayGlobalState state) {

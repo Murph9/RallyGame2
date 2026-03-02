@@ -5,6 +5,7 @@ public enum HubItemType {
     Car,
     LoanPaperwork,
     Phone,
+    Race,
     // Decorative — show rarity glow as progress indicator
     TV,
     Fridge,
