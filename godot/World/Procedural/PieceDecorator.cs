@@ -176,12 +176,12 @@ public partial class PieceDecorator : IPieceDecorator {
             Transform = new Transform3D(basis, buildingCenter)
         });
 
-        var body = new StaticBody3D();
-        body.AddChild(new CollisionShape3D() {
-            Shape = new BoxShape3D() { Size = boxSize },
-            Transform = new Transform3D(basis, buildingCenter)
-        });
-        node.AddChild(body);
+        // var body = new StaticBody3D();
+        // body.AddChild(new CollisionShape3D() {
+        // Shape = new BoxShape3D() { Size = boxSize },
+        // Transform = new Transform3D(basis, buildingCenter)
+        // });
+        // node.AddChild(body);
     }
 
     // -------------------------------------------------------------------
