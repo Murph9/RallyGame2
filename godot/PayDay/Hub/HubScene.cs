@@ -1,5 +1,7 @@
 using Godot;
 using murph9.RallyGame2.godot.Component.Rarity;
+using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,8 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 /// The 3D house hub scene that serves as the menu between runs.
 /// Each HouseItem child emits Clicked; this node routes those to game-level signals.
 /// Decorative furniture glows with the best rarity part in the player's inventory.
+/// When parts were collected during the previous run, SetEveningParts() shows the
+/// PartApplyScreen as an overlay before hub interaction is enabled.
 /// </summary>
 public partial class HubScene : Node3D {
 
@@ -20,11 +24,17 @@ public partial class HubScene : Node3D {
     [Signal]
     public delegate void OpenPhoneEventHandler();
 
+    private bool _hubInteractionEnabled = true;
+
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
         foreach (var item in GetAllHubItems()) {
             item.InputEvent += (camera, @event, eventPosition, normal, shapeIdx) => {
+                if (!_hubInteractionEnabled) {
+                    return;
+                }
+
                 if (!@event.IsAction("select_world_object") || @event.IsReleased()) {
                     return;
                 }
@@ -50,6 +60,27 @@ public partial class HubScene : Node3D {
 
             UpdateItemRarity(item, state);
         }
+    }
+
+    /// <summary>
+    /// Call after loading the hub when parts were collected in the previous run.
+    /// Shows the PartApplyScreen overlay; hub items are non-interactive until it closes.
+    /// Safe to call with an empty list — it becomes a no-op.
+    /// </summary>
+    public void SetEveningParts(List<CollectedPart> parts) {
+        if (parts == null || parts.Count == 0)
+            return;
+
+        _hubInteractionEnabled = false;
+
+        var applyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(PartApplyScreen))).Instantiate<PartApplyScreen>();
+        applyScreen.Closed += () => {
+            RemoveChild(applyScreen);
+            applyScreen.QueueFree();
+            _hubInteractionEnabled = true;
+        };
+        AddChild(applyScreen);
+        applyScreen.SetParts(parts);
     }
 
     private static void UpdateItemRarity(StaticBody3D item, PayDayGlobalState state) {

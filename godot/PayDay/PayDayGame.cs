@@ -14,7 +14,7 @@ namespace murph9.RallyGame2.godot.PayDay;
 
 /// <summary>
 /// Top-level Pay Day Loan game manager. Owns the phase state machine:
-///   Hub → Racing → RunEnd → PartApply → Hub (loop)
+///   Hub → Racing → RunEnd → Hub (loop, with PartApplyScreen shown in hub if parts collected)
 ///                    ↘ DayEnd ↗
 /// Win: loan paid off. Lose: debt exceeds 10× original principal.
 /// </summary>
@@ -22,7 +22,7 @@ public partial class PayDayGame : Node {
 
     private const double RUN_DURATION_SECONDS = 3 * 60; // 3-minute runs
 
-    private enum Phase { Hub, Racing, RunEnd, PartApply, DayEnd, Win, Lose }
+    private enum Phase { Hub, Racing, RunEnd, DayEnd, Win, Lose }
 
     private Phase _phase = Phase.Hub;
     private Node _currentScene;
@@ -92,6 +92,8 @@ public partial class PayDayGame : Node {
         hub.OpenLoanPaperwork += () => CallDeferred(MethodName.ShowDayEnd);
         hub.OpenPhone += () => CallDeferred(MethodName.ShowFriendDialog);
         SwapScene(hub);
+        hub.SetEveningParts(_runParts);
+        _runParts.Clear();
     }
 
     private void StartRacingRun() {
@@ -131,24 +133,12 @@ public partial class PayDayGame : Node {
         endScreen.ReturnHome += () => {
             // and remove the UI here first
             RemoveChild(endScreen);
-            CallDeferred(MethodName.GoToHubEvening);
+            CallDeferred(MethodName.GoToHub);
         };
         // keep the car scene in the background, but pause the racing scene
         (_currentScene as PayDayRacingScene)?.SetPaused(true);
         AddChild(endScreen);
         endScreen.Populate(_runMoney, _runParts);
-    }
-
-    private void GoToHubEvening() {
-        if (_runParts.Count > 0) {
-            _phase = Phase.PartApply;
-            var applyScreen = LoadScene<PartApplyScreen>();
-            applyScreen.SetParts(_runParts);
-            applyScreen.Closed += () => CallDeferred(MethodName.GoToHub);
-            SwapScene(applyScreen);
-        } else {
-            GoToHub();
-        }
     }
 
     private void ShowDayEnd() {
