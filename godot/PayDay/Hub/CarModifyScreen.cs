@@ -15,8 +15,6 @@ public partial class CarModifyScreen : CenterContainer {
 
     [Signal]
     public delegate void ClosedEventHandler();
-    [Signal]
-    public delegate void StartRacingEventHandler();
 
     public Vector3? Center { get; set; } = null;
 
@@ -106,5 +104,5 @@ public partial class CarModifyScreen : CenterContainer {
     }
 
     public void ApplyButton_Pressed() => EmitSignal(SignalName.Closed);
-    public void CloseButton_Pressed() => EmitSignal(SignalName.Closed); // TODO but also cancel the changes
+    public void CloseButton_Pressed() => EmitSignal(SignalName.Closed);
 }

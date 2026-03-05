@@ -95,6 +95,8 @@ public partial class HubScene : Node3D {
 
             UpdateItemRarity(item, state);
         }
+
+        SetupCamera();
     }
 
     public override void _Process(double delta) {
@@ -162,7 +164,6 @@ public partial class HubScene : Node3D {
     /// <summary>
     /// Call after loading the hub when parts were collected in the previous run.
     /// Shows the PartApplyScreen overlay; hub items are non-interactive until it closes.
-    /// Safe to call with an empty list — it becomes a no-op.
     /// </summary>
     public void SetEveningParts(List<CollectedPart> parts) {
         if (parts == null || parts.Count == 0)
@@ -193,15 +194,13 @@ public partial class HubScene : Node3D {
             modifyScreen.QueueFree();
             _hubInteractionEnabled = true;
             RefreshAllRarityGlows();
-        };
-        modifyScreen.StartRacing += () => {
-            RemoveChild(modifyScreen);
-            modifyScreen.QueueFree();
-            _hubInteractionEnabled = true;
-            RefreshAllRarityGlows();
-            EmitSignal(SignalName.StartRacing);
+            SetupCamera();
         };
         AddChild(modifyScreen);
+    }
+
+    private void SetupCamera() {
+        GetViewport().GetCamera3D().LookAt(new Vector3());
     }
 
     /// <summary>Recomputes the rarity-glow material on all decorative hub items.</summary>
