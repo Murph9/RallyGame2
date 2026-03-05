@@ -44,8 +44,8 @@ public partial class PayDayGame : Node {
         state.Reset();
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
-        state.GameWon += () => CallDeferred(MethodName.GoToWin);
-        state.GameLost += () => CallDeferred(MethodName.GoToLose);
+        state.GameWon += () => { _phase = Phase.Win; CallDeferred(MethodName.GoToWin); };
+        state.GameLost += () => { _phase = Phase.Lose; CallDeferred(MethodName.GoToLose); };
 
         ShowIntroDialog();
     }

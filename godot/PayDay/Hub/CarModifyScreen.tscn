@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://carmodify00001"]
+[gd_scene format=3 uid="uid://c2ovcjspfk441"]
 
-[ext_resource type="Script" path="res://PayDay/Hub/CarModifyScreen.cs" id="1_carmodify"]
+[ext_resource type="Script" uid="uid://by0gsuf45a6m7" path="res://PayDay/Hub/CarModifyScreen.cs" id="1_carmodify"]
 
-[node name="CarModifyScreen" type="CenterContainer"]
+[node name="CarModifyScreen" type="CenterContainer" unique_id=264433584]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -10,55 +10,51 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_carmodify")
 
-[node name="Panel" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(900, 600)
+[node name="HBox" type="HBoxContainer" parent="." unique_id=261643864]
+layout_mode = 2
 
-[node name="HBox" type="HBoxContainer" parent="Panel"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="SubViewportContainer" type="SubViewportContainer" parent="Panel/HBox"]
+[node name="Control" type="Control" parent="HBox" unique_id=130686561]
 custom_minimum_size = Vector2(420, 0)
-size_flags_horizontal = 3
-size_flags_vertical = 3
-stretch = true
+layout_mode = 2
 
-[node name="SubViewport" type="SubViewport" parent="Panel/HBox/SubViewportContainer"]
-size = Vector2i(420, 560)
+[node name="Panel" type="PanelContainer" parent="HBox" unique_id=870542013]
+custom_minimum_size = Vector2(480, 600)
+layout_mode = 2
 
-[node name="Camera3D" type="Camera3D" parent="Panel/HBox/SubViewportContainer/SubViewport"]
-transform = Transform3D(0.66379577, 0, 0.747914, 0, 1, 0, -0.747914, 0, 0.66379577, 6.0, 2.5, 4.0)
-
-[node name="VBox" type="VBoxContainer" parent="Panel/HBox"]
-custom_minimum_size = Vector2(420, 0)
+[node name="VBox" type="VBoxContainer" parent="HBox/Panel" unique_id=360602948]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TitleLabel" type="Label" parent="Panel/HBox/VBox"]
+[node name="TitleLabel" type="Label" parent="HBox/Panel/VBox" unique_id=326059082]
+layout_mode = 2
 text = "Modify Car"
 horizontal_alignment = 1
 
-[node name="InventoryLabel" type="Label" parent="Panel/HBox/VBox"]
+[node name="InventoryLabel" type="Label" parent="HBox/Panel/VBox" unique_id=206223841]
+layout_mode = 2
 text = "Your Parts"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBox/VBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HBox/Panel/VBox" unique_id=494770545]
+layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PartsList" type="VBoxContainer" parent="Panel/HBox/VBox/ScrollContainer"]
+[node name="PartsList" type="VBoxContainer" parent="HBox/Panel/VBox/ScrollContainer" unique_id=1566203015]
+layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ButtonRow" type="HBoxContainer" parent="Panel/HBox/VBox"]
+[node name="ButtonRow" type="HBoxContainer" parent="HBox/Panel/VBox" unique_id=1578399628]
+layout_mode = 2
 
-[node name="StartRaceButton" type="Button" parent="Panel/HBox/VBox/ButtonRow"]
+[node name="ApplyButton" type="Button" parent="HBox/Panel/VBox/ButtonRow" unique_id=228901018]
+layout_mode = 2
 size_flags_horizontal = 3
-text = "Start Race"
+text = "Apply"
 
-[node name="CloseButton" type="Button" parent="Panel/HBox/VBox/ButtonRow"]
+[node name="CloseButton" type="Button" parent="HBox/Panel/VBox/ButtonRow" unique_id=1782295173]
+layout_mode = 2
 size_flags_horizontal = 3
 text = "Close"
 
-[connection signal="pressed" from="Panel/HBox/VBox/ButtonRow/StartRaceButton" to="." method="StartRaceButton_Pressed"]
-[connection signal="pressed" from="Panel/HBox/VBox/ButtonRow/CloseButton" to="." method="CloseButton_Pressed"]
+[connection signal="pressed" from="HBox/Panel/VBox/ButtonRow/ApplyButton" to="." method="ApplyButton_Pressed"]
+[connection signal="pressed" from="HBox/Panel/VBox/ButtonRow/CloseButton" to="." method="CloseButton_Pressed"]

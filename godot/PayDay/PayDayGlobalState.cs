@@ -57,6 +57,10 @@ public partial class PayDayGlobalState : Node {
         PartInventory.Add(part);
     }
 
+    public void RemoveCollectedPart(CollectedPart part) {
+        PartInventory.Remove(part);
+    }
+
     public void EndRun(float moneyEarned) {
         AddMoney(moneyEarned);
         EmitSignal(SignalName.RunEnded);

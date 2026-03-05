@@ -11,6 +11,7 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 /// <summary>
 /// The 3D house hub scene that serves as the menu between runs.
 /// Each HouseItem child emits Clicked; this node routes those to game-level signals.
+/// Interactive items highlight on hover and show a tooltip label near the cursor.
 /// Decorative furniture glows with the best rarity part in the player's inventory.
 /// Clicking the Car item opens CarModifyScreen where parts can be applied and racing started.
 /// Clicking the Race item starts a racing run immediately.
@@ -28,36 +29,44 @@ public partial class HubScene : Node3D {
 
     private bool _hubInteractionEnabled = true;
 
+    // Tooltip nodes (resolved in _Ready)
+    private PanelContainer _tooltipPanel;
+    private Label _tooltipLabel;
+
+    // Per-item: original material overrides saved so hover tint can be reverted.
+    // Key: StaticBody3D instance id, Value: list of (MeshInstance3D, surface index, original Material)
+    private readonly Dictionary<ulong, List<(MeshInstance3D mesh, int surface, Material original)>> _savedMaterials = [];
+
+    // Hover colour applied to interactive items
+    private static readonly Color HoverColour = new(1f, 1f, 1f, 1f);
+    private const float HoverEmission = 0.4f;
+    private static readonly Vector2 TooltipOffset = new(14f, 14f);
+
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
+
+        _tooltipPanel = GetNode<PanelContainer>("TooltipLayer/TooltipPanel");
+        _tooltipLabel = GetNode<Label>("TooltipLayer/TooltipPanel/TooltipLabel");
 
         // Spawn the live car mesh at the Car StaticBody3D's position
         if (state.CarDetails != null) {
             var carDisplay = new CarDisplayNode();
             carDisplay.Initialise(state.CarDetails);
-            // Match the transform of StaticBody3D2 in HubScene.tscn
             carDisplay.Position = new Vector3(3.1767545f, 0f, 0f);
             AddChild(carDisplay);
         }
 
         foreach (var item in GetAllHubItems()) {
+            var type = GetTypeFromNode(item);
+
             item.InputEvent += (camera, @event, eventPosition, normal, shapeIdx) => {
-                if (!_hubInteractionEnabled) {
-                    return;
-                }
-
-                if (!@event.IsAction("select_world_object") || @event.IsReleased()) {
-                    return;
-                }
-
-                var type = GetTypeFromNode(item);
-                if (type == null) {
-                    return;
-                }
+                if (!_hubInteractionEnabled) return;
+                if (!@event.IsAction("select_world_object") || @event.IsReleased()) return;
+                if (type == null) return;
 
                 switch (type) {
                     case HubItemType.Car:
-                        OpenCarModifyScreen();
+                        OpenCarModifyScreen(eventPosition);
                         break;
                     case HubItemType.Race:
                         EmitSignal(SignalName.StartRacing);
@@ -68,12 +77,86 @@ public partial class HubScene : Node3D {
                     case HubItemType.Phone:
                         EmitSignal(SignalName.OpenPhone);
                         break;
-                        // Decorative items: no action beyond showing their rarity glow
                 }
             };
 
+            // Only interactive items get hover effects
+            if (type.HasValue && GetTooltipForType(type.Value) != null) {
+                item.MouseEntered += () => {
+                    if (!_hubInteractionEnabled) return;
+                    ApplyHoverHighlight(item);
+                    ShowTooltip(type.Value);
+                };
+                item.MouseExited += () => {
+                    RemoveHoverHighlight(item);
+                    HideTooltip();
+                };
+            }
+
             UpdateItemRarity(item, state);
         }
+    }
+
+    public override void _Process(double delta) {
+        // Keep the tooltip panel near the cursor each frame
+        if (_tooltipPanel != null && _tooltipPanel.Visible) {
+            _tooltipPanel.Position = GetViewport().GetMousePosition() + TooltipOffset;
+        }
+    }
+
+    private void ShowTooltip(HubItemType type) {
+        var text = GetTooltipForType(type);
+        if (text == null) return;
+        _tooltipLabel.Text = text;
+        _tooltipPanel.Visible = true;
+    }
+
+    private void HideTooltip() {
+        if (_tooltipPanel != null)
+            _tooltipPanel.Visible = false;
+    }
+
+    private static string GetTooltipForType(HubItemType type) => type switch {
+        HubItemType.Car => "Modify your car",
+        HubItemType.Race => "Start a racing run",
+        HubItemType.LoanPaperwork => "Pay down your loan",
+        HubItemType.Phone => "Call a friend",
+        HubItemType.Lounge => "Look at stats",
+        _ => null, // decorative — no tooltip
+    };
+
+    private void ApplyHoverHighlight(StaticBody3D item) {
+        var id = item.GetInstanceId();
+        if (_savedMaterials.ContainsKey(id)) return; // already highlighted
+
+        var saved = new List<(MeshInstance3D, int, Material)>();
+
+        foreach (var mesh in item.GetAllChildrenOfType<MeshInstance3D>()) {
+            for (var i = 0; i < mesh.Mesh.GetSurfaceCount(); i++) {
+                saved.Add((mesh, i, mesh.GetSurfaceOverrideMaterial(i)));
+
+                var hoverMat = new StandardMaterial3D {
+                    AlbedoColor = HoverColour,
+                    EmissionEnabled = true,
+                    Emission = HoverColour,
+                    EmissionEnergyMultiplier = HoverEmission
+                };
+                mesh.SetSurfaceOverrideMaterial(i, hoverMat);
+            }
+        }
+
+        _savedMaterials[id] = saved;
+    }
+
+    private void RemoveHoverHighlight(StaticBody3D item) {
+        var id = item.GetInstanceId();
+        if (!_savedMaterials.TryGetValue(id, out var saved)) return;
+
+        foreach (var (mesh, surface, original) in saved) {
+            mesh.SetSurfaceOverrideMaterial(surface, original);
+        }
+
+        _savedMaterials.Remove(id);
     }
 
     /// <summary>
@@ -86,45 +169,57 @@ public partial class HubScene : Node3D {
             return;
 
         _hubInteractionEnabled = false;
+        HideTooltip();
 
         var applyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(PartApplyScreen))).Instantiate<PartApplyScreen>();
         applyScreen.Closed += () => {
             RemoveChild(applyScreen);
             applyScreen.QueueFree();
             _hubInteractionEnabled = true;
+            RefreshAllRarityGlows();
         };
         AddChild(applyScreen);
         applyScreen.SetParts(parts);
     }
 
-    private void OpenCarModifyScreen() {
+    private void OpenCarModifyScreen(Vector3 eventPosition) {
         _hubInteractionEnabled = false;
+        HideTooltip();
 
         var modifyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(CarModifyScreen))).Instantiate<CarModifyScreen>();
+        modifyScreen.Center = eventPosition;
         modifyScreen.Closed += () => {
             RemoveChild(modifyScreen);
             modifyScreen.QueueFree();
             _hubInteractionEnabled = true;
+            RefreshAllRarityGlows();
         };
         modifyScreen.StartRacing += () => {
             RemoveChild(modifyScreen);
             modifyScreen.QueueFree();
             _hubInteractionEnabled = true;
+            RefreshAllRarityGlows();
             EmitSignal(SignalName.StartRacing);
         };
         AddChild(modifyScreen);
     }
 
+    /// <summary>Recomputes the rarity-glow material on all decorative hub items.</summary>
+    public void RefreshAllRarityGlows() {
+        var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
+        foreach (var item in GetAllHubItems()) {
+            UpdateItemRarity(item, state);
+        }
+    }
+
     private static void UpdateItemRarity(StaticBody3D item, PayDayGlobalState state) {
         if (state.PartInventory.Count == 0) return;
 
-        // The house glows with the best rarity part collected so far
         var best = PartRarity.Poor;
         foreach (var part in state.PartInventory) {
             if (part.Rarity > best) best = part.Rarity;
         }
 
-        // All decorative furniture reflects the item's rarity
         var hubItem = GetTypeFromNode(item);
         if (hubItem is HubItemType.TV or HubItemType.Fridge
                       or HubItemType.Lounge or HubItemType.Lamp) {
@@ -144,7 +239,7 @@ public partial class HubScene : Node3D {
     }
 
     private static HubItemType? GetTypeFromNode(Node node) {
-        if (node is StaticBody3D body) {
+        if (node is StaticBody3D body && body.HasMeta("HubItemType")) {
             if (Enum.TryParse(body.GetMeta("HubItemType").ToString(), out HubItemType type)) {
                 return type;
             }

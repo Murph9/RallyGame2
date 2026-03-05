@@ -1,13 +1,13 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Component.Rarity;
-using murph9.RallyGame2.godot.Utilities;
+using murph9.RallyGame2.godot.PayDay.Parts;
+using System.Collections.Generic;
 
 namespace murph9.RallyGame2.godot.PayDay.Hub;
 
 /// <summary>
 /// Fullscreen overlay shown when the player clicks the car in the hub.
-/// Left side: live 3D car view via SubViewport.
+/// Left side: live 3D car view
 /// Right side: scrollable list of collected parts with Apply buttons.
 /// Emits Closed or StartRacing on the respective button presses.
 /// </summary>
@@ -18,21 +18,20 @@ public partial class CarModifyScreen : CenterContainer {
     [Signal]
     public delegate void StartRacingEventHandler();
 
+    public Vector3? Center { get; set; } = null;
+
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
-        // ── 3D car view ─────────────────────────────────────────────────────
-        var subViewport = GetNode<SubViewport>("Panel/HBox/SubViewportContainer/SubViewport");
-        var carDisplay = new CarDisplayNode();
-        carDisplay.Initialise(state.CarDetails);
-        subViewport.AddChild(carDisplay);
+        if (Center.HasValue) {
+            GetViewport().GetCamera3D().LookAt(Center.Value);
+        }
 
-        // ── Parts list ───────────────────────────────────────────────────────
         PopulatePartsList(state);
     }
 
     private void PopulatePartsList(PayDayGlobalState state) {
-        var partsList = GetNode<VBoxContainer>("Panel/HBox/VBox/ScrollContainer/PartsList");
+        var partsList = GetNode<VBoxContainer>("HBox/Panel/VBox/ScrollContainer/PartsList");
 
         // Clear any existing rows (in case we refresh)
         foreach (var child in partsList.GetChildren()) {
@@ -45,7 +44,10 @@ public partial class CarModifyScreen : CenterContainer {
             return;
         }
 
-        foreach (var collectedPart in state.PartInventory) {
+        // Snapshot the inventory so iteration is stable while we build rows
+        var inventorySnapshot = new List<CollectedPart>(state.PartInventory);
+
+        foreach (var collectedPart in inventorySnapshot) {
             var part = collectedPart.Part;
             if (part == null) continue;
 
@@ -85,23 +87,17 @@ public partial class CarModifyScreen : CenterContainer {
             };
 
             // Capture loop variables for the closure
-            var capturedPart = part;
-            var capturedLevelLabel = levelLabel;
-            var capturedApplyBtn = applyBtn;
-            var capturedMaxLevel = maxLevel;
+            var capturedPart = collectedPart;
 
             applyBtn.Pressed += () => {
-                var nextLevel = state.CarDetails.LevelOfPart(capturedPart) + 1;
-                if (nextLevel > capturedMaxLevel) return;
+                var nextLevel = state.CarDetails.LevelOfPart(capturedPart.Part) + 1;
+                if (nextLevel > capturedPart.Part.Levels.Length - 1) return;
 
-                state.CarDetails.ApplyPartChange(capturedPart, nextLevel);
+                state.CarDetails.ApplyPartChange(capturedPart.Part, nextLevel);
+                state.RemoveCollectedPart(capturedPart);
 
-                var newLevel = state.CarDetails.LevelOfPart(capturedPart);
-                capturedLevelLabel.Text = $"Lv {newLevel}/{capturedMaxLevel}";
-                if (newLevel >= capturedMaxLevel) {
-                    capturedApplyBtn.Text = "Max";
-                    capturedApplyBtn.Disabled = true;
-                }
+                // Refresh the whole list so the consumed row disappears
+                PopulatePartsList(state);
             };
 
             row.AddChild(applyBtn);
@@ -109,6 +105,6 @@ public partial class CarModifyScreen : CenterContainer {
         }
     }
 
-    public void CloseButton_Pressed() => EmitSignal(SignalName.Closed);
-    public void StartRaceButton_Pressed() => EmitSignal(SignalName.StartRacing);
+    public void ApplyButton_Pressed() => EmitSignal(SignalName.Closed);
+    public void CloseButton_Pressed() => EmitSignal(SignalName.Closed); // TODO but also cancel the changes
 }
