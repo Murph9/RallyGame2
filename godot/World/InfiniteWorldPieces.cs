@@ -11,6 +11,8 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     record PrivateCheckpoint(Transform3D Transform3D, Node3D Node, float Distance);
 
+    private const float BARRIER_HEIGHT = 4f;
+    private const float BARRIER_THICKNESS = 0.5f;
     private static readonly Transform3D CAR_ROTATION_OFFSET = new(new Basis(Vector3.Up, Mathf.DegToRad(90)), Vector3.Zero);
     private readonly Transform3D _spawnPoint = Transform3D.Identity;
 
@@ -26,6 +28,7 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
     private InfiniteCheckpoint _nextTransform;
 
     private double _pieceDistanceLimit;
+    private StaticBody3D _wrongWayBarrier;
 
     public WorldType CurrentWorldType => _pieceGen.CurrentWorldType;
 
@@ -64,6 +67,27 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
 
     public override void _Ready() {
         AddChild(_placementStrategy);
+
+        // Create the wrong-way barrier: a semi-transparent red wall that sits at the
+        // trailing end of the oldest active road piece and prevents the player from
+        // reversing off the back of the road.
+        var roadWidth = GetRoadWidth();
+        var barrierSize = new Vector3(BARRIER_THICKNESS, BARRIER_HEIGHT, roadWidth * 2f);
+
+        _wrongWayBarrier = new StaticBody3D();
+        _wrongWayBarrier.AddChild(new CollisionShape3D() {
+            Shape = new BoxShape3D() { Size = barrierSize }
+        });
+        _wrongWayBarrier.AddChild(new MeshInstance3D() {
+            Mesh = new BoxMesh() { Size = barrierSize },
+            MaterialOverride = new StandardMaterial3D() {
+                AlbedoColor = new Color(1f, 0.15f, 0.1f, 0.55f),
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+            }
+        });
+
+        AddChild(_wrongWayBarrier);
     }
 
     public void UpdateWorldType(WorldType type) {
@@ -82,6 +106,14 @@ public partial class InfiniteWorldPieces : Node3D, IWorld {
             _placedPieces.Remove(firstPiece);
             _checkpoints.RemoveAll(x => x.Node == firstPiece);
             RemoveChild(firstPiece);
+        }
+
+        // Keep the wrong-way barrier aligned to the entry edge of the oldest active piece.
+        // The barrier sits perpendicular to the road, blocking any reversal off the back end.
+        if (_wrongWayBarrier != null && _placedPieces.Count > 0) {
+            var oldestPiece = _placedPieces.First();
+            var pieceEdge = oldestPiece.GlobalTransform;
+            _wrongWayBarrier.GlobalTransform = new Transform3D(pieceEdge.Basis, pieceEdge.Origin + new Vector3(0, BARRIER_HEIGHT * 0.5f, 0));
         }
 
         // update placementStrategy position for math
