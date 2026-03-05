@@ -34,6 +34,7 @@ public partial class PayDayRacingScene : Node3D {
 
         var spawnTransform = _roadManager.GetInitialSpawn();
         _car = new Car(state.CarDetails, null, true, spawnTransform);
+        _car.RigidBody.Translate(new Vector3(0, 0, 8));
         AddChild(_car);
 
         // create the rival placer
