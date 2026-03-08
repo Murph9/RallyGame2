@@ -5,6 +5,7 @@ using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.PayDay.Hub;
 
@@ -48,21 +49,47 @@ public partial class HubScene : Node3D {
         _tooltipPanel = GetNode<PanelContainer>("TooltipLayer/TooltipPanel");
         _tooltipLabel = GetNode<Label>("TooltipLayer/TooltipPanel/TooltipLabel");
 
+        var packedScene = GD.Load<PackedScene>("res://assets/house.blend");
+        var scene = packedScene.Instantiate<Node3D>();
+        AddChild(scene);
+
+        var addedHubItems = new List<HubItemType>();
+
+        foreach (var obj in scene.GetChildren()) {
+            if (Enum.TryParse(obj.Name, true, out HubItemType type)) {
+                var staticBody = obj.GetAllChildrenOfType<StaticBody3D>().First();
+                staticBody.SetMeta(nameof(HubItemType), type.ToString());
+                addedHubItems.Add(type);
+            }
+        }
+        // calc unplaced hub items
+        var diff = Enum.GetValues<HubItemType>().Except(addedHubItems);
+        if (diff.Any()) {
+            GD.Print(string.Join(",", diff.Select(x => x.ToString())));
+        }
+
         // Spawn the live car mesh at the Car StaticBody3D's position
         if (state.CarDetails != null) {
             var carDisplay = new CarDisplayNode();
             carDisplay.Initialise(state.CarDetails);
-            carDisplay.Position = new Vector3(3.1767545f, 0f, 0f);
             AddChild(carDisplay);
         }
 
+        // force main camera to be used
+        UseCamera("main");
+
         foreach (var item in GetAllHubItems()) {
+            UpdateItemRarity(item, state);
+
             var type = GetTypeFromNode(item);
+            if (type is null)
+                continue;
 
             item.InputEvent += (camera, @event, eventPosition, normal, shapeIdx) => {
-                if (!_hubInteractionEnabled) return;
-                if (!@event.IsAction("select_world_object") || @event.IsReleased()) return;
-                if (type == null) return;
+                if (!_hubInteractionEnabled)
+                    return;
+                if (!@event.IsAction("select_world_object") || @event.IsReleased())
+                    return;
 
                 switch (type) {
                     case HubItemType.Car:
@@ -81,7 +108,7 @@ public partial class HubScene : Node3D {
             };
 
             // Only interactive items get hover effects
-            if (type.HasValue && GetTooltipForType(type.Value) != null) {
+            if (type.HasValue) {
                 item.MouseEntered += () => {
                     if (!_hubInteractionEnabled) return;
                     ApplyHoverHighlight(item);
@@ -92,11 +119,7 @@ public partial class HubScene : Node3D {
                     HideTooltip();
                 };
             }
-
-            UpdateItemRarity(item, state);
         }
-
-        SetupCamera();
     }
 
     public override void _Process(double delta) {
@@ -108,7 +131,8 @@ public partial class HubScene : Node3D {
 
     private void ShowTooltip(HubItemType type) {
         var text = GetTooltipForType(type);
-        if (text == null) return;
+        if (text == null)
+            return;
         _tooltipLabel.Text = text;
         _tooltipPanel.Visible = true;
     }
@@ -133,17 +157,41 @@ public partial class HubScene : Node3D {
 
         var saved = new List<(MeshInstance3D, int, Material)>();
 
-        foreach (var mesh in item.GetAllChildrenOfType<MeshInstance3D>()) {
-            for (var i = 0; i < mesh.Mesh.GetSurfaceCount(); i++) {
-                saved.Add((mesh, i, mesh.GetSurfaceOverrideMaterial(i)));
+        var children = item.GetAllChildrenOfType<MeshInstance3D>();
 
-                var hoverMat = new StandardMaterial3D {
-                    AlbedoColor = HoverColour,
-                    EmissionEnabled = true,
-                    Emission = HoverColour,
-                    EmissionEnergyMultiplier = HoverEmission
-                };
-                mesh.SetSurfaceOverrideMaterial(i, hoverMat);
+        if (children.Any()) {
+            foreach (var mesh in children) {
+                for (var i = 0; i < mesh.Mesh.GetSurfaceCount(); i++) {
+                    saved.Add((mesh, i, mesh.GetSurfaceOverrideMaterial(i)));
+
+                    var hoverMat = new StandardMaterial3D {
+                        AlbedoColor = HoverColour,
+                        EmissionEnabled = true,
+                        Emission = HoverColour,
+                        EmissionEnergyMultiplier = HoverEmission
+                    };
+                    mesh.SetSurfaceOverrideMaterial(i, hoverMat);
+                }
+            }
+        } else {
+            // attempt to look up the tree
+            var node = item.GetParent();
+            while (node != null) {
+                if (node is MeshInstance3D mesh) {
+                    for (var i = 0; i < mesh.Mesh.GetSurfaceCount(); i++) {
+                        saved.Add((mesh, i, mesh.GetSurfaceOverrideMaterial(i)));
+
+                        var hoverMat = new StandardMaterial3D {
+                            AlbedoColor = HoverColour,
+                            EmissionEnabled = true,
+                            Emission = HoverColour,
+                            EmissionEnergyMultiplier = HoverEmission
+                        };
+                        mesh.SetSurfaceOverrideMaterial(i, hoverMat);
+                    }
+                }
+
+                node = node.GetParent();
             }
         }
 
@@ -152,7 +200,8 @@ public partial class HubScene : Node3D {
 
     private void RemoveHoverHighlight(StaticBody3D item) {
         var id = item.GetInstanceId();
-        if (!_savedMaterials.TryGetValue(id, out var saved)) return;
+        if (!_savedMaterials.TryGetValue(id, out var saved))
+            return;
 
         foreach (var (mesh, surface, original) in saved) {
             mesh.SetSurfaceOverrideMaterial(surface, original);
@@ -186,6 +235,7 @@ public partial class HubScene : Node3D {
     private void OpenCarModifyScreen(Vector3 eventPosition) {
         _hubInteractionEnabled = false;
         HideTooltip();
+        UseCamera("car");
 
         var modifyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(CarModifyScreen))).Instantiate<CarModifyScreen>();
         modifyScreen.Center = eventPosition;
@@ -194,13 +244,9 @@ public partial class HubScene : Node3D {
             modifyScreen.QueueFree();
             _hubInteractionEnabled = true;
             RefreshAllRarityGlows();
-            SetupCamera();
+            UseCamera("main");
         };
         AddChild(modifyScreen);
-    }
-
-    private void SetupCamera() {
-        GetViewport().GetCamera3D().LookAt(new Vector3());
     }
 
     /// <summary>Recomputes the rarity-glow material on all decorative hub items.</summary>
@@ -230,19 +276,30 @@ public partial class HubScene : Node3D {
     }
 
     private IEnumerable<StaticBody3D> GetAllHubItems() {
-        foreach (var child in GetChildren()) {
+        foreach (var child in this.GetAllChildrenOfType<StaticBody3D>()) {
             if (GetTypeFromNode(child).HasValue) {
-                yield return child as StaticBody3D;
+                yield return child;
             }
         }
     }
 
-    private static HubItemType? GetTypeFromNode(Node node) {
-        if (node is StaticBody3D body && body.HasMeta("HubItemType")) {
-            if (Enum.TryParse(body.GetMeta("HubItemType").ToString(), out HubItemType type)) {
-                return type;
-            }
+    private static HubItemType? GetTypeFromNode(StaticBody3D body) {
+        if (!body.HasMeta(nameof(HubItemType))) {
+            return null;
+        }
+
+        if (Enum.TryParse(body.GetMeta(nameof(HubItemType)).ToString(), out HubItemType type)) {
+            return type;
         }
         return null;
+    }
+
+    private void UseCamera(string name) {
+        foreach (var obj in this.GetAllChildrenOfType<Camera3D>()) {
+            if (obj.Name.ToString().Contains(name)) {
+                obj.Current = true;
+                return;
+            }
+        }
     }
 }

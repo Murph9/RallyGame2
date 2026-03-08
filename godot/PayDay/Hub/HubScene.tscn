@@ -2,34 +2,8 @@
 
 [ext_resource type="Script" uid="uid://dw4rafs8g3vy" path="res://PayDay/Hub/HubScene.cs" id="1_hub"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_hdvu2"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_6gkdd"]
-
 [node name="HubScene" type="Node3D" unique_id=195864218]
 script = ExtResource("1_hub")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1030271789]
-metadata/HubItemType = &"Lounge"
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1996357681]
-shape = SubResource("BoxShape3D_hdvu2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1403204321]
-mesh = SubResource("BoxMesh_6gkdd")
-
-[node name="Camera3D" type="Camera3D" parent="." unique_id=516891387]
-transform = Transform3D(0.66379577, 0, 0.747914, 0, 1, 0, -0.747914, 0, 0.66379577, 8.945002, 0.9538144, 5.5969067)
-
-[node name="StaticBody3D3" type="StaticBody3D" parent="." unique_id=1318249714]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, 0)
-metadata/HubItemType = &"Race"
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D3" unique_id=193279260]
-shape = SubResource("BoxShape3D_hdvu2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D3" unique_id=1147787172]
-mesh = SubResource("BoxMesh_6gkdd")
 
 [node name="TooltipLayer" type="CanvasLayer" parent="." unique_id=1318333698]
 
