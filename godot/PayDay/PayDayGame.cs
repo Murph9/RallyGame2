@@ -107,9 +107,12 @@ public partial class PayDayGame : Node {
         };
         racingScene.RivalWon += (reward) => {
             _runParts.Add(reward);
-            _runMoney += 200f; // flat rivalry win bonus
             _activeUI.UpdateRivalStatus($"{PartRarityHelper.GetExclamation(reward.Rarity)} {PartRarityHelper.GetDisplayName(reward.Rarity)} {reward.Part?.Name}!");
             GetNode<PayDayGlobalState>("/root/PayDayGlobalState").AddCollectedPart(reward);
+        };
+        racingScene.RivalWonMoney += () => {
+            _runMoney += 200f;
+            _activeUI.UpdateRivalStatus("Won the race! +$200");
         };
         racingScene.RivalLost += () => {
             _activeUI.UpdateRivalStatus("Lost the race...");

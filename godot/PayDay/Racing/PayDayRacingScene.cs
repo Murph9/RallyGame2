@@ -16,6 +16,8 @@ public partial class PayDayRacingScene : Node3D {
     [Signal]
     public delegate void RivalWonEventHandler(CollectedPart reward);
     [Signal]
+    public delegate void RivalWonMoneyEventHandler();
+    [Signal]
     public delegate void RivalLostEventHandler();
 
     private Car _car;
@@ -43,7 +45,8 @@ public partial class PayDayRacingScene : Node3D {
         _rivalManager.Init(_roadManager, _car, state.DayNumber);
         _rivalManager.RivalRaceStarted += (rival) => EmitSignal(SignalName.RivalRaceStarted, rival);
         _rivalManager.RivalWonReward += (reward) => EmitSignal(SignalName.RivalWon, reward);
-        _rivalManager.RivalLost += () => EmitSignal(SignalName.RivalLost);
+        _rivalManager.RivalWonMoney += () => EmitSignal(SignalName.RivalWonMoney);
+        _rivalManager.RivalLost += (_rival) => EmitSignal(SignalName.RivalLost);
     }
 
     public void ReplaceCarWithState(CarDetails newDetails) {

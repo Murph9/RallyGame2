@@ -1,19 +1,23 @@
-using System;
-using System.Linq;
 using Godot;
 using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Utilities;
-using murph9.RallyGame2.godot.Component;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace murph9.RallyGame2.godot.Component.Racing;
 
+public enum RivalStakeType { Money, Parts }
+
 /// <summary>
 /// Manages rival car encounters during a racing run.
-/// Periodically spawns a rival alongside the player. When close enough and
-/// at matching speed, a race is triggered. The rival's rarity hint indicates
-/// how hard they are and what reward is on offer.
+/// Up to MAX_RIVALS rivals can exist simultaneously. Each rival independently
+/// negotiates a speed-match with the player and then races them. Every rival
+/// is assigned a stake at spawn — either a money reward or a specific part
+/// from their car — so the player always knows what is on offer before the race.
 /// </summary>
 public partial class RivalEncounterManager : Node {
 
@@ -22,39 +26,38 @@ public partial class RivalEncounterManager : Node {
     [Signal]
     public delegate void RivalRaceStartedEventHandler(Car rival);
     [Signal]
-    public delegate void RivalWonEventHandler();
+    public delegate void RivalWonEventHandler(Car rival);
     [Signal]
-    public delegate void RivalLostEventHandler();
+    public delegate void RivalLostEventHandler(Car rival);
 
-    private const float RIVAL_SPAWN_INTERVAL = 2f;  // seconds between spawn attempts
-    private const float RACE_TRIGGER_DISTANCE = 6f;  // metres — must be this close
-    protected const float RACE_DISTANCE = 500f; // metres of race length
-    protected const float SPEED_MATCH_WINDOW = 3f;   // seconds both must hold matching speed
-    private const float SPEED_MATCH_DIFF_MS = 2f;   // m/s tolerance for speed match
+    private const int MAX_RIVALS = 3;
+    private const float RIVAL_SPAWN_INTERVAL = 2f;
+    private const float RACE_TRIGGER_DISTANCE = 6f;
+    protected const float RACE_DISTANCE = 500f;
+    protected const float SPEED_MATCH_WINDOW = 3f;
+    private const float SPEED_MATCH_DIFF_MS = 2f;
 
     protected InfiniteRoadManager _roadManager;
     protected Car _playerCar;
 
-    protected float _spawnTimer;
-    protected Car _currentRival;
+    private float _spawnTimer;
+    private readonly List<RivalEntry> _rivals = [];
 
-    protected float _playerStartDist;
-    protected bool _checkpointSet;
-    protected bool _raceActive;
-    protected double _speedMatchTimer;
+    /// <summary>Returns the entry for a given rival car, or null if not tracked.</summary>
+    protected RivalEntry GetRivalEntry(Car rival) =>
+        _rivals.FirstOrDefault(e => e.Car == rival);
 
-    private Checkpoint _raceCheckpoint;
-
-    /// <summary>Metres driven by the player since the race started (0 when no race is active).</summary>
-    protected float RaceDistanceDriven => _raceActive ? _playerCar.DistanceTravelled - _playerStartDist : 0f;
+    /// <summary>Metres driven by the player since that rival's race started.</summary>
+    protected float RaceDistanceDrivenFor(RivalEntry entry) =>
+        entry.RaceActive ? _playerCar.DistanceTravelled - entry.PlayerStartDist : 0f;
 
     /// <summary>
-    /// When the finish checkpoint has been placed, returns the straight-line distance
-    /// from the player to it. Returns -1 while the checkpoint has not yet spawned.
+    /// Straight-line distance from the player to the finish checkpoint for this rival.
+    /// Returns -1 while the checkpoint has not been placed yet.
     /// </summary>
-    protected float RaceCheckpointDistance =>
-        _checkpointSet && IsInstanceValid(_raceCheckpoint)
-            ? _playerCar.RigidBody.GlobalPosition.DistanceTo(_raceCheckpoint.GlobalPosition)
+    protected float RaceCheckpointDistanceFor(RivalEntry entry) =>
+        entry.CheckpointSet && IsInstanceValid(entry.RaceCheckpoint)
+            ? _playerCar.RigidBody.GlobalPosition.DistanceTo(entry.RaceCheckpoint.GlobalPosition)
             : -1f;
 
     public void Init(InfiniteRoadManager roadManager, Car playerCar) {
@@ -66,123 +69,166 @@ public partial class RivalEncounterManager : Node {
     public override void _PhysicsProcess(double delta) {
         if (_roadManager == null || _playerCar == null) return;
 
-        if (_currentRival == null || !IsInstanceValid(_currentRival.RigidBody)) {
-            if (_currentRival != null) {
-                // Node was freed externally (e.g. road culling) — reset without ending the race formally
-                _raceActive = false;
-                _checkpointSet = false;
-                if (_raceCheckpoint != null) { RemoveChild(_raceCheckpoint); _raceCheckpoint = null; }
-                _currentRival = null;
-            }
+        // Spawn new rivals while under the cap
+        if (_rivals.Count < MAX_RIVALS) {
             _spawnTimer -= (float)delta;
             if (_spawnTimer <= 0) {
                 SpawnRival();
                 _spawnTimer = RIVAL_SPAWN_INTERVAL;
             }
-            return;
         }
 
-        // Respawn rival if it has fallen well below the road surface
-        var nextCheckpointY = _roadManager.GetNextCheckpoint(_currentRival.RigidBody.GlobalPosition, false, 0).Origin.Y;
-        if (_currentRival.RigidBody.GlobalPosition.Y + 20f < nextCheckpointY) {
-            RespawnRivalNearPlayer();
-        }
+        // Process each rival independently
+        for (int i = _rivals.Count - 1; i >= 0; i--) {
+            var entry = _rivals[i];
 
-        if (!_raceActive) {
-            float dist = _currentRival.RigidBody.GlobalPosition.DistanceTo(_playerCar.RigidBody.GlobalPosition);
-            float speedDiff = (_currentRival.RigidBody.LinearVelocity - _playerCar.RigidBody.LinearVelocity).Length();
+            // If the node was freed externally, clean up silently
+            if (!IsInstanceValid(entry.Car?.RigidBody)) {
+                CleanupEntry(entry, i);
+                continue;
+            }
 
-            if (dist < RACE_TRIGGER_DISTANCE && speedDiff < SPEED_MATCH_DIFF_MS) {
-                _speedMatchTimer += delta;
-                if (_speedMatchTimer >= SPEED_MATCH_WINDOW) {
-                    StartRace();
+            // Respawn rival if it has fallen below the road surface
+            var nextCheckpointY = _roadManager
+                .GetNextCheckpoint(entry.Car.RigidBody.GlobalPosition, false, 0).Origin.Y;
+            if (entry.Car.RigidBody.GlobalPosition.Y + 20f < nextCheckpointY) {
+                RespawnRivalNearPlayer(entry);
+            }
+
+            if (!entry.RaceActive) {
+                float dist = entry.Car.RigidBody.GlobalPosition
+                    .DistanceTo(_playerCar.RigidBody.GlobalPosition);
+                float speedDiff = (entry.Car.RigidBody.LinearVelocity
+                    - _playerCar.RigidBody.LinearVelocity).Length();
+
+                if (dist < RACE_TRIGGER_DISTANCE && speedDiff < SPEED_MATCH_DIFF_MS) {
+                    entry.SpeedMatchTimer += delta;
+                    if (entry.SpeedMatchTimer >= SPEED_MATCH_WINDOW) {
+                        StartRace(entry);
+                    }
+                } else {
+                    entry.SpeedMatchTimer = Mathf.Max(entry.SpeedMatchTimer - delta, 0);
                 }
             } else {
-                _speedMatchTimer = 0;
-            }
-        } else {
-            if (!_checkpointSet && _playerCar.DistanceTravelled - _playerStartDist >= RACE_DISTANCE) {
-                _checkpointSet = true;
+                if (!entry.CheckpointSet
+                    && _playerCar.DistanceTravelled - entry.PlayerStartDist >= RACE_DISTANCE) {
+                    entry.CheckpointSet = true;
 
-                var checkpoints = _roadManager.GetNextCheckpoints(_playerCar.RigidBody.GlobalPosition, false, 0);
-                var checkpoint = checkpoints.Skip(10).FirstOrDefault();
-                if (checkpoint == default) {
-                    checkpoint = checkpoints.Last();
+                    var checkpoints = _roadManager.GetNextCheckpoints(
+                        _playerCar.RigidBody.GlobalPosition, false, 0);
+                    var checkpoint = checkpoints.Skip(10).FirstOrDefault();
+                    if (checkpoint == default)
+                        checkpoint = checkpoints.Last();
+
+                    GD.Print($"Placing rival race checkpoint at distance: {_playerCar.DistanceTravelled}");
+                    CreateRaceCheckpoint(entry, checkpoint);
                 }
-
-                GD.Print("Placing rival race checkpoint at distance: " + _playerCar.DistanceTravelled);
-                CreateRaceCheckpoint(checkpoint);
             }
         }
-    }
-
-    private void RespawnRivalNearPlayer() {
-        var t = _playerCar.RigidBody.GlobalTransform;
-        t.Origin += t.Basis.X * 3f;
-        _currentRival.RigidBody.GlobalTransform = t;
-        _currentRival.RigidBody.LinearVelocity = _playerCar.RigidBody.LinearVelocity;
-        _currentRival.RigidBody.AngularVelocity = Vector3.Zero;
     }
 
     private void SpawnRival() {
-        // Pick a random car make; higher rarity rivals use faster CarMakes in future tuning
-        var make = RandHelper.RandFromList(Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
+        var make = RandHelper.RandFromList(
+            Enum.GetValues<CarMake>().Except([CarMake.Runner]).ToList());
         var details = make.LoadFromFile(Main.DEFAULT_GRAVITY);
 
-        // Spawn offset to the side of the player
+        // Step each new rival further to the side so they do not overlap
         var spawnTransform = _playerCar.RigidBody.GlobalTransform;
-        spawnTransform.Origin += spawnTransform.Basis.X * 3f;
+        spawnTransform.Origin += spawnTransform.Basis.X * (3f * (_rivals.Count + 1));
 
-        _currentRival = new Car(details, new TrafficAiInputs(_roadManager, false), false, spawnTransform);
-        GetParent().AddChild(_currentRival);
+        var rivalCar = new Car(details, new TrafficAiInputs(_roadManager, false), false, spawnTransform);
+        GetParent().AddChild(rivalCar);
 
-        _speedMatchTimer = 0;
-        _raceActive = false;
+        // Decide the rival's stake
+        var stake = GD.Randf() < 0.5f ? RivalStakeType.Parts : RivalStakeType.Money;
+        Part wageredPart = null;
+        if (stake == RivalStakeType.Parts) {
+            var allParts = details.GetAllPartsInTree().ToList();
+            if (allParts.Count > 0)
+                wageredPart = RandHelper.RandFromList(allParts);
+            else
+                stake = RivalStakeType.Money; // fallback if car has no parts
+        }
 
-        EmitSignal(SignalName.SpawnedRival, _currentRival);
+        var entry = new RivalEntry {
+            Car = rivalCar,
+            Details = details,
+            Stake = stake,
+            WageredPart = wageredPart,
+        };
+        _rivals.Add(entry);
+
+        EmitSignal(SignalName.SpawnedRival, rivalCar);
     }
 
-    private void StartRace() {
-        _raceActive = true;
-        _playerStartDist = _playerCar.DistanceTravelled;
-        _checkpointSet = false;
-        _currentRival.ChangeInputsTo(new RacingAiInputs(_roadManager));
+    private void StartRace(RivalEntry entry) {
+        entry.RaceActive = true;
+        entry.PlayerStartDist = _playerCar.DistanceTravelled;
+        entry.CheckpointSet = false;
+        entry.Car.ChangeInputsTo(new RacingAiInputs(_roadManager));
 
-        EmitSignal(SignalName.RivalRaceStarted, _currentRival);
+        EmitSignal(SignalName.RivalRaceStarted, entry.Car);
     }
 
-    private void CreateRaceCheckpoint(Transform3D transform) {
-        _raceCheckpoint = Checkpoint.AsBox(transform, Vector3.One * 20, new Color(1, 1, 1, 0.7f));
-        AddChild(_raceCheckpoint);
-        _raceCheckpoint.ThingEntered += node => {
+    private void CreateRaceCheckpoint(RivalEntry entry, Transform3D transform) {
+        entry.RaceCheckpoint = Checkpoint.AsBox(
+            transform, Vector3.One * 20, new Color(1, 1, 1, 0.7f));
+        AddChild(entry.RaceCheckpoint);
+
+        entry.RaceCheckpoint.ThingEntered += node => {
             if (node.GetParent() is not Car) return;
             if (node == _playerCar.RigidBody) {
-                CallDeferred(MethodName.EndRaceDeferred, true);
-            } else if (node == _currentRival?.RigidBody) {
-                CallDeferred(MethodName.EndRaceDeferred, false);
+                CallDeferred(MethodName.EndRaceDeferred, entry.Car, true);
+            } else if (node == entry.Car?.RigidBody) {
+                CallDeferred(MethodName.EndRaceDeferred, entry.Car, false);
             }
         };
     }
 
-    private void EndRaceDeferred(bool playerWon) => EndRace(playerWon);
+    private void EndRaceDeferred(Car rivalCar, bool playerWon) {
+        var entry = _rivals.FirstOrDefault(e => e.Car == rivalCar);
+        if (entry != null) EndRace(entry, playerWon);
+    }
 
-    private void EndRace(bool playerWon) {
-        if (!_raceActive) return; // guard against duplicate calls
-        _raceActive = false;
-        _checkpointSet = false;
+    private void EndRace(RivalEntry entry, bool playerWon) {
+        if (!entry.RaceActive) return;
+        entry.RaceActive = false;
+        entry.CheckpointSet = false;
 
-        if (_raceCheckpoint != null) {
-            RemoveChild(_raceCheckpoint);
-            _raceCheckpoint = null;
+        if (entry.RaceCheckpoint != null) {
+            RemoveChild(entry.RaceCheckpoint);
+            entry.RaceCheckpoint = null;
         }
 
         if (playerWon) {
-            EmitSignal(SignalName.RivalWon);
+            EmitSignal(SignalName.RivalWon, entry.Car);
         } else {
-            EmitSignal(SignalName.RivalLost);
+            EmitSignal(SignalName.RivalLost, entry.Car);
         }
 
-        _currentRival.ChangeInputsTo(new StopAiInputs(_roadManager));
-        _currentRival = null;
+        entry.Car.ChangeInputsTo(new StopAiInputs(_roadManager));
+
+        int idx = _rivals.IndexOf(entry);
+        CleanupEntry(entry, idx);
+    }
+
+    private void RespawnRivalNearPlayer(RivalEntry entry) {
+        var t = _playerCar.RigidBody.GlobalTransform;
+        t.Origin += t.Basis.X * 3f;
+        entry.Car.RigidBody.GlobalTransform = t;
+        entry.Car.RigidBody.LinearVelocity = _playerCar.RigidBody.LinearVelocity;
+        entry.Car.RigidBody.AngularVelocity = Vector3.Zero;
+    }
+
+    private void CleanupEntry(RivalEntry entry, int index) {
+        if (index >= 0 && index < _rivals.Count)
+            _rivals.RemoveAt(index);
+        else
+            _rivals.Remove(entry);
+
+        if (entry.RaceCheckpoint != null && IsInstanceValid(entry.RaceCheckpoint)) {
+            RemoveChild(entry.RaceCheckpoint);
+            entry.RaceCheckpoint = null;
+        }
     }
 }

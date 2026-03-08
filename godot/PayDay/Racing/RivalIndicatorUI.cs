@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
+using murph9.RallyGame2.godot.Component.Racing;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.Utilities;
 using System;
@@ -19,15 +20,21 @@ namespace murph9.RallyGame2.godot.PayDay.Racing;
 /// </summary>
 public partial class RivalIndicatorUI : CanvasLayer {
 
+    private const float PANEL_WIDTH = 248f;
+    private const float PANEL_MARGIN = 16f;
+    private const float PANEL_GAP = 8f;
+
     private Car _playerCar;
     private Car _rivalCar;
     private PartRarity _rarity;
+    private RivalStakeType _stake;
+    private string _wageredPartName;
+    private int _slotIndex;
 
     // State set by RivalEncounterManager each frame
     private bool _raceActive;
-    private double _speedMatchProgress; // 0 … 1
+    private double _speedMatchProgress; // fraction
 
-    // ─── UI nodes ────────────────────────────────────────────────────────────
     private Panel _statusPanel;
     private Label _rarityLabel;
     private Label _stateLabel;
@@ -43,10 +50,13 @@ public partial class RivalIndicatorUI : CanvasLayer {
     private float _raceTotalDistance;
     private float _raceCheckpointDist = -1f; // -1 = checkpoint not yet placed
 
-    public void Init(Car playerCar, Car rivalCar, PartRarity rarity) {
+    public void Init(Car playerCar, Car rivalCar, PartRarity rarity, RivalStakeType stake, string wageredPartName, int slotIndex = 0) {
         _playerCar = playerCar;
         _rivalCar = rivalCar;
         _rarity = rarity;
+        _stake = stake;
+        _wageredPartName = wageredPartName;
+        _slotIndex = slotIndex;
     }
 
     public void UpdateSpeedMatchProgress(double progress) => _speedMatchProgress = progress;
@@ -57,14 +67,11 @@ public partial class RivalIndicatorUI : CanvasLayer {
         _raceCheckpointDist = checkpointDist;
     }
 
-    // ─── Ready ────────────────────────────────────────────────────────────────
-
     public override void _Ready() {
         Layer = 10; // ensure it draws above other game UI
         var color = PartRarityHelper.GetColour(_rarity);
         var rarityName = PartRarityHelper.GetDisplayName(_rarity);
 
-        // ── Status panel ──────────────────────────────────────────────────────
         _statusPanel = new Panel { Name = "RivalStatusPanel" };
         _statusPanel.AddThemeStyleboxOverride("panel", MakeBoxStyle(new Color(0f, 0f, 0f, 0.72f), color, 3));
         AddChild(_statusPanel);
@@ -79,6 +86,15 @@ public partial class RivalIndicatorUI : CanvasLayer {
         };
         SetLabelStyle(_rarityLabel, color, 16);
         vbox.AddChild(_rarityLabel);
+
+        // Stake – what the rival is racing for
+        var stakeColor = _stake == RivalStakeType.Parts ? color : new Color(1f, 0.85f, 0.1f);
+        var stakeLabel = new Label {
+            Text = $"WAGER: {_wageredPartName}",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        SetLabelStyle(stakeLabel, stakeColor, 13);
+        vbox.AddChild(stakeLabel);
 
         // State – approach / match-speed / racing
         _stateLabel = new Label {
@@ -124,7 +140,8 @@ public partial class RivalIndicatorUI : CanvasLayer {
         _speedMatchBar.AddThemeStyleboxOverride("background", MakeBoxStyle(new Color(0.1f, 0.1f, 0.1f, 0.8f), new Color(0.3f, 0.3f, 0.3f), 1));
         vbox.AddChild(_speedMatchBar);
 
-        // ── On-screen world marker ─────────────────────────────────────────────
+
+        // directional arrows
         _onScreenMarker = new Label {
             Text = "▼  RIVAL",
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -133,7 +150,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
         SetLabelStyle(_onScreenMarker, color, 18);
         AddChild(_onScreenMarker);
 
-        // ── Off-screen directional arrow ───────────────────────────────────────
+
         _arrowLabel = new Label {
             Text = "▶",
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -145,7 +162,6 @@ public partial class RivalIndicatorUI : CanvasLayer {
         AddChild(_arrowLabel);
     }
 
-    // ─── Process ──────────────────────────────────────────────────────────────
 
     public override void _Process(double delta) {
         if (!IsInstanceValid(_playerCar?.RigidBody) || !IsInstanceValid(_rivalCar?.RigidBody)) {
@@ -160,11 +176,11 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
         var screenSize = viewport.GetVisibleRect().Size;
 
-        // Resize & reposition status panel to the right-centre of the screen
-        const float panelW = 248f;
+        // Resize & reposition status panel — stacked down the right edge, one slot per rival
         float panelH = _statusPanel.GetMinimumSize().Y + 20f;
-        _statusPanel.Size = new Vector2(panelW, Mathf.Max(panelH, 120f));
-        _statusPanel.Position = new Vector2(screenSize.X - panelW - 16f, screenSize.Y / 2f - _statusPanel.Size.Y / 2f);
+        _statusPanel.Size = new Vector2(PANEL_WIDTH, Mathf.Max(panelH, 120f));
+        float panelY = PANEL_MARGIN + _slotIndex * (_statusPanel.Size.Y + PANEL_GAP);
+        _statusPanel.Position = new Vector2(screenSize.X - PANEL_WIDTH - PANEL_MARGIN, panelY);
 
         // Sync VBox to fill the panel interior
         var vbox = _statusPanel.GetNode<VBoxContainer>("VBox");
