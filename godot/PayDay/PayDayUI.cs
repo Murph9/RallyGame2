@@ -55,4 +55,8 @@ public partial class PayDayUI : CanvasLayer {
             EmitSignal(SignalName.TimerExpired);
         }
     }
+
+    private void _on_button_pressed() {
+        EmitSignal(SignalName.TimerExpired);
+    }
 }
