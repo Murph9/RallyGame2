@@ -18,6 +18,7 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 /// Clicking the Race item starts a racing run immediately.
 /// When parts were collected during the previous run, SetEveningParts() shows the
 /// PartApplyScreen as an overlay before hub interaction is enabled.
+/// The Race item is locked until the player has reviewed their loan (LoanPaperwork).
 /// </summary>
 public partial class HubScene : Node3D {
 
@@ -29,6 +30,13 @@ public partial class HubScene : Node3D {
     public delegate void OpenPhoneEventHandler();
 
     private bool _hubInteractionEnabled = true;
+
+    // Loan must be reviewed before the player can race again
+    private bool _loanReviewed = false;
+    private float _lastRunMoney = 0f;
+
+    // Reference to the LoanPaperwork body so we can apply/remove urgency glow
+    private StaticBody3D _loanPaperworkBody;
 
     // Tooltip nodes (resolved in _Ready)
     private PanelContainer _tooltipPanel;
@@ -42,6 +50,10 @@ public partial class HubScene : Node3D {
     private static readonly Color HoverColour = new(1f, 1f, 1f, 1f);
     private const float HoverEmission = 0.4f;
     private static readonly Vector2 TooltipOffset = new(14f, 14f);
+
+    // Urgency glow colour for the loan paperwork when not yet reviewed
+    private static readonly Color LoanUrgentColour = new(1f, 0.3f, 0.1f, 1f);
+    private const float LoanUrgentEmission = 0.6f;
 
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
@@ -62,12 +74,6 @@ public partial class HubScene : Node3D {
                 addedHubItems.Add(type);
             }
         }
-        // calc unplaced hub items
-        var diff = Enum.GetValues<HubItemType>().Except(addedHubItems);
-        if (diff.Any()) {
-            GD.Print(string.Join(",", diff.Select(x => x.ToString())));
-        }
-
         // Spawn the live car mesh at the Car StaticBody3D's position
         if (state.CarDetails != null) {
             var carDisplay = new CarDisplayNode();
@@ -85,6 +91,11 @@ public partial class HubScene : Node3D {
             if (type is null)
                 continue;
 
+            // Track the LoanPaperwork body so we can control its urgency glow
+            if (type == HubItemType.LoanPaperwork) {
+                _loanPaperworkBody = item;
+            }
+
             item.InputEvent += (camera, @event, eventPosition, normal, shapeIdx) => {
                 if (!_hubInteractionEnabled)
                     return;
@@ -96,7 +107,12 @@ public partial class HubScene : Node3D {
                         OpenCarModifyScreen(eventPosition);
                         break;
                     case HubItemType.Race:
-                        EmitSignal(SignalName.StartRacing);
+                        if (!_loanReviewed) {
+                            // Flash the tooltip warning instead of starting race
+                            ShowLockedRaceTooltip();
+                        } else {
+                            EmitSignal(SignalName.StartRacing);
+                        }
                         break;
                     case HubItemType.LoanPaperwork:
                         EmitSignal(SignalName.OpenLoanPaperwork);
@@ -120,6 +136,9 @@ public partial class HubScene : Node3D {
                 };
             }
         }
+
+        // Apply urgency glow to loan paperwork at start (before loan is reviewed)
+        UpdateLoanUrgencyGlow();
     }
 
     public override void _Process(double delta) {
@@ -137,15 +156,20 @@ public partial class HubScene : Node3D {
         _tooltipPanel.Visible = true;
     }
 
+    private void ShowLockedRaceTooltip() {
+        _tooltipLabel.Text = "Review your loan first! (click the paperwork)";
+        _tooltipPanel.Visible = true;
+    }
+
     private void HideTooltip() {
         if (_tooltipPanel != null)
             _tooltipPanel.Visible = false;
     }
 
-    private static string GetTooltipForType(HubItemType type) => type switch {
+    private string GetTooltipForType(HubItemType type) => type switch {
         HubItemType.Car => "Modify your car",
-        HubItemType.Race => "Start a racing run",
-        HubItemType.LoanPaperwork => "Pay down your loan",
+        HubItemType.Race => _loanReviewed ? "Start a racing run" : "[LOCKED] Review your loan first!",
+        HubItemType.LoanPaperwork => _loanReviewed ? "Pay down your loan" : "! REVIEW YOUR LOAN (required before racing)",
         HubItemType.Phone => "Call a friend",
         HubItemType.Lounge => "Look at stats",
         _ => null, // decorative — no tooltip
@@ -211,10 +235,16 @@ public partial class HubScene : Node3D {
     }
 
     /// <summary>
-    /// Call after loading the hub when parts were collected in the previous run.
-    /// Shows the PartApplyScreen overlay; hub items are non-interactive until it closes.
+    /// Call after loading the hub when returning from a run.
+    /// If parts were collected, shows the PartApplyScreen overlay first.
+    /// Marks the loan as not-yet-reviewed so the Race item is locked until
+    /// the player visits LoanPaperwork.
     /// </summary>
-    public void SetEveningParts(List<CollectedPart> parts) {
+    public void SetEveningParts(List<CollectedPart> parts, float runMoney = 0f) {
+        _lastRunMoney = runMoney;
+        _loanReviewed = false;
+        UpdateLoanUrgencyGlow();
+
         if (parts == null || parts.Count == 0)
             return;
 
@@ -230,6 +260,48 @@ public partial class HubScene : Node3D {
         };
         AddChild(applyScreen);
         applyScreen.SetParts(parts);
+    }
+
+    /// <summary>
+    /// Called when the player has opened and dismissed the LoanPaperwork / DayEnd screen.
+    /// Unlocks the Race item and removes the urgency glow.
+    /// </summary>
+    public void MarkLoanReviewed() {
+        _loanReviewed = true;
+        UpdateLoanUrgencyGlow();
+    }
+
+    /// <summary>The money earned in the last run, passed to DayEndScreen for context.</summary>
+    public float LastRunMoney => _lastRunMoney;
+
+    /// <summary>
+    /// Applies or removes the orange urgency glow on the LoanPaperwork mesh
+    /// depending on whether the loan has been reviewed yet.
+    /// </summary>
+    private void UpdateLoanUrgencyGlow() {
+        if (_loanPaperworkBody == null)
+            return;
+
+        var meshes = _loanPaperworkBody.GetAllChildrenOfType<MeshInstance3D>();
+        foreach (var mesh in meshes) {
+            if (_loanReviewed) {
+                // Restore default — clear override
+                for (var i = 0; i < mesh.Mesh?.GetSurfaceCount(); i++) {
+                    mesh.SetSurfaceOverrideMaterial(i, null);
+                }
+            } else {
+                // Orange urgency pulse
+                for (var i = 0; i < mesh.Mesh?.GetSurfaceCount(); i++) {
+                    var urgentMat = new StandardMaterial3D {
+                        AlbedoColor = LoanUrgentColour,
+                        EmissionEnabled = true,
+                        Emission = LoanUrgentColour,
+                        EmissionEnergyMultiplier = LoanUrgentEmission
+                    };
+                    mesh.SetSurfaceOverrideMaterial(i, urgentMat);
+                }
+            }
+        }
     }
 
     private void OpenCarModifyScreen(Vector3 eventPosition) {

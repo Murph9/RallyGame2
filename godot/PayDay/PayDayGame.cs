@@ -32,6 +32,7 @@ public partial class PayDayGame : Node {
     // Accumulated during a single run
     private readonly List<CollectedPart> _runParts = [];
     private float _runMoney;
+    private bool _loanViewedThisReturn = false;
 
     public PayDayGame() {
 #if DEBUG
@@ -46,6 +47,9 @@ public partial class PayDayGame : Node {
 
         state.GameWon += () => { _phase = Phase.Win; CallDeferred(MethodName.GoToWin); };
         state.GameLost += () => { _phase = Phase.Lose; CallDeferred(MethodName.GoToLose); };
+
+        // Day 1: player hasn't done a run yet, no loan review needed before first race
+        _loanViewedThisReturn = true;
 
         ShowIntroDialog();
     }
@@ -92,8 +96,15 @@ public partial class PayDayGame : Node {
         hub.OpenLoanPaperwork += () => CallDeferred(MethodName.ShowDayEnd);
         hub.OpenPhone += () => CallDeferred(MethodName.ShowFriendDialog);
         SwapScene(hub);
-        hub.SetEveningParts(_runParts);
+        hub.SetEveningParts(_runParts, _runMoney);
         _runParts.Clear();
+
+        // If the player already reviewed the loan this return (e.g. came back from DayEndScreen),
+        // immediately unlock the Race item so they don't have to click it again.
+        if (_loanViewedThisReturn) {
+            hub.MarkLoanReviewed();
+            _loanViewedThisReturn = false;
+        }
     }
 
     private void StartRacingRun() {
@@ -150,11 +161,13 @@ public partial class PayDayGame : Node {
         dayEnd.DayEnded += (amountPaid) => {
             var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
             state.EndDay(amountPaid);
+            _loanViewedThisReturn = true;
             // GameWon/GameLost signals will fire from state if terminal; otherwise return to hub
             if (_phase == Phase.DayEnd)
                 CallDeferred(MethodName.GoToHub);
         };
         SwapScene(dayEnd);
+        dayEnd.SetRunMoney(_runMoney);
     }
 
     private void ShowFriendDialog() {

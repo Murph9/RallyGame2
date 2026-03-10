@@ -12,13 +12,11 @@ script = ExtResource("1_carmodify")
 
 [node name="HBox" type="HBoxContainer" parent="." unique_id=261643864]
 layout_mode = 2
-
-[node name="Control" type="Control" parent="HBox" unique_id=130686561]
-custom_minimum_size = Vector2(420, 0)
-layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="Panel" type="PanelContainer" parent="HBox" unique_id=870542013]
-custom_minimum_size = Vector2(480, 600)
+custom_minimum_size = Vector2(360, 600)
 layout_mode = 2
 
 [node name="VBox" type="VBoxContainer" parent="HBox/Panel" unique_id=360602948]
@@ -31,30 +29,32 @@ layout_mode = 2
 text = "Modify Car"
 horizontal_alignment = 1
 
-[node name="InventoryLabel" type="Label" parent="HBox/Panel/VBox" unique_id=206223841]
+[node name="SubtitleLabel" type="Label" parent="HBox/Panel/VBox"]
 layout_mode = 2
-text = "Your Parts"
+text = "Drag a part onto the car, or press Apply"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="HBox/Panel/VBox"]
+layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HBox/Panel/VBox" unique_id=494770545]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PartsList" type="VBoxContainer" parent="HBox/Panel/VBox/ScrollContainer" unique_id=1566203015]
+[node name="TreeContainer" type="VBoxContainer" parent="HBox/Panel/VBox/ScrollContainer" unique_id=1566203015]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ButtonRow" type="HBoxContainer" parent="HBox/Panel/VBox" unique_id=1578399628]
-layout_mode = 2
-
-[node name="ApplyButton" type="Button" parent="HBox/Panel/VBox/ButtonRow" unique_id=228901018]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Apply"
-
-[node name="CloseButton" type="Button" parent="HBox/Panel/VBox/ButtonRow" unique_id=1782295173]
+[node name="CloseButton" type="Button" parent="HBox/Panel/VBox" unique_id=1782295173]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Close"
 
-[connection signal="pressed" from="HBox/Panel/VBox/ButtonRow/ApplyButton" to="." method="ApplyButton_Pressed"]
-[connection signal="pressed" from="HBox/Panel/VBox/ButtonRow/CloseButton" to="." method="CloseButton_Pressed"]
+[node name="DropZone" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+
+[connection signal="pressed" from="HBox/Panel/VBox/CloseButton" to="." method="CloseButton_Pressed"]
