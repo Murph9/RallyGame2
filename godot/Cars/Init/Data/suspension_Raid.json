@@ -12,15 +12,15 @@
           "FrontMaxTravel": 0.3,
           "FrontMinTravel": -0.1,
           "FrontPreloadDistance": 0.1,
-          "FrontRelax": 0.6,
-          "FrontStiffness": 12,
+          "FrontRelax": 0.4,
+          "FrontStiffness": 18,
           "RearAntiroll": 1,
           "RearComp": 0.36,
           "RearMaxTravel": 0.3,
           "RearMinTravel": -0.1,
           "RearPreloadDistance": 0.1,
-          "RearRelax": 0.6,
-          "RearStiffness": 12
+          "RearRelax": 0.4,
+          "RearStiffness": 18
         }
       ]
     }

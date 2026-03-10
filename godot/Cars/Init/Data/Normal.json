@@ -51,7 +51,7 @@
       "name": "Brakes",
       "icon": "brakes.png",
       "levelCost": [0],
-      "levels": [{ "BrakeMaxTorque": 4000, "BrakeAbsTimeout": 0.1 }]
+      "levels": [{ "BrakeMaxTorque": 2500, "BrakeAbsTimeout": 0.1 }]
     },
     {
       "color": "#ffe119",

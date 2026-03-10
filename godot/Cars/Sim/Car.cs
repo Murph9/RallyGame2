@@ -301,7 +301,7 @@ public partial class Car : Node3D {
         }
 
         // attmempt to apply abs
-        var predictedRadSecDiff = Mathf.Abs(brakeCurrent * Details.BrakeMaxTorque / wheelInertia * w.Details.Radius);
+        var predictedRadSecDiff = Mathf.Abs(brakeCurrent * Details.BrakeMaxTorque / (wheelInertia * w.Details.Radius));
         if (w.ABSControlTimeOut > 0) {
             w.ABSControlTimeOut -= delta;
         } else if (brakeCurrent > 0 && Mathf.Abs(w.RadSec - predictedRadSecDiff) > 10) {
@@ -312,7 +312,7 @@ public partial class Car : Node3D {
         // add the wheel force after merging the forces
         var totalLongForce = Engine.WheelEngineTorque[w.Details.Id] - w.AppliedForces.Z
                 - (brakeCurrent * Details.BrakeMaxTorque * Mathf.Sign(w.RadSec));
-        var totalLongForceTorque = totalLongForce / wheelInertia * w.Details.Radius;
+        var totalLongForceTorque = totalLongForce / (wheelInertia * w.Details.Radius);
 
         if (brakeCurrent != 0 && Mathf.Sign(w.RadSec) != Mathf.Sign(w.RadSec + totalLongForceTorque))
             w.RadSec = 0; // maxed out the forces with braking, so prevent wheels from moving
