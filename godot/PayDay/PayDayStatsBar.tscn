@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://b0t33y7sevsro"]
+
+[ext_resource type="Script" path="res://PayDay/PayDayStatsBar.cs" id="1_statsbar"]
+
+[node name="PayDayStatsBar" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_statsbar")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_right = 160.0
+offset_bottom = 90.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="DayLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Day 1"
+
+[node name="LoanLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Loan: $5000"
+
+[node name="MoneyLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Wallet: $0"
+
+[node name="PartsLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Parts: 0"

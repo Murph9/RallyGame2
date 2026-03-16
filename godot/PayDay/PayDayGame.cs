@@ -27,6 +27,7 @@ public partial class PayDayGame : Node {
     private Phase _phase = Phase.Hub;
     private Node _currentScene;
     private PayDayUI _activeUI;
+    private PayDayStatsBar _statsBar;
     private bool _paused;
 
     // Accumulated during a single run
@@ -50,6 +51,10 @@ public partial class PayDayGame : Node {
 
         // Day 1: player hasn't done a run yet, no loan review needed before first race
         _loanViewedThisReturn = true;
+
+        // Persistent stats bar — lives for the entire game session
+        _statsBar = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(PayDayStatsBar))).Instantiate<PayDayStatsBar>();
+        AddChild(_statsBar);
 
         ShowIntroDialog();
     }
@@ -114,7 +119,7 @@ public partial class PayDayGame : Node {
 
         var racingScene = LoadScene<PayDayRacingScene>();
         racingScene.RivalRaceStarted += (rival) => {
-            _activeUI.UpdateRivalStatus("Rival Race In Progress");
+            _activeUI?.UpdateRivalStatus("Rival Race In Progress");
         };
         racingScene.RivalWon += (reward) => {
             _runParts.Add(reward);
@@ -186,6 +191,7 @@ public partial class PayDayGame : Node {
 
     private void GoToWin() {
         _phase = Phase.Win;
+        _statsBar?.Hide();
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
         var panel = new PanelContainer();
@@ -208,6 +214,7 @@ public partial class PayDayGame : Node {
 
     private void GoToLose() {
         _phase = Phase.Lose;
+        _statsBar?.Hide();
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
         var panel = new PanelContainer();
