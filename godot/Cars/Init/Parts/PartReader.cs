@@ -71,7 +71,7 @@ public class PartReader {
 
     public IEnumerable<PartResult> GetResults() {
         foreach (var fieldProp in _fieldProps) {
-            var li = new List<Part>();
+            var li = new List<PartDetails>();
             foreach (var part in _self.Parts) {
                 var partValues = part.GetLevel();
                 if (partValues.ContainsKey(fieldProp.Field.Name))

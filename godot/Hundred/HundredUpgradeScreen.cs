@@ -16,9 +16,9 @@ public partial class HundredUpgradeScreen : CenterContainer {
     [Signal]
     public delegate void ClosedEventHandler(bool carChanged);
 
-    private ICollection<Part> _currentPartOptions = [];
+    private ICollection<PartDetails> _currentPartOptions = [];
 
-    private Part _appliedPart;
+    private PartDetails _appliedPart;
     private float _moneyPaid;
     private Button _buttonPressed;
 
@@ -42,11 +42,11 @@ public partial class HundredUpgradeScreen : CenterContainer {
         }
     }
 
-    public void SetParts(List<Part> parts) {
+    public void SetParts(List<PartDetails> parts) {
         _currentPartOptions = [.. parts];
     }
 
-    public (Part, float) GetChangedDetails() => (_appliedPart, _moneyPaid);
+    public (PartDetails, float) GetChangedDetails() => (_appliedPart, _moneyPaid);
 
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");

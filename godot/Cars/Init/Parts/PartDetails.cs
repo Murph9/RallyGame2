@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
-public class Part {
+public class PartDetails {
     public string Name { get; set; }
     public string Color { get; set; }
     public PartLevel CurrentLevel { get; set; }

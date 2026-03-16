@@ -58,7 +58,7 @@ public class EngineDetails : IHaveParts {
 
     [JsonIgnore]
     private PartReader PartReader { get; init; }
-    public List<Part> Parts { get; init; } = [];
+    public List<PartDetails> Parts { get; init; } = [];
 
     public EngineDetails() {
         PartReader = new PartReader(this);
@@ -145,5 +145,5 @@ public class EngineDetails : IHaveParts {
     }
 
     public IEnumerable<PartResult> GetPartResultsInTree() => PartReader.GetResults();
-    public IEnumerable<Part> GetAllPartsInTree() => Parts;
+    public IEnumerable<PartDetails> GetAllPartsInTree() => Parts;
 }

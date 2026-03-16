@@ -14,7 +14,7 @@ public partial class HundredUI : HBoxContainer {
     // perf to map things in one place
     private readonly Dictionary<HundredInProgressItem, Label> _uiLabelMap = [];
 
-    private readonly Dictionary<string, Tuple<Part, Control>> _partMappings = [];
+    private readonly Dictionary<string, Tuple<PartDetails, Control>> _partMappings = [];
     private readonly Dictionary<Car, HundredInProgressItem> _rivalDetails = [];
     private readonly Dictionary<RelicType, Container> _relicMappings = [];
     private readonly Dictionary<GoalState, HundredInProgressItem> _goalsInProgress = [];

@@ -26,7 +26,7 @@ public partial class PaydayRivalEncounterManager : RivalEncounterManager {
     private class PerRivalState {
         public PartLevel Rarity;
         public RivalStakeType Stake;
-        public Part WageredPart;
+        public PartDetails WageredPart;
         public RivalHighlighter Highlighter;
         public RivalIndicatorUI IndicatorUI;
         public int SlotIndex;

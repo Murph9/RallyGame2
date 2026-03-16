@@ -4,14 +4,14 @@ namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public interface IHaveParts {
     PartCategory PartCategory { get; }
-    List<Part> Parts { get; }
-    IEnumerable<Part> GetAllPartsInTree();
+    List<PartDetails> Parts { get; }
+    IEnumerable<PartDetails> GetAllPartsInTree();
     IEnumerable<PartResult> GetPartResultsInTree();
 }
 
-public record PartResult(string Name, object Value, HigherIs HigherIsGood, IEnumerable<Part> BecauseOf) {
+public record PartResult(string Name, object Value, HigherIs HigherIsGood, IEnumerable<PartDetails> BecauseOf) {
     public string Name { get; init; } = Name;
     public object Value { get; init; } = Value;
     public HigherIs HigherIsGood { get; init; } = HigherIsGood;
-    public IEnumerable<Part> BecauseOf { get; init; } = BecauseOf;
+    public IEnumerable<PartDetails> BecauseOf { get; init; } = BecauseOf;
 }

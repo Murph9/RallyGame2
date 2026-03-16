@@ -9,7 +9,7 @@ public partial class RivalEncounterManager {
         public Car Car;
         public CarDetails Details;
         public RivalStakeType Stake;
-        public Part WageredPart;
+        public PartDetails WageredPart;
         public bool RaceActive;
         public float PlayerStartDist;
         public bool CheckpointSet;

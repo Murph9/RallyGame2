@@ -141,7 +141,7 @@ public partial class RivalEncounterManager : Node {
 
         // Decide the rival's stake
         var stake = GD.Randf() < 0.5f ? RivalStakeType.Parts : RivalStakeType.Money;
-        Part wageredPart = null;
+        PartDetails wageredPart = null;
         if (stake == RivalStakeType.Parts) {
             var allParts = details.GetAllPartsInTree().ToList();
             if (allParts.Count > 0)

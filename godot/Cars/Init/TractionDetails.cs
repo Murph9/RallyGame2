@@ -11,7 +11,7 @@ public class TractionDetails : IHaveParts {
     public PartCategory PartCategory => PartCategory.Traction;
     [JsonIgnore]
     private PartReader PartReader { get; init; }
-    public List<Part> Parts { get; init; } = [];
+    public List<PartDetails> Parts { get; init; } = [];
 
     [PartField(0d, HowToApply.Set, HigherIs.Neutral)]
     public double LatMaxSlip;
@@ -49,5 +49,5 @@ public class TractionDetails : IHaveParts {
     }
 
     public IEnumerable<PartResult> GetPartResultsInTree() => PartReader.GetResults();
-    public IEnumerable<Part> GetAllPartsInTree() => Parts;
+    public IEnumerable<PartDetails> GetAllPartsInTree() => Parts;
 }

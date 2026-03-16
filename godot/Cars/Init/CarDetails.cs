@@ -85,7 +85,7 @@ public class CarDetails : IHaveParts {
 
     [JsonIgnore]
     private PartReader PartReader { get; init; }
-    public List<Part> Parts { get; set; } = [];
+    public List<PartDetails> Parts { get; set; } = [];
 
     public float MaxSteerAngle; // radians [0.2 - 0.5]
 
@@ -302,8 +302,8 @@ public class CarDetails : IHaveParts {
         return details;
     }
 
-    public IEnumerable<Part> GetAllPartsInTree() {
-        var parts = new List<Part>();
+    public IEnumerable<PartDetails> GetAllPartsInTree() {
+        var parts = new List<PartDetails>();
         foreach (var result in Parts) {
             parts.Add(result);
         }
@@ -319,16 +319,16 @@ public class CarDetails : IHaveParts {
         return parts;
     }
 
-    public void ApplyPartChange(Part part, PartLevel level) {
+    public void ApplyPartChange(PartDetails part, PartLevel level) {
         var selfPart = GetAllPartsInTree().Single(x => x.Name == part.Name);
         selfPart.CurrentLevel = level;
         LoadSelf(Main.DEFAULT_GRAVITY);
     }
-    public PartLevel LevelOfPart(Part part) {
+    public PartLevel LevelOfPart(PartDetails part) {
         return GetAllPartsInTree().Single(x => x.Name == part.Name).CurrentLevel;
     }
 
-    public PartCategory GetPartCategory(Part part) {
+    public PartCategory GetPartCategory(PartDetails part) {
         if (Engine.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
             return Engine.PartCategory;
         }

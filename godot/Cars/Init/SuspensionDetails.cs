@@ -44,14 +44,14 @@ public class SuspensionDetails : IHaveParts {
 
     [JsonIgnore]
     private PartReader PartReader { get; init; }
-    public List<Part> Parts { get; set; } = [];
+    public List<PartDetails> Parts { get; set; } = [];
 
     public SuspensionDetails() {
         PartReader = new PartReader(this);
     }
 
     public IEnumerable<PartResult> GetPartResultsInTree() => PartReader.GetResults();
-    public IEnumerable<Part> GetAllPartsInTree() => Parts;
+    public IEnumerable<PartDetails> GetAllPartsInTree() => Parts;
 
     public CarSusDetails Front => new(FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
     public CarSusDetails Rear => new(RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);
