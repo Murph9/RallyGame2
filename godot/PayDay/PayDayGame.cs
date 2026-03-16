@@ -46,6 +46,16 @@ public partial class PayDayGame : Node {
         state.Reset();
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
+        // Seed inventory with one Poor copy of every car part as level-0 defaults
+        foreach (var part in state.CarDetails.GetAllPartsInTree())
+            state.AddCollectedPart(new CollectedPart(part, PartRarity.Poor));
+#if DEBUG
+        // add some parts on debug
+        for (var i = 0; i < 5; i++) {
+            state.AddCollectedPart(PartDropTable.Generate(state.CarDetails, 0));
+        }
+#endif
+
         state.GameWon += () => { _phase = Phase.Win; CallDeferred(MethodName.GoToWin); };
         state.GameLost += () => { _phase = Phase.Lose; CallDeferred(MethodName.GoToLose); };
 
