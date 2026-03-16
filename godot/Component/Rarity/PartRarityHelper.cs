@@ -27,18 +27,18 @@ public static class PartRarityHelper {
 
     /// <summary>
     /// Weighted rarity roll. Later days push the distribution toward higher tiers.
-    /// Day 1: ~90% Poor/Common. Day 10+: meaningful Rare/Epic chance.
+    /// Day 1: ~90% Common. Day 10+: meaningful Rare/Epic chance.
     /// </summary>
     public static PartRarity RollRarity(int dayNumber) {
         float day = Math.Min(dayNumber, 20);
 
         // weights: [Poor, Common, Uncommon, Rare, Epic, Legendary]
-        float legendary = day * 0.5f;           //  0 – 10 %
+        float legendary = day * 0.5f;      //  0 – 10 %
         float epic = day * 2.0f;           //  0 – 40 %
         float rare = day * 3.0f;           //  0 – 60 %
         float uncommon = 20f;
         float common = 30f;
-        float poor = Math.Max(5f, 60f - day * 4f);
+        float poor = 0;                    // no poor drop parts
 
         float[] weights = [poor, common, uncommon, rare, epic, legendary];
 
@@ -46,10 +46,11 @@ public static class PartRarityHelper {
         foreach (var w in weights) total += w;
 
         float roll = (float)GD.RandRange(0.0, total);
-        float cumulative = 0f;
+        float cumulative = 0;
         for (int i = 0; i < weights.Length; i++) {
             cumulative += weights[i];
-            if (roll < cumulative) return (PartRarity)i;
+            if (roll < cumulative)
+                return (PartRarity)i;
         }
 
         return PartRarity.Common;
