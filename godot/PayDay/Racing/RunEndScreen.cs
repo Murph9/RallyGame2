@@ -39,11 +39,11 @@ public partial class RunEndScreen : CenterContainer {
 
             row.AddChild(new ColorRect {
                 CustomMinimumSize = new Vector2(20, 20),
-                Color = PartRarityHelper.GetColour(part.Rarity)
+                Color = PartLevelHelper.GetColour(part.Rarity)
             });
 
             row.AddChild(new Label {
-                Text = $"  [{PartRarityHelper.GetDisplayName(part.Rarity)}]  {part.Part?.Name ?? "Unknown Part"}"
+                Text = $"  [{PartLevelHelper.GetDisplayName(part.Rarity)}]  {part.Part?.Name ?? "Unknown Part"}"
             });
 
             _partsContainer.AddChild(row);

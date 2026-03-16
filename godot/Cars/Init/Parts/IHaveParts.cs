@@ -3,6 +3,7 @@ using System.Collections.Generic;
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
 public interface IHaveParts {
+    PartCategory PartCategory { get; }
     List<Part> Parts { get; }
     IEnumerable<Part> GetAllPartsInTree();
     IEnumerable<PartResult> GetPartResultsInTree();

@@ -10,7 +10,7 @@ namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 public class Part {
     public string Name { get; set; }
     public string Color { get; set; }
-    public int CurrentLevel { get; set; }
+    public PartLevel CurrentLevel { get; set; }
     public double[] LevelCost { get; set; }
     public string Icon { get; set; }
     [JsonIgnore]
@@ -18,14 +18,12 @@ public class Part {
 
     public Dictionary<string, object>[] Levels { get; set; }
 
-    public Dictionary<string, object> GetLevel() => GetAllValues()[CurrentLevel];
+    public Dictionary<string, object> GetLevel() => GetAllValues()[(int)CurrentLevel];
     public Dictionary<string, object>[] GetAllValues() => Levels;
 
     public void Validate(IEnumerable<FieldInfo> allFields) {
         if (string.IsNullOrWhiteSpace(Name))
             throw new Exception("No name set for part with levels " + Levels.Length);
-        if (CurrentLevel < 0 || CurrentLevel > Levels.Length - 1)
-            throw new Exception($"Part {Name}: Current level is wrong ({CurrentLevel})");
         if (LevelCost.Length != Levels.Length)
             throw new Exception($"Part {Name}: Level {Levels.Length} has different amount to LevelCost {LevelCost.Length}");
         if (!Godot.Color.HtmlIsValid(Color))

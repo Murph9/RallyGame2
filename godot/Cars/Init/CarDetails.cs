@@ -17,6 +17,8 @@ public class CarDetails : IHaveParts {
 
     public string Name;
     public string CarModel;
+    [JsonIgnore]
+    public PartCategory PartCategory => PartCategory.Car;
 
     public float CamLookAtHeight; // from the middle of the model up
     public float CamOffsetLength; // from the middle of the model back
@@ -317,12 +319,28 @@ public class CarDetails : IHaveParts {
         return parts;
     }
 
-    public void ApplyPartChange(Part part, int level) {
+    public void ApplyPartChange(Part part, PartLevel level) {
         var selfPart = GetAllPartsInTree().Single(x => x.Name == part.Name);
         selfPart.CurrentLevel = level;
         LoadSelf(Main.DEFAULT_GRAVITY);
     }
-    public int LevelOfPart(Part part) {
+    public PartLevel LevelOfPart(Part part) {
         return GetAllPartsInTree().Single(x => x.Name == part.Name).CurrentLevel;
+    }
+
+    public PartCategory GetPartCategory(Part part) {
+        if (Engine.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+            return Engine.PartCategory;
+        }
+        if (TractionDetails.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+            return TractionDetails.PartCategory;
+        }
+        if (SuspensionDetails.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+            return SuspensionDetails.PartCategory;
+        }
+        if (Parts.Any(x => x.Name == part.Name)) {
+            return PartCategory;
+        }
+        return PartCategory.Car; // as a fallback
     }
 }

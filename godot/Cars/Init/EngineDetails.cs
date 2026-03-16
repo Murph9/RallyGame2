@@ -8,6 +8,8 @@ using System.Text.Json.Serialization;
 namespace murph9.RallyGame2.godot.Cars.Init;
 
 public class EngineDetails : IHaveParts {
+    [JsonIgnore]
+    public PartCategory PartCategory => PartCategory.Engine;
 
     public string Name { get; set; }
     public int IdleRPM { get; set; }

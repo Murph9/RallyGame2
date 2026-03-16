@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component.Racing;
 using murph9.RallyGame2.godot.Component.Rarity;
@@ -26,7 +27,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
     private Car _playerCar;
     private Car _rivalCar;
-    private PartRarity _rarity;
+    private PartLevel _rarity;
     private RivalStakeType _stake;
     private string _wageredPartName;
     private int _slotIndex;
@@ -50,7 +51,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
     private float _raceTotalDistance;
     private float _raceCheckpointDist = -1f; // -1 = checkpoint not yet placed
 
-    public void Init(Car playerCar, Car rivalCar, PartRarity rarity, RivalStakeType stake, string wageredPartName, int slotIndex = 0) {
+    public void Init(Car playerCar, Car rivalCar, PartLevel rarity, RivalStakeType stake, string wageredPartName, int slotIndex = 0) {
         _playerCar = playerCar;
         _rivalCar = rivalCar;
         _rarity = rarity;
@@ -69,8 +70,8 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
     public override void _Ready() {
         Layer = 10; // ensure it draws above other game UI
-        var color = PartRarityHelper.GetColour(_rarity);
-        var rarityName = PartRarityHelper.GetDisplayName(_rarity);
+        var color = PartLevelHelper.GetColour(_rarity);
+        var rarityName = PartLevelHelper.GetDisplayName(_rarity);
 
         _statusPanel = new Panel { Name = "RivalStatusPanel" };
         _statusPanel.AddThemeStyleboxOverride("panel", MakeBoxStyle(new Color(0f, 0f, 0f, 0.72f), color, 3));
@@ -193,7 +194,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
         if (_raceActive) {
             _stateLabel.Text = "★  RACING  ★";
-            _stateLabel.AddThemeColorOverride("font_color", PartRarityHelper.GetColour(_rarity));
+            _stateLabel.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(_rarity));
             _speedMatchBar.Visible = false;
             _speedMatchTitle.Visible = false;
 

@@ -24,7 +24,7 @@ public partial class PaydayRivalEncounterManager : RivalEncounterManager {
 
 
     private class PerRivalState {
-        public PartRarity Rarity;
+        public PartLevel Rarity;
         public RivalStakeType Stake;
         public Part WageredPart;
         public RivalHighlighter Highlighter;
@@ -35,7 +35,7 @@ public partial class PaydayRivalEncounterManager : RivalEncounterManager {
     private readonly Dictionary<Car, PerRivalState> _rivalStates = [];
     private int _dayNumber;
 
-    private PartRarity _currentRivalRarity;
+    private PartLevel _currentRivalRarity;
 
     // Visual highlighting
     private RivalHighlighter _highlighter;
@@ -56,7 +56,7 @@ public partial class PaydayRivalEncounterManager : RivalEncounterManager {
     private void SpawnedRivalHandler(Car rival) {
         var entry = GetRivalEntry(rival);
 
-        var rarity = PartRarityHelper.RollRarity(_dayNumber);
+        var rarity = PartLevelHelper.RollRarity(_dayNumber);
         var stake = entry?.Stake ?? RivalStakeType.Money;
         var wageredPart = entry?.WageredPart;
         string wageredPartName = stake == RivalStakeType.Parts ? (wageredPart?.Name ?? "Part") : "$$$";

@@ -10,6 +10,9 @@ namespace murph9.RallyGame2.godot.Cars.Init;
 #pragma warning disable IDE0044 // Add readonly modifier, because all private fields are loaded by json
 #pragma warning disable CS0649 // Will always have the default value, but also loaded by json
 public class SuspensionDetails : IHaveParts {
+    [JsonIgnore]
+    public PartCategory PartCategory => PartCategory.Suspension;
+
     [PartField(0, HowToApply.Set)]
     private float FrontAntiroll;
     [PartField(0, HowToApply.Set, HigherIs.Neutral)]

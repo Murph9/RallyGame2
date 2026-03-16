@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.Utilities;
@@ -21,23 +22,23 @@ public partial class RivalHighlighter : Node3D {
     private const float PULSE_SPEED = 2.0f;
 
     private Car _rival;
-    private PartRarity _rarity;
+    private PartLevel _rarity;
     private Label3D _label;
     private MeshInstance3D _ringMesh;
     private float _pulseTimer;
 
-    public void Init(Car rival, PartRarity rarity) {
+    public void Init(Car rival, PartLevel rarity) {
         _rival = rival;
         _rarity = rarity;
     }
 
     public override void _Ready() {
-        var color = PartRarityHelper.GetColour(_rarity);
-        var rarityName = PartRarityHelper.GetDisplayName(_rarity);
+        var color = PartLevelHelper.GetColour(_rarity);
+        var rarityName = PartLevelHelper.GetDisplayName(_rarity);
 
         // 1. Apply rarity emission glow to all car body mesh surfaces.
         //    We duplicate each StandardMaterial3D surface and enable emission.
-        float emission = PartRarityHelper.EmissionForRarity(_rarity);
+        float emission = PartLevelHelper.EmissionForRarity(_rarity);
         foreach (var mesh in _rival.RigidBody.GetAllChildrenOfType<MeshInstance3D>()) {
             if (mesh.Mesh == null || mesh.Mesh.GetSurfaceCount() == 0)
                 continue;

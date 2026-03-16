@@ -8,6 +8,8 @@ namespace murph9.RallyGame2.godot.Cars.Init;
 
 public class TractionDetails : IHaveParts {
     [JsonIgnore]
+    public PartCategory PartCategory => PartCategory.Traction;
+    [JsonIgnore]
     private PartReader PartReader { get; init; }
     public List<Part> Parts { get; init; } = [];
 

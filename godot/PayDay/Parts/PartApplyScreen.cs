@@ -33,9 +33,9 @@ public partial class PartApplyScreen : CenterContainer {
 
         _current = _queue.Dequeue();
 
-        var rarityColour = PartRarityHelper.GetColour(_current.Rarity);
-        var rarityName = PartRarityHelper.GetDisplayName(_current.Rarity);
-        var exclamation = PartRarityHelper.GetExclamation(_current.Rarity);
+        var rarityColour = PartLevelHelper.GetColour(_current.Rarity);
+        var rarityName = PartLevelHelper.GetDisplayName(_current.Rarity);
+        var exclamation = PartLevelHelper.GetExclamation(_current.Rarity);
         var partName = _current.Part?.Name ?? "PART";
 
         var rarityLabel = GetNode<Label>("Panel/VBox/RarityLabel");

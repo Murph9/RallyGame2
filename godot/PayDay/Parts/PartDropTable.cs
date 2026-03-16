@@ -13,7 +13,7 @@ public static class PartDropTable {
     public static CollectedPart Generate(CarDetails carDetails, int dayNumber) {
         var allParts = carDetails.GetAllPartsInTree().ToList();
         var part = RandHelper.RandFromList(allParts);
-        var rarity = PartRarityHelper.RollRarity(dayNumber);
+        var rarity = PartLevelHelper.RollRarity(dayNumber);
         return new CollectedPart(part, rarity);
     }
 }

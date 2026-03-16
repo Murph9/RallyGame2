@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
 using murph9.RallyGame2.godot.Utilities;
@@ -332,7 +333,7 @@ public partial class HubScene : Node3D {
     private static void UpdateItemRarity(StaticBody3D item, PayDayGlobalState state) {
         if (state.PartInventory.Count == 0) return;
 
-        var best = PartRarity.Poor;
+        var best = PartLevel.Common;
         foreach (var part in state.PartInventory) {
             if (part.Rarity > best) best = part.Rarity;
         }
@@ -342,7 +343,7 @@ public partial class HubScene : Node3D {
                       or HubItemType.Lounge or HubItemType.Lamp) {
             var meshes = item.GetAllChildrenOfType<MeshInstance3D>();
             foreach (var mesh in meshes) {
-                PartRarityHelper.ApplyRarityMaterial(mesh, best);
+                PartLevelHelper.ApplyRarityMaterial(mesh, best);
             }
         }
     }
