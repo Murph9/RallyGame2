@@ -25,7 +25,7 @@ public partial class PayDayUI : CanvasLayer {
     public override void _Process(double delta) {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
         GetNode<Label>("HUD/TopBar/MoneyLabel").Text = $"${state.Money:F0}";
-        GetNode<Label>("HUD/TopBar/PartsLabel").Text = $"Parts: {state.PartCount}";
+        GetNode<Label>("HUD/TopBar/PartsLabel").Text = $"Parts: {state.PartInventory.Count}";
 
         if (!_running || _paused) return;
 

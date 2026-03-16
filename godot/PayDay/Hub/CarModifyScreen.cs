@@ -1,8 +1,8 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,44 +11,37 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 /// <summary>
 /// Fullscreen overlay shown when the player clicks the car in the hub.
 /// Left panel: grouped collapsible tree of collected parts, organised by subsystem.
-///   Each part row is draggable and can be dropped onto the car in the centre to apply it.
-///   A small "Apply" button on each row is kept as an accessible alternative.
+///   Each part row shows one button per owned rarity variant (only applicable ones shown).
+///   Staged changes are not committed until the player presses Confirm.
+///   Parts apply at the level matching their rarity tier.
+///   Poor parts (level 0) can always downgrade/reset a part back to default.
+///   Other tiers are blocked if their target level is not above the current level.
 /// Centre: the live 3D car view (camera switched to "car" by HubScene before this opens).
-/// A transparent Control overlay covers the centre area and acts as the DnD drop target.
 /// </summary>
 public partial class CarModifyScreen : CenterContainer {
 
     [Signal]
     public delegate void ClosedEventHandler();
 
-    // Drag-data key used to pass a CollectedPart between drag source and drop target.
-    // Shared with PartDropZone via internal visibility.
-    internal const string DRAG_KEY = "collected_part_index";
-
     public Vector3? Center { get; set; } = null;
 
-    // Populated in _Ready, used by the drop target
     private PayDayGlobalState _state;
-
-    // The tree container (left panel scroll)
     private VBoxContainer _treeContainer;
+    private Button _confirmButton;
+
+    // Staged changes: part name → (CollectedPart, targetLevel).
+    // Keyed by part name so staging the same part twice just overwrites.
+    private readonly Dictionary<string, (CollectedPart Cp, PartLevel TargetLevel)> _staged = [];
 
     public override void _Ready() {
         _state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
-        if (Center.HasValue) {
+        if (Center.HasValue)
             GetViewport().GetCamera3D().LookAt(Center.Value);
-        }
 
         _treeContainer = GetNode<VBoxContainer>("HBox/Panel/VBox/ScrollContainer/TreeContainer");
-
-        // Replace the static DropZone placeholder with a live PartDropZone instance
-        var staticDropZone = GetNode<Control>("HBox/DropZone");
-        var dropZone = new PartDropZone(this);
-        dropZone.SizeFlagsHorizontal = SizeFlags.Expand | SizeFlags.Fill;
-        dropZone.SizeFlagsVertical = SizeFlags.Expand | SizeFlags.Fill;
-        staticDropZone.GetParent().AddChild(dropZone);
-        staticDropZone.QueueFree();
+        _confirmButton = GetNode<Button>("HBox/Panel/VBox/ConfirmButton");
+        _confirmButton.Disabled = true;
 
         PopulateTree();
     }
@@ -56,19 +49,16 @@ public partial class CarModifyScreen : CenterContainer {
     // ─── Tree population ──────────────────────────────────────────────────────
 
     private void PopulateTree() {
-        // Clear existing rows
         foreach (var child in _treeContainer.GetChildren())
             child.QueueFree();
 
         if (_state.PartInventory.Count == 0) {
-            var empty = new Label { Text = "No parts in inventory." };
-            _treeContainer.AddChild(empty);
+            _treeContainer.AddChild(new Label { Text = "No parts in inventory." });
+            RefreshConfirmButton();
             return;
         }
 
-        // Group inventory by which subsystem owns the part
         var groups = BuildGroups(_state);
-
         bool anyGroup = false;
         foreach (var (groupName, items) in groups) {
             if (items.Count == 0) continue;
@@ -76,19 +66,20 @@ public partial class CarModifyScreen : CenterContainer {
             AddGroupSection(groupName, items);
         }
 
-        if (!anyGroup) {
-            var empty = new Label { Text = "No parts in inventory." };
-            _treeContainer.AddChild(empty);
-        }
+        if (!anyGroup)
+            _treeContainer.AddChild(new Label { Text = "No parts in inventory." });
+
+        RefreshConfirmButton();
     }
 
     /// <summary>
-    /// Returns ordered (groupName, [CollectedPart]) pairs, matched by subsystem ownership.
+    /// Returns groups where each entry is a list of CollectedPart lists grouped by part name.
+    /// Within each group, variants are ordered by descending rarity so the best shows first.
     /// </summary>
-    private static List<(string Name, List<CollectedPart> Parts)> BuildGroups(PayDayGlobalState state) {
-        var enginePartNames = new HashSet<string>(state.CarDetails.Engine.GetAllPartsInTree().Select(p => p.Name));
-        var susPartNames = new HashSet<string>(state.CarDetails.SuspensionDetails.GetAllPartsInTree().Select(p => p.Name));
-        var tractionPartNames = new HashSet<string>(state.CarDetails.TractionDetails.GetAllPartsInTree().Select(p => p.Name));
+    private static List<(string Name, List<List<CollectedPart>> PartGroups)> BuildGroups(PayDayGlobalState state) {
+        var engineNames = new HashSet<string>(state.CarDetails.Engine.GetAllPartsInTree().Select(p => p.Name));
+        var susNames = new HashSet<string>(state.CarDetails.SuspensionDetails.GetAllPartsInTree().Select(p => p.Name));
+        var tractionNames = new HashSet<string>(state.CarDetails.TractionDetails.GetAllPartsInTree().Select(p => p.Name));
 
         var engine = new List<CollectedPart>();
         var chassis = new List<CollectedPart>();
@@ -97,28 +88,30 @@ public partial class CarModifyScreen : CenterContainer {
 
         foreach (var cp in state.PartInventory) {
             if (cp.Part == null) continue;
-            if (enginePartNames.Contains(cp.Part.Name))
-                engine.Add(cp);
-            else if (susPartNames.Contains(cp.Part.Name))
-                sus.Add(cp);
-            else if (tractionPartNames.Contains(cp.Part.Name))
-                traction.Add(cp);
-            else
-                chassis.Add(cp);  // CarDetails.Parts: Brakes, Transmission, Nitro, Aero, etc.
+            if (engineNames.Contains(cp.Part.Name)) engine.Add(cp);
+            else if (susNames.Contains(cp.Part.Name)) sus.Add(cp);
+            else if (tractionNames.Contains(cp.Part.Name)) traction.Add(cp);
+            else chassis.Add(cp);
         }
 
         return [
-            ("Engine",          engine),
-            ("Chassis / Aero",  chassis),
-            ("Suspension",      sus),
-            ("Traction",        traction),
+            ("Engine",         GroupByPartName(engine)),
+            ("Chassis / Aero", GroupByPartName(chassis)),
+            ("Suspension",     GroupByPartName(sus)),
+            ("Traction",       GroupByPartName(traction)),
         ];
     }
 
-    private void AddGroupSection(string groupName, List<CollectedPart> items) {
-        // ── Category header (toggle button) ──
+    private static List<List<CollectedPart>> GroupByPartName(List<CollectedPart> parts) =>
+        parts
+            .GroupBy(cp => cp.Part.Name)
+            .Select(g => g.OrderByDescending(cp => cp.Rarity).ToList())
+            .ToList();
+
+    private void AddGroupSection(string groupName, List<List<CollectedPart>> partGroups) {
+        int partCount = partGroups.Count;
         var headerBtn = new Button {
-            Text = $"▼  {groupName}  ({items.Count})",
+            Text = $"▼  {groupName}  ({partCount})",
             Flat = true,
             SizeFlagsHorizontal = SizeFlags.Fill,
             Alignment = HorizontalAlignment.Left,
@@ -126,190 +119,183 @@ public partial class CarModifyScreen : CenterContainer {
         headerBtn.AddThemeColorOverride("font_color", Colors.LightGray);
         _treeContainer.AddChild(headerBtn);
 
-        // ── Child container (collapsible) ──
         var childBox = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.Fill };
         _treeContainer.AddChild(childBox);
 
-        // Toggle collapse on header click
         headerBtn.Pressed += () => {
             childBox.Visible = !childBox.Visible;
-            headerBtn.Text = (childBox.Visible ? "▼  " : "▶  ") + groupName + $"  ({items.Count})";
+            headerBtn.Text = (childBox.Visible ? "▼  " : "▶  ") + groupName + $"  ({partCount})";
         };
 
-        // ── Part rows ──
-        foreach (var cp in items) {
-            var part = cp.Part;
-            if (part == null) continue;
+        foreach (var group in partGroups) {
+            if (group.Count == 0) continue;
+            var currentLevel = _state.CarDetails.LevelOfPart(group[0].Part);
+            var maxLevel = group[0].Part.Levels.Length - 1;
+            var stagedCp = _staged.TryGetValue(group[0].Part.Name, out var s) ? s.Cp : null;
 
-            var currentLevel = _state.CarDetails.LevelOfPart(part);
-            var maxLevel = part.Levels.Length - 1;
-            var isMax = currentLevel >= maxLevel;
-
-            var row = new PartRow(cp, currentLevel, maxLevel, isMax);
-            row.ApplyRequested += () => ApplyPart(cp);
+            var row = new PartRow(group, currentLevel, maxLevel, stagedCp);
+            row.StageRequested += (cp) => StageChange(cp, row);
+            row.UnstageRequested += (cp) => UnstageChange(cp, row);
             childBox.AddChild(row);
         }
 
-        // Add a small separator under each group
         childBox.AddChild(new HSeparator());
     }
 
-    // ─── Part application ────────────────────────────────────────────────────
+    // ─── Staging ─────────────────────────────────────────────────────────────
 
-    /// <summary>Called by PartDropZone when a part is dropped onto the car view.</summary>
-    public void ApplyPartAtIndex(int inventoryIdx) {
-        if (inventoryIdx < 0 || inventoryIdx >= _state.PartInventory.Count) return;
-        ApplyPart(_state.PartInventory[inventoryIdx]);
+    private void StageChange(CollectedPart cp, PartRow row) {
+        var currentLevel = _state.CarDetails.LevelOfPart(cp.Part);
+        var maxLevel = cp.Part.Levels.Length - 1;
+        var targetLevel = Math.Min((int)cp.Rarity, maxLevel);
+
+        bool canApply = targetLevel == 0 ? currentLevel > 0 : targetLevel > (int)currentLevel;
+        if (!canApply) return;
+
+        _staged[cp.Part.Name] = (cp, (PartLevel)targetLevel);
+        row.MarkStaged(cp);
+        RefreshConfirmButton();
     }
 
-    private void ApplyPart(CollectedPart cp) {
-        var nextLevel = _state.CarDetails.LevelOfPart(cp.Part) + 1;
-        if (nextLevel > cp.Part.Levels.Length - 1) return;
+    private void UnstageChange(CollectedPart cp, PartRow row) {
+        _staged.Remove(cp.Part.Name);
+        row.MarkUnstaged(cp);
+        RefreshConfirmButton();
+    }
 
-        _state.CarDetails.ApplyPartChange(cp.Part, nextLevel);
-        _state.RemoveCollectedPart(cp);
+    private void RefreshConfirmButton() {
+        if (_confirmButton == null) return;
+        _confirmButton.Disabled = _staged.Count == 0;
+        _confirmButton.Text = _staged.Count > 0
+            ? $"Confirm ({_staged.Count} change{(_staged.Count == 1 ? "" : "s")})"
+            : "Confirm";
+    }
+
+    // ─── Confirm / Close ─────────────────────────────────────────────────────
+
+    public void ConfirmButton_Pressed() {
+        foreach (var (_, (cp, targetLevel)) in _staged) {
+            _state.CarDetails.ApplyPartChange(cp.Part, targetLevel);
+            _state.RemoveCollectedPart(cp);
+        }
+        _staged.Clear();
         PopulateTree();
     }
 
-    // ─── Drag source (on each PartRow) ───────────────────────────────────────
-
-    /// <summary>
-    /// Called from a PartRow when the user starts a drag. Returns drag data dict.
-    /// </summary>
-    public Variant MakeDragDataForPart(CollectedPart cp, Vector2 atPosition) {
-        var idx = _state.PartInventory.IndexOf(cp);
-        if (idx < 0) return default;
-
-        // Build a small drag preview label
-        var preview = new Label {
-            Text = $"{PartRarityHelper.GetDisplayName(cp.Rarity)} {cp.Part?.Name}",
-            CustomMinimumSize = new Vector2(200, 30),
-        };
-        preview.AddThemeColorOverride("font_color", PartRarityHelper.GetColour(cp.Rarity));
-        SetDragPreview(preview);
-
-        var dict = new Godot.Collections.Dictionary { [DRAG_KEY] = idx };
-        return dict;
+    public void CloseButton_Pressed() {
+        _staged.Clear();
+        EmitSignal(SignalName.Closed);
     }
-
-    // ─── Close ───────────────────────────────────────────────────────────────
-
-    public void CloseButton_Pressed() => EmitSignal(SignalName.Closed);
 }
 
-// ─── Inner helper: one draggable part row ────────────────────────────────────
+// ─── Part row ─────────────────────────────────────────────────────────────────
 
 /// <summary>
-/// A single row in the part tree. Shows rarity swatch, icon, name, level badge,
-/// and an Apply button. The whole row is draggable via Godot's Control DnD API.
+/// A single row in the part tree representing one part across all owned rarity variants.
+/// Layout: [colour bar] [icon] [part name] [Common] [Rare] [Epic] ...
+/// Only applicable tier buttons are shown. The staged tier shows ✕ instead of its name.
 /// </summary>
 public partial class PartRow : HBoxContainer {
 
     [Signal]
-    public delegate void ApplyRequestedEventHandler();
+    public delegate void StageRequestedEventHandler(CollectedPart cp);
 
-    private readonly CollectedPart _cp;
+    [Signal]
+    public delegate void UnstageRequestedEventHandler(CollectedPart cp);
 
-    public PartRow(CollectedPart cp, int currentLevel, int maxLevel, bool isMax) {
-        _cp = cp;
+    // One entry per variant: the button and its named press handler (for clean -=).
+    private readonly record struct TierEntry(CollectedPart Cp, Button Btn, Action Handler);
+    private readonly List<TierEntry> _tierEntries = [];
 
+    public PartRow(List<CollectedPart> variants, PartLevel currentLevel, int maxLevel, CollectedPart stagedCp) {
         SizeFlagsHorizontal = SizeFlags.Fill;
         MouseFilter = MouseFilterEnum.Stop;
 
-        // Rarity colour bar (narrow)
-        var swatch = new ColorRect {
+        // ── Rarity colour bar (colour of the highest-rarity owned variant) ───
+        AddChild(new ColorRect {
             CustomMinimumSize = new Vector2(6, 0),
-            Color = PartRarityHelper.GetColour(cp.Rarity),
+            Color = PartLevelHelper.GetColour(variants[0].Rarity),
             SizeFlagsVertical = SizeFlags.Fill,
-        };
-        AddChild(swatch);
+        });
 
-        // Part icon
-        if (cp.Part?.IconImage != null) {
-            var icon = new TextureRect {
-                Texture = cp.Part.IconImage,
+        // ── Part icon ────────────────────────────────────────────────────────
+        var part = variants[0].Part;
+        if (part?.IconImage != null) {
+            AddChild(new TextureRect {
+                Texture = part.IconImage,
                 CustomMinimumSize = new Vector2(32, 32),
                 ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            };
-            AddChild(icon);
+            });
         }
 
-        // Part name + rarity text
-        var nameLabel = new Label {
-            Text = $"{cp.Part?.Name ?? "Unknown"}",
+        // ── Part name ────────────────────────────────────────────────────────
+        AddChild(new Label {
+            Text = part?.Name ?? "Unknown",
             SizeFlagsHorizontal = SizeFlags.Expand | SizeFlags.Fill,
             VerticalAlignment = VerticalAlignment.Center,
-        };
-        nameLabel.AddThemeColorOverride("font_color", isMax ? Colors.Gray : PartRarityHelper.GetColour(cp.Rarity));
-        AddChild(nameLabel);
+        });
 
-        // Level badge
-        var levelLabel = new Label {
-            Text = isMax ? "MAX" : $"Lv {currentLevel}→{currentLevel + 1}",
-            CustomMinimumSize = new Vector2(70, 0),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        levelLabel.AddThemeColorOverride("font_color", isMax ? Colors.Gray : Colors.White);
-        AddChild(levelLabel);
+        // ── Per-tier buttons ─────────────────────────────────────────────────
+        // One button per applicable variant, ordered best-first (variants already sorted desc).
+        // Inapplicable variants are hidden entirely.
+        foreach (var cp in variants) {
+            int targetLevel = Math.Min((int)cp.Rarity, maxLevel);
+            bool applicable = targetLevel == 0 ? currentLevel > 0 : targetLevel > (int)currentLevel;
 
-        // Apply button (accessible alternative to drag-and-drop)
-        var applyBtn = new Button {
-            Text = isMax ? "Max" : "Apply",
-            Disabled = isMax,
-            CustomMinimumSize = new Vector2(60, 0),
-        };
-        if (!isMax) {
-            applyBtn.Pressed += () => EmitSignal(SignalName.ApplyRequested);
+            bool isStaged = stagedCp != null && ReferenceEquals(stagedCp, cp);
+
+            // Hidden if not applicable and not staged (staged always visible so ✕ is reachable).
+            if (!applicable && !isStaged) continue;
+
+            var btn = new Button {
+                CustomMinimumSize = new Vector2(80, 0),
+            };
+            btn.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(cp.Rarity));
+
+            Action handler;
+            if (isStaged) {
+                btn.Text = "✕";
+                handler = () => EmitSignal(SignalName.UnstageRequested, cp);
+            } else {
+                btn.Text = PartLevelHelper.GetDisplayName(cp.Rarity);
+                handler = () => EmitSignal(SignalName.StageRequested, cp);
+            }
+            btn.Pressed += handler;
+
+            AddChild(btn);
+            _tierEntries.Add(new TierEntry(cp, btn, handler));
         }
-        AddChild(applyBtn);
     }
 
-    public override Variant _GetDragData(Vector2 atPosition) {
-        if (_cp.Part == null) return default;
+    // ─── Called by CarModifyScreen ────────────────────────────────────────────
 
-        // Find the CarModifyScreen ancestor to delegate preview + data creation
-        var screen = FindCarModifyScreen();
-        if (screen == null) return default;
+    /// <summary>Switches the staged variant's button to ✕ / UnstageRequested.</summary>
+    public void MarkStaged(CollectedPart cp) {
+        var entry = _tierEntries.FirstOrDefault(e => ReferenceEquals(e.Cp, cp));
+        if (entry.Btn == null) return;
 
-        return screen.MakeDragDataForPart(_cp, atPosition);
+        entry.Btn.Pressed -= entry.Handler;
+        Action newHandler = () => EmitSignal(SignalName.UnstageRequested, cp);
+        entry.Btn.Text = "✕";
+        entry.Btn.Pressed += newHandler;
+
+        // Update stored handler so MarkUnstaged can remove it cleanly.
+        int idx = _tierEntries.IndexOf(entry);
+        _tierEntries[idx] = entry with { Handler = newHandler };
     }
 
-    private CarModifyScreen FindCarModifyScreen() {
-        Node node = GetParent();
-        while (node != null) {
-            if (node is CarModifyScreen s) return s;
-            node = node.GetParent();
-        }
-        return null;
-    }
-}
+    /// <summary>Restores the previously staged variant's button to its rarity name.</summary>
+    public void MarkUnstaged(CollectedPart cp) {
+        var entry = _tierEntries.FirstOrDefault(e => ReferenceEquals(e.Cp, cp));
+        if (entry.Btn == null) return;
 
-// ─── Drop zone: transparent Control covering the centre car area ──────────────
+        entry.Btn.Pressed -= entry.Handler;
+        Action newHandler = () => EmitSignal(SignalName.StageRequested, cp);
+        entry.Btn.Text = PartLevelHelper.GetDisplayName(cp.Rarity);
+        entry.Btn.Pressed += newHandler;
 
-/// <summary>
-/// Transparent Control that fills the centre area of CarModifyScreen.
-/// Accepts drag data from PartRow and applies the part to the car on drop.
-/// </summary>
-public partial class PartDropZone : Control {
-
-    private readonly CarModifyScreen _screen;
-
-    public PartDropZone(CarModifyScreen screen) {
-        _screen = screen;
-        MouseFilter = MouseFilterEnum.Stop;
-    }
-
-    public override bool _CanDropData(Vector2 atPosition, Variant data) {
-        if (data.VariantType != Variant.Type.Dictionary) return false;
-        var dict = data.As<Godot.Collections.Dictionary>();
-        return dict.ContainsKey(CarModifyScreen.DRAG_KEY);
-    }
-
-    public override void _DropData(Vector2 atPosition, Variant data) {
-        var dict = data.As<Godot.Collections.Dictionary>();
-        var idx = dict[CarModifyScreen.DRAG_KEY].AsInt32();
-        _screen.ApplyPartAtIndex(idx);
+        int idx = _tierEntries.IndexOf(entry);
+        _tierEntries[idx] = entry with { Handler = newHandler };
     }
 }

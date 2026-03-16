@@ -206,7 +206,7 @@ public partial class HundredRallyGame : Node {
             var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
             var state = GetNode<GlobalState>("/root/GlobalState");
             _upgradeScreen.SetParts(state.PlayerCar.Details.GetAllPartsInTree()
-                .Where(x => x.CurrentLevel < x.Levels.Length - 1)
+                .Where(x => (int)x.CurrentLevel < x.Levels.Length - 1)
                 .OrderBy(x => GD.Randi())
                 .Take(hundredState.ShopPartCount)
                 .ToList());

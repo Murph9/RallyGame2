@@ -46,9 +46,6 @@ public partial class PayDayGame : Node {
         state.Reset();
         state.SetCarDetails(CarMake.Runner.LoadFromFile(Main.DEFAULT_GRAVITY));
 
-        // Seed inventory with one Poor copy of every car part as level-0 defaults
-        foreach (var part in state.CarDetails.GetAllPartsInTree())
-            state.AddCollectedPart(new CollectedPart(part, PartRarity.Poor));
 #if DEBUG
         // add some parts on debug
         for (var i = 0; i < 5; i++) {
@@ -133,7 +130,7 @@ public partial class PayDayGame : Node {
         };
         racingScene.RivalWon += (reward) => {
             _runParts.Add(reward);
-            GD.Print($"{PartRarityHelper.GetExclamation(reward.Rarity)} {PartRarityHelper.GetDisplayName(reward.Rarity)} {reward.Part?.Name}!");
+            GD.Print($"{PartLevelHelper.GetExclamation(reward.Rarity)} {PartLevelHelper.GetDisplayName(reward.Rarity)} {reward.Part?.Name}!");
             GetNode<PayDayGlobalState>("/root/PayDayGlobalState").AddCollectedPart(reward);
         };
         racingScene.RivalWonMoney += () => {

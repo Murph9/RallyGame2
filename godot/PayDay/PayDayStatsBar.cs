@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace murph9.RallyGame2.godot.PayDay;
@@ -33,6 +34,6 @@ public partial class PayDayStatsBar : CanvasLayer {
         _dayLabel.Text = $"Day {state.DayNumber}";
         _loanLabel.Text = $"Loan: ${state.Loan.Principal:F0}";
         _moneyLabel.Text = $"Wallet: ${state.Money:F0}";
-        _partsLabel.Text = $"Parts: {state.PartInventory.Count}";
+        _partsLabel.Text = $"Parts: {state.PartInventory.Count}:\n{string.Join("\n", state.PartInventory.Select(x => $"{x.Part.Name} @ {x.Rarity}"))}";
     }
 }

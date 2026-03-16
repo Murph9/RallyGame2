@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component;
 using System.Linq;
 
@@ -127,9 +128,9 @@ public partial class UpgradeTestMenu : CenterContainer {
                 popup.AddItem("Level: " + i.ToString() + " " + string.Join(", ", l.Select(x => x.Key + ": " + x.Value)));
                 i++;
             }
-            option.Selected = part.CurrentLevel;
+            option.Selected = (int)part.CurrentLevel;
             option.ItemSelected += (id) => {
-                part.CurrentLevel = (int)id;
+                part.CurrentLevel = (PartLevel)id;
                 LoadPage();
             };
             var richLabel = new RichTextLabel() {

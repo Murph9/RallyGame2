@@ -67,12 +67,12 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 });
             } else {
                 container.AddChild(new Label() {
-                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[part.CurrentLevel + 1]}"
+                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[(int)(part.CurrentLevel + 1)]}"
                 });
             }
             var optionButton = new Button() {
                 Text = "Choose",
-                Disabled = alreadyBought || part.LevelCost[part.CurrentLevel + 1] > state.Money
+                Disabled = alreadyBought || part.LevelCost[(int)(part.CurrentLevel + 1)] > state.Money
             };
             optionButton.Pressed += () => {
                 if (_appliedPart == part)
@@ -96,7 +96,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         };
         saveButton.Pressed += () => {
             if (_appliedPart != null) {
-                _moneyPaid = (float)_appliedPart.LevelCost[_appliedPart.CurrentLevel + 1];
+                _moneyPaid = (float)_appliedPart.LevelCost[(int)(_appliedPart.CurrentLevel + 1)];
             }
             EmitSignal(SignalName.Closed, _appliedPart != null);
         };
