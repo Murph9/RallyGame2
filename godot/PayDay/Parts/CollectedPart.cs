@@ -8,6 +8,6 @@ namespace murph9.RallyGame2.godot.PayDay.Parts;
 /// Extends RefCounted so it can be passed through Godot signals as a Variant.
 /// </summary>
 public partial class CollectedPart(PartDetails part, PartLevel rarity) : RefCounted {
-    public PartDetails Part { get; set; } = part;
-    public PartLevel Rarity { get; set; } = rarity;
+    public PartDetails Part { get; init; } = part;
+    public PartLevel Rarity { get; init; } = rarity;
 }

@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.PayDay.Loan;
 using murph9.RallyGame2.godot.PayDay.Parts;
 using System.Collections.Generic;
@@ -21,11 +22,13 @@ public partial class PayDayGlobalState : Node {
     [Signal]
     public delegate void GameLostEventHandler();
 
+    private readonly List<CollectedPart> _partInventory = [];
+    public IReadOnlyCollection<CollectedPart> PartInventory => _partInventory;
+
     public float Money { get; private set; }
     public int DayNumber { get; private set; }
     public CarDetails CarDetails { get; private set; }
     public LoanState Loan { get; private set; }
-    public List<CollectedPart> PartInventory { get; private set; } = [];
 
     public PayDayGlobalState() {
         Reset();
@@ -35,7 +38,6 @@ public partial class PayDayGlobalState : Node {
         Money = 0f;
         DayNumber = 1;
         Loan = new LoanState(startPrincipal: 5000f);
-        PartInventory = [];
         CarDetails = null;
     }
 
@@ -54,11 +56,15 @@ public partial class PayDayGlobalState : Node {
     }
 
     public void AddCollectedPart(CollectedPart part) {
-        PartInventory.Add(part);
+        if (part.Rarity == PartLevel.Common)
+            return; // do not save common parts, we always own them
+        _partInventory.Add(part);
     }
 
     public void RemoveCollectedPart(CollectedPart part) {
-        PartInventory.Remove(part);
+        if (part.Rarity == PartLevel.Common)
+            return; // do not remove common parts, we always own them
+        _partInventory.Remove(part);
     }
 
     public void EndRun(float moneyEarned) {

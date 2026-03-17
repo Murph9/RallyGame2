@@ -2,6 +2,7 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,14 +25,12 @@ public partial class CarModifyScreen : CenterContainer {
     public delegate void ClosedEventHandler();
 
     public Vector3? Center { get; set; } = null;
+    private readonly List<PartRow> _rows = [];
 
     private PayDayGlobalState _state;
     private VBoxContainer _treeContainer;
     private Button _confirmButton;
 
-    // Staged changes: part name → (CollectedPart, targetLevel).
-    // Keyed by part name so staging the same part twice just overwrites.
-    private readonly Dictionary<string, (CollectedPart Cp, PartLevel TargetLevel)> _staged = [];
 
     public override void _Ready() {
         _state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
@@ -58,12 +57,15 @@ public partial class CarModifyScreen : CenterContainer {
             return;
         }
 
-        var groups = BuildGroups(_state);
+        var partsByCategory = _state.CarDetails.GetAllPartsInTree().GroupBy(x => _state.CarDetails.GetPartCategory(x));
+
         bool anyGroup = false;
-        foreach (var (groupName, items) in groups) {
-            if (items.Count == 0) continue;
+        foreach (var group in partsByCategory) {
+            if (!group.Any())
+                continue;
+
             anyGroup = true;
-            AddGroupSection(groupName, items);
+            AddGroupSection(group.Key.ToString(), [.. group]);
         }
 
         if (!anyGroup)
@@ -72,46 +74,9 @@ public partial class CarModifyScreen : CenterContainer {
         RefreshConfirmButton();
     }
 
-    /// <summary>
-    /// Returns groups where each entry is a list of CollectedPart lists grouped by part name.
-    /// Within each group, variants are ordered by descending rarity so the best shows first.
-    /// </summary>
-    private static List<(string Name, List<List<CollectedPart>> PartGroups)> BuildGroups(PayDayGlobalState state) {
-        var engineNames = new HashSet<string>(state.CarDetails.Engine.GetAllPartsInTree().Select(p => p.Name));
-        var susNames = new HashSet<string>(state.CarDetails.SuspensionDetails.GetAllPartsInTree().Select(p => p.Name));
-        var tractionNames = new HashSet<string>(state.CarDetails.TractionDetails.GetAllPartsInTree().Select(p => p.Name));
-
-        var engine = new List<CollectedPart>();
-        var chassis = new List<CollectedPart>();
-        var sus = new List<CollectedPart>();
-        var traction = new List<CollectedPart>();
-
-        foreach (var cp in state.PartInventory) {
-            if (cp.Part == null) continue;
-            if (engineNames.Contains(cp.Part.Name)) engine.Add(cp);
-            else if (susNames.Contains(cp.Part.Name)) sus.Add(cp);
-            else if (tractionNames.Contains(cp.Part.Name)) traction.Add(cp);
-            else chassis.Add(cp);
-        }
-
-        return [
-            ("Engine",         GroupByPartName(engine)),
-            ("Chassis / Aero", GroupByPartName(chassis)),
-            ("Suspension",     GroupByPartName(sus)),
-            ("Traction",       GroupByPartName(traction)),
-        ];
-    }
-
-    private static List<List<CollectedPart>> GroupByPartName(List<CollectedPart> parts) =>
-        parts
-            .GroupBy(cp => cp.Part.Name)
-            .Select(g => g.OrderByDescending(cp => cp.Rarity).ToList())
-            .ToList();
-
-    private void AddGroupSection(string groupName, List<List<CollectedPart>> partGroups) {
-        int partCount = partGroups.Count;
+    private void AddGroupSection(string groupName, List<PartDetails> parts) {
         var headerBtn = new Button {
-            Text = $"▼  {groupName}  ({partCount})",
+            Text = $"▼  {groupName}  ({parts.Count})",
             Flat = true,
             SizeFlagsHorizontal = SizeFlags.Fill,
             Alignment = HorizontalAlignment.Left,
@@ -124,102 +89,94 @@ public partial class CarModifyScreen : CenterContainer {
 
         headerBtn.Pressed += () => {
             childBox.Visible = !childBox.Visible;
-            headerBtn.Text = (childBox.Visible ? "▼  " : "▶  ") + groupName + $"  ({partCount})";
+            headerBtn.Text = (childBox.Visible ? "▼  " : "▶  ") + groupName + $"  ({parts.Count})";
         };
 
-        foreach (var group in partGroups) {
-            if (group.Count == 0) continue;
-            var currentLevel = _state.CarDetails.LevelOfPart(group[0].Part);
-            var maxLevel = group[0].Part.Levels.Length - 1;
-            var stagedCp = _staged.TryGetValue(group[0].Part.Name, out var s) ? s.Cp : null;
+        foreach (var part in parts) {
+            var currentLevel = _state.CarDetails.LevelOfPart(part);
+            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part == part));
+            row.Updated += RefreshConfirmButton;
 
-            var row = new PartRow(group, currentLevel, maxLevel, stagedCp);
-            row.StageRequested += (cp) => StageChange(cp, row);
-            row.UnstageRequested += (cp) => UnstageChange(cp, row);
             childBox.AddChild(row);
+            _rows.Add(row);
         }
 
         childBox.AddChild(new HSeparator());
     }
 
-    // ─── Staging ─────────────────────────────────────────────────────────────
-
-    private void StageChange(CollectedPart cp, PartRow row) {
-        var currentLevel = _state.CarDetails.LevelOfPart(cp.Part);
-        var maxLevel = cp.Part.Levels.Length - 1;
-        var targetLevel = Math.Min((int)cp.Rarity, maxLevel);
-
-        bool canApply = targetLevel == 0 ? currentLevel > 0 : targetLevel > (int)currentLevel;
-        if (!canApply) return;
-
-        _staged[cp.Part.Name] = (cp, (PartLevel)targetLevel);
-        row.MarkStaged(cp);
-        RefreshConfirmButton();
-    }
-
-    private void UnstageChange(CollectedPart cp, PartRow row) {
-        _staged.Remove(cp.Part.Name);
-        row.MarkUnstaged(cp);
-        RefreshConfirmButton();
-    }
-
     private void RefreshConfirmButton() {
-        if (_confirmButton == null) return;
-        _confirmButton.Disabled = _staged.Count == 0;
-        _confirmButton.Text = _staged.Count > 0
-            ? $"Confirm ({_staged.Count} change{(_staged.Count == 1 ? "" : "s")})"
+        if (_confirmButton == null)
+            return;
+
+        var countChanged = _rows.Count(x => x.GetResult()?.Rarity != null);
+        _confirmButton.Disabled = countChanged == 0;
+        _confirmButton.Text = countChanged > 0
+            ? $"Confirm ({countChanged} change{(countChanged == 1 ? "" : "s")})"
             : "Confirm";
     }
 
-    // ─── Confirm / Close ─────────────────────────────────────────────────────
-
     public void ConfirmButton_Pressed() {
-        foreach (var (_, (cp, targetLevel)) in _staged) {
-            _state.CarDetails.ApplyPartChange(cp.Part, targetLevel);
-            _state.RemoveCollectedPart(cp);
+        foreach (var row in _rows) {
+            var newRarity = row.GetResult();
+            if (newRarity != null)
+                _state.CarDetails.ApplyPartChange(newRarity.Part, newRarity.Rarity);
+            row.Reset();
         }
-        _staged.Clear();
-        PopulateTree();
+        EmitSignal(SignalName.Closed);
     }
 
     public void CloseButton_Pressed() {
-        _staged.Clear();
+        foreach (var row in _rows)
+            row.Reset();
         EmitSignal(SignalName.Closed);
     }
 }
 
-// ─── Part row ─────────────────────────────────────────────────────────────────
+
+public partial class StagedPart(PartDetails part, PartLevel rarity) : RefCounted {
+    public PartDetails Part { get; } = part;
+    public PartLevel Rarity { get; } = rarity;
+
+    public override bool Equals(object? obj) {
+        if (obj == null) return false;
+        if (obj is not StagedPart sp) return false;
+        return sp.Part == Part && sp.Rarity == Rarity;
+    }
+    public override int GetHashCode() => 79 * Part.GetHashCode() + 41 * Rarity.GetHashCode();
+}
 
 /// <summary>
 /// A single row in the part tree representing one part across all owned rarity variants.
-/// Layout: [colour bar] [icon] [part name] [Common] [Rare] [Epic] ...
-/// Only applicable tier buttons are shown. The staged tier shows ✕ instead of its name.
+/// The staged tier shows ✕ and current is ✓ instead of its name.
 /// </summary>
 public partial class PartRow : HBoxContainer {
 
     [Signal]
-    public delegate void StageRequestedEventHandler(CollectedPart cp);
+    public delegate void UpdatedEventHandler();
 
-    [Signal]
-    public delegate void UnstageRequestedEventHandler(CollectedPart cp);
+    private readonly List<(PartLevel, Button)> _tiers = [];
 
-    // One entry per variant: the button and its named press handler (for clean -=).
-    private readonly record struct TierEntry(CollectedPart Cp, Button Btn, Action Handler);
-    private readonly List<TierEntry> _tierEntries = [];
+    private readonly PartDetails _part;
+    private readonly PartLevel _existingRarity;
+    private PartLevel? _newRarity = null;
 
-    public PartRow(List<CollectedPart> variants, PartLevel currentLevel, int maxLevel, CollectedPart stagedCp) {
+    public void Reset() => _newRarity = null;
+    public StagedPart GetResult() => _newRarity.HasValue ? new StagedPart(_part, _newRarity.Value) : null;
+
+    public PartRow(PartDetails part, PartLevel currentRarity, IEnumerable<CollectedPart> ownedRarities) {
+        _part = part;
+        _existingRarity = currentRarity;
+
         SizeFlagsHorizontal = SizeFlags.Fill;
         MouseFilter = MouseFilterEnum.Stop;
 
-        // ── Rarity colour bar (colour of the highest-rarity owned variant) ───
+        // Colour of the current rarity
         AddChild(new ColorRect {
             CustomMinimumSize = new Vector2(6, 0),
-            Color = PartLevelHelper.GetColour(variants[0].Rarity),
+            Color = PartLevelHelper.GetColour(currentRarity),
             SizeFlagsVertical = SizeFlags.Fill,
         });
 
-        // ── Part icon ────────────────────────────────────────────────────────
-        var part = variants[0].Part;
         if (part?.IconImage != null) {
             AddChild(new TextureRect {
                 Texture = part.IconImage,
@@ -229,73 +186,53 @@ public partial class PartRow : HBoxContainer {
             });
         }
 
-        // ── Part name ────────────────────────────────────────────────────────
+        // Part name
         AddChild(new Label {
-            Text = part?.Name ?? "Unknown",
+            Text = part.Name ?? "Unknown",
             SizeFlagsHorizontal = SizeFlags.Expand | SizeFlags.Fill,
             VerticalAlignment = VerticalAlignment.Center,
         });
 
-        // ── Per-tier buttons ─────────────────────────────────────────────────
-        // One button per applicable variant, ordered best-first (variants already sorted desc).
-        // Inapplicable variants are hidden entirely.
-        foreach (var cp in variants) {
-            int targetLevel = Math.Min((int)cp.Rarity, maxLevel);
-            bool applicable = targetLevel == 0 ? currentLevel > 0 : targetLevel > (int)currentLevel;
+        foreach (var (level, index) in part.Levels.WithIndex()) {
+            // always show common, but and only show owned tiers
+            if ((PartLevel)index != PartLevel.Common && !ownedRarities.Any(x => (int)x.Rarity == index))
+                continue;
 
-            bool isStaged = stagedCp != null && ReferenceEquals(stagedCp, cp);
-
-            // Hidden if not applicable and not staged (staged always visible so ✕ is reachable).
-            if (!applicable && !isStaged) continue;
+            var rarity = (PartLevel)index;
 
             var btn = new Button {
-                CustomMinimumSize = new Vector2(80, 0),
+                CustomMinimumSize = new Vector2(80, 0)
             };
-            btn.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(cp.Rarity));
-
-            Action handler;
-            if (isStaged) {
-                btn.Text = "✕";
-                handler = () => EmitSignal(SignalName.UnstageRequested, cp);
-            } else {
-                btn.Text = PartLevelHelper.GetDisplayName(cp.Rarity);
-                handler = () => EmitSignal(SignalName.StageRequested, cp);
-            }
-            btn.Pressed += handler;
+            btn.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(rarity));
+            btn.Pressed += () => ButtonPressed(rarity);
 
             AddChild(btn);
-            _tierEntries.Add(new TierEntry(cp, btn, handler));
+            _tiers.Add(new(rarity, btn));
         }
+        UpdateButtons();
     }
 
-    // ─── Called by CarModifyScreen ────────────────────────────────────────────
-
-    /// <summary>Switches the staged variant's button to ✕ / UnstageRequested.</summary>
-    public void MarkStaged(CollectedPart cp) {
-        var entry = _tierEntries.FirstOrDefault(e => ReferenceEquals(e.Cp, cp));
-        if (entry.Btn == null) return;
-
-        entry.Btn.Pressed -= entry.Handler;
-        Action newHandler = () => EmitSignal(SignalName.UnstageRequested, cp);
-        entry.Btn.Text = "✕";
-        entry.Btn.Pressed += newHandler;
-
-        // Update stored handler so MarkUnstaged can remove it cleanly.
-        int idx = _tierEntries.IndexOf(entry);
-        _tierEntries[idx] = entry with { Handler = newHandler };
+    private void ButtonPressed(PartLevel rarity) {
+        if (_existingRarity == rarity) {
+            _newRarity = null;
+        } else {
+            _newRarity = rarity;
+        }
+        UpdateButtons();
     }
 
-    /// <summary>Restores the previously staged variant's button to its rarity name.</summary>
-    public void MarkUnstaged(CollectedPart cp) {
-        var entry = _tierEntries.FirstOrDefault(e => ReferenceEquals(e.Cp, cp));
-        if (entry.Btn == null) return;
+    private void UpdateButtons() {
+        foreach (var tier in _tiers) {
+            var btn = tier.Item2;
+            if (tier.Item1 == _newRarity) {
+                btn.Text = "✓";
+            } else if (tier.Item1 == _existingRarity) {
+                btn.Text = "Owned";
+            } else {
+                btn.Text = PartLevelHelper.GetDisplayName(tier.Item1);
+            }
+        }
 
-        entry.Btn.Pressed -= entry.Handler;
-        Action newHandler = () => EmitSignal(SignalName.StageRequested, cp);
-        entry.Btn.Text = PartLevelHelper.GetDisplayName(cp.Rarity);
-        entry.Btn.Pressed += newHandler;
-
-        int idx = _tierEntries.IndexOf(entry);
-        _tierEntries[idx] = entry with { Handler = newHandler };
+        EmitSignal(SignalName.Updated);
     }
 }
