@@ -39,7 +39,7 @@ public partial class HundredUI : HBoxContainer {
                 Text = part.Name
             });
             hbox.AddChild(new Label() {
-                Text = part.CurrentLevel.ToString()
+                Text = state.CarDetails.LevelOfPart(part).ToString()
             });
             hbox.AddChild(new TextureRect() {
                 Texture = part.IconImage,
@@ -103,7 +103,7 @@ public partial class HundredUI : HBoxContainer {
         var allParts = state.CarDetails.GetAllPartsInTree();
         foreach (var part in allParts) {
             var uiPart = _partMappings[part.Name];
-            uiPart.Item2.GetChild<Label>(1).Text = part.CurrentLevel.ToString();
+            uiPart.Item2.GetChild<Label>(1).Text = state.CarDetails.LevelOfPart(part).ToString();
         }
 
         // update relic view

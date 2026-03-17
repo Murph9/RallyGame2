@@ -10,7 +10,6 @@ namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 public class PartDetails {
     public string Name { get; set; }
     public string Color { get; set; }
-    public PartLevel CurrentLevel { get; set; }
     public double[] LevelCost { get; set; }
     public string Icon { get; set; }
     [JsonIgnore]
@@ -18,7 +17,7 @@ public class PartDetails {
 
     public Dictionary<string, object>[] Levels { get; set; }
 
-    public Dictionary<string, object> GetLevel() => GetAllValues()[(int)CurrentLevel];
+    public Dictionary<string, object> GetLevel(PartLevel level) => GetAllValues()[(int)level];
     public Dictionary<string, object>[] GetAllValues() => Levels;
 
     public void Validate(IEnumerable<FieldInfo> allFields) {

@@ -5,6 +5,7 @@ namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 public interface IHaveParts {
     PartCategory PartCategory { get; }
     List<PartDetails> Parts { get; }
+    Dictionary<string, PartLevel> PartLevels { get; set; }
     IEnumerable<PartDetails> GetAllPartsInTree();
     IEnumerable<PartResult> GetPartResultsInTree();
 }

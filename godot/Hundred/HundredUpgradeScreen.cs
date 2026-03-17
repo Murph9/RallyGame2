@@ -19,6 +19,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
     private ICollection<PartDetails> _currentPartOptions = [];
 
     private PartDetails _appliedPart;
+    private PartLevel _targetLevel;
     private float _moneyPaid;
     private Button _buttonPressed;
 
@@ -46,7 +47,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         _currentPartOptions = [.. parts];
     }
 
-    public (PartDetails, float) GetChangedDetails() => (_appliedPart, _moneyPaid);
+    public (PartDetails, PartLevel, float) GetChangedDetails() => (_appliedPart, _targetLevel, _moneyPaid);
 
     private void LoadOptions(HundredGlobalState state) {
         var optionsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerOptions");
@@ -59,20 +60,16 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
             });
-            var alreadyBought = part.CurrentLevel + 1 == state.CarDetails.LevelOfPart(part);
+            var currentLevel = state.CarDetails.LevelOfPart(part);
+            var targetLevel = currentLevel + 1;
 
-            if (alreadyBought) {
-                container.AddChild(new Label() {
-                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} bought"
-                });
-            } else {
-                container.AddChild(new Label() {
-                    Text = $"{part.Name} lvl {part.CurrentLevel + 1} for ${part.LevelCost[(int)(part.CurrentLevel + 1)]}"
-                });
-            }
+            container.AddChild(new Label() {
+                Text = $"{part.Name} lvl {targetLevel} for ${part.LevelCost[(int)targetLevel]}"
+            });
+
             var optionButton = new Button() {
                 Text = "Choose",
-                Disabled = alreadyBought || part.LevelCost[(int)(part.CurrentLevel + 1)] > state.Money
+                Disabled = part.LevelCost[(int)targetLevel] > state.Money
             };
             optionButton.Pressed += () => {
                 if (_appliedPart == part)
@@ -80,9 +77,10 @@ public partial class HundredUpgradeScreen : CenterContainer {
 
                 // clone it so we don't modify the original
                 var currentClone = state.CarDetails.Clone();
-                currentClone.ApplyPartChange(part, part.CurrentLevel + 1);
+                currentClone.ApplyPartChange(part, targetLevel);
 
                 _appliedPart = part;
+                _targetLevel = targetLevel;
                 _buttonPressed = optionButton;
                 ReloadStats(state, currentClone);
             };
@@ -96,7 +94,7 @@ public partial class HundredUpgradeScreen : CenterContainer {
         };
         saveButton.Pressed += () => {
             if (_appliedPart != null) {
-                _moneyPaid = (float)_appliedPart.LevelCost[(int)(_appliedPart.CurrentLevel + 1)];
+                _moneyPaid = (float)_appliedPart.LevelCost[(int)_targetLevel];
             }
             EmitSignal(SignalName.Closed, _appliedPart != null);
         };

@@ -128,9 +128,9 @@ public partial class UpgradeTestMenu : CenterContainer {
                 popup.AddItem("Level: " + i.ToString() + " " + string.Join(", ", l.Select(x => x.Key + ": " + x.Value)));
                 i++;
             }
-            option.Selected = (int)part.CurrentLevel;
+            option.Selected = (int)_carDetails.LevelOfPart(part);
             option.ItemSelected += (id) => {
-                part.CurrentLevel = (PartLevel)id;
+                _carDetails.ApplyPartChange(part, (PartLevel)id);
                 LoadPage();
             };
             var richLabel = new RichTextLabel() {

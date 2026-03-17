@@ -206,7 +206,7 @@ public partial class HundredRallyGame : Node {
             var hundredState = GetNode<HundredGlobalState>("/root/HundredGlobalState");
             var state = GetNode<GlobalState>("/root/GlobalState");
             _upgradeScreen.SetParts(state.PlayerCar.Details.GetAllPartsInTree()
-                .Where(x => (int)x.CurrentLevel < x.Levels.Length - 1)
+                .Where(x => (int)hundredState.CarDetails.LevelOfPart(x) < x.Levels.Length - 1)
                 .OrderBy(x => GD.Randi())
                 .Take(hundredState.ShopPartCount)
                 .ToList());
@@ -218,10 +218,10 @@ public partial class HundredRallyGame : Node {
 
                     var changedDetails = _upgradeScreen.GetChangedDetails();
                     var newCarDetails = state.CarDetails.Clone();
-                    newCarDetails.ApplyPartChange(changedDetails.Item1, changedDetails.Item1.CurrentLevel + 1);
+                    newCarDetails.ApplyPartChange(changedDetails.Item1, changedDetails.Item2);
 
                     state.SetCarDetails(newCarDetails);
-                    state.AddMoney(-changedDetails.Item2);
+                    state.AddMoney(-changedDetails.Item3);
                 }
 
                 SetPauseState(false);

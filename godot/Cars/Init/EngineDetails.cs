@@ -59,6 +59,7 @@ public class EngineDetails : IHaveParts {
     [JsonIgnore]
     private PartReader PartReader { get; init; }
     public List<PartDetails> Parts { get; init; } = [];
+    public Dictionary<string, PartLevel> PartLevels { get; set; } = [];
 
     public EngineDetails() {
         PartReader = new PartReader(this);

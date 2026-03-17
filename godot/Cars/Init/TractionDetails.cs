@@ -12,6 +12,7 @@ public class TractionDetails : IHaveParts {
     [JsonIgnore]
     private PartReader PartReader { get; init; }
     public List<PartDetails> Parts { get; init; } = [];
+    public Dictionary<string, PartLevel> PartLevels { get; set; } = [];
 
     [PartField(0d, HowToApply.Set, HigherIs.Neutral)]
     public double LatMaxSlip;
