@@ -9,12 +9,6 @@ public partial class RacingPauseScreen : CenterContainer {
     [Signal]
     public delegate void QuitEventHandler();
 
-    public override void _Process(double delta) {
-        if (Input.IsActionJustPressed("menu_back")) {
-            EmitSignal(SignalName.Resume);
-        }
-    }
-
     public void ResumeButton_Pressed() {
         EmitSignal(SignalName.Resume);
     }

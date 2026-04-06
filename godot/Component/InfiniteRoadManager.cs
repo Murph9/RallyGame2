@@ -37,6 +37,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     private readonly List<Car> _normalTraffic = [];
     private readonly List<Car> _opponents = [];
     private readonly RandomNumberGenerator _rand = new();
+    private bool _paused;
 
     public WorldType CurrentWorldType => _world.CurrentWorldType;
     public int PiecesPlaced { get; private set; }
@@ -76,6 +77,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public override void _Process(double delta) {
+        if (_paused) return;
+
         // calculate the player pos
         var cameraPos = GetViewport().GetCamera3D().Position;
 
@@ -291,6 +294,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     }
 
     public void SetPaused(bool paused) {
+        _paused = paused;
         foreach (var car in _normalTraffic) {
             car.SetActive(!paused);
         }

@@ -28,6 +28,7 @@ public partial class HundredRallyGame : Node {
     private bool _shopCountdownStarted;
 
     private bool _paused = false;
+    private RacingPauseScreen _pauseScreen;
 
     public HundredRallyGame() {
 #if DEBUG
@@ -96,6 +97,8 @@ public partial class HundredRallyGame : Node {
                 CallDeferred(MethodName.ShowRelicShop);
             }
 #endif
+        } else if (Input.IsActionJustPressed("menu_back")) {
+            _pauseScreen?.EmitSignal(RacingPauseScreen.SignalName.Resume);
         }
 
         _playerLineDebug3D.Start = _racingScene.PlayerCarPos;
@@ -245,15 +248,16 @@ public partial class HundredRallyGame : Node {
     private void ShowPause() {
         SetPauseState(true);
 
-        var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
-        pauseScreen.Resume += () => {
+        _pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
+        _pauseScreen.Resume += () => {
             SetPauseState(false);
-            CallDeferred(MethodName.RemoveNode, pauseScreen);
+            CallDeferred(MethodName.RemoveNode, _pauseScreen);
+            _pauseScreen = null;
         };
-        pauseScreen.Quit += () => {
+        _pauseScreen.Quit += () => {
             GetTree().ChangeSceneToFile("res://Main.tscn");
         };
-        AddChild(pauseScreen);
+        AddChild(_pauseScreen);
     }
 
     private void CreateCheckpoint(Transform3D transform, Func<Node3D, bool> action) {

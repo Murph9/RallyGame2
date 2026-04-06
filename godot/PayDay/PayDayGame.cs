@@ -29,6 +29,7 @@ public partial class PayDayGame : Node {
     private PayDayUI _activeUI;
     private PayDayStatsBar _statsBar;
     private bool _paused;
+    private RacingPauseScreen _pauseScreen;
 
     // Accumulated during a single run
     private readonly List<CollectedPart> _runParts = [];
@@ -77,6 +78,8 @@ public partial class PayDayGame : Node {
                 var pos = racingScene.RoadManager.GetPassedCheckpoint(GetViewport().GetCamera3D().Position);
                 racingScene.ResetCarTo(pos);
             }
+        } else if (_paused && Input.IsActionJustPressed("menu_back")) {
+            _pauseScreen?.EmitSignal(RacingPauseScreen.SignalName.Resume);
         }
     }
 
@@ -244,17 +247,22 @@ public partial class PayDayGame : Node {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+    private void RemoveNode(Node node) {
+        RemoveChild(node);
+        node.QueueFree();
+    }
+
     private void ShowPause() {
         SetPauseState(true);
 
-        var pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
-        pauseScreen.Resume += () => {
+        _pauseScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(RacingPauseScreen))).Instantiate<RacingPauseScreen>();
+        _pauseScreen.Resume += () => {
             SetPauseState(false);
-            RemoveChild(pauseScreen);
-            pauseScreen.QueueFree();
+            CallDeferred(MethodName.RemoveNode, _pauseScreen);
+            _pauseScreen = null;
         };
-        pauseScreen.Quit += () => GetTree().ChangeSceneToFile("res://Main.tscn");
-        AddChild(pauseScreen);
+        _pauseScreen.Quit += () => GetTree().ChangeSceneToFile("res://Main.tscn");
+        AddChild(_pauseScreen);
     }
 
     private void SetPauseState(bool paused) {
