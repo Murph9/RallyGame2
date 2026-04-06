@@ -5,4 +5,8 @@
 [node name="PayDayRacingScene" type="Node3D" unique_id=1718490517]
 script = ExtResource("1_pdrace")
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.734784, -0.62771, 0.257046, 0, 0.378956, 0.925415, -0.678301, -0.67998, 0.278451, 0, 4.33694, 3.13063)
+shadow_enabled = true
+
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1525552744]
