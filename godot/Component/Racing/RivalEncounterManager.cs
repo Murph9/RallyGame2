@@ -37,7 +37,7 @@ public partial class RivalEncounterManager : Node {
     protected const float SPEED_MATCH_WINDOW = 3f;
     private const float SPEED_MATCH_DIFF_MS = 2f;
 
-    protected InfiniteRoadManager _roadManager;
+    protected IRoadManager _roadManager;
     protected Car _playerCar;
 
     private float _spawnTimer;
