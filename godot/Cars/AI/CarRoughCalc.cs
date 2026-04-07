@@ -32,4 +32,20 @@ public class CarRoughCalc {
         // v = sqrt(r * LatGripMax)
         return Mathf.Sqrt(Math.Abs(radius) * carDetails.TractionDetails.LatGripMax);
     }
+
+    /// <summary>
+    /// Estimates the car's terminal top speed in km/h by stepping through velocities
+    /// in the highest gear until engine thrust can no longer overcome aerodynamic drag.
+    /// </summary>
+    public static float EstimateTopSpeed(CarDetails carDetails) {
+        const float STEP = 1f; // m/s
+        const float MAX_SEARCH = 200f; // m/s (~720 km/h) — safety upper bound
+
+        for (float v = STEP; v < MAX_SEARCH; v += STEP) {
+            if (CalcBestAccel(carDetails, v) <= 0)
+                return v;
+        }
+
+        return MAX_SEARCH;
+    }
 }
