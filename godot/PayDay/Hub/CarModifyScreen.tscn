@@ -16,7 +16,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Panel" type="PanelContainer" parent="HBox" unique_id=870542013]
-custom_minimum_size = Vector2(360, 600)
+custom_minimum_size = Vector2(450, 600)
 layout_mode = 2
 
 [node name="VBox" type="VBoxContainer" parent="HBox/Panel" unique_id=360602948]
@@ -29,13 +29,13 @@ layout_mode = 2
 text = "Modify Car"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="HBox/Panel/VBox"]
+[node name="SubtitleLabel" type="Label" parent="HBox/Panel/VBox" unique_id=955368137]
 layout_mode = 2
 text = "Apply parts to stage them, then Confirm to commit"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="HSeparator" type="HSeparator" parent="HBox/Panel/VBox"]
+[node name="HSeparator" type="HSeparator" parent="HBox/Panel/VBox" unique_id=1779817433]
 layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HBox/Panel/VBox" unique_id=494770545]
@@ -46,7 +46,7 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ConfirmButton" type="Button" parent="HBox/Panel/VBox"]
+[node name="ConfirmButton" type="Button" parent="HBox/Panel/VBox" unique_id=229500295]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Confirm"
