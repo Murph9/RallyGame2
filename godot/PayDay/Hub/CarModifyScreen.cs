@@ -94,7 +94,7 @@ public partial class CarModifyScreen : CenterContainer {
 
         foreach (var part in parts) {
             var currentLevel = _state.CarDetails.LevelOfPart(part);
-            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part == part));
+            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Name == part.Name));
             row.Updated += RefreshConfirmButton;
 
             childBox.AddChild(row);

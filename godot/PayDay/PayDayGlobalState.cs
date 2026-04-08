@@ -58,6 +58,13 @@ public partial class PayDayGlobalState : Node {
     public void AddCollectedPart(CollectedPart part) {
         if (part.Rarity == PartLevel.Common)
             return; // do not save common parts, we always own them
+
+        // prevent duplicate part and rarity combos
+        foreach (var existingPart in _partInventory) {
+            if (existingPart.Part.Name == part.Part.Name && existingPart.Rarity == part.Rarity)
+                return;
+        }
+
         _partInventory.Add(part);
     }
 

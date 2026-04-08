@@ -40,7 +40,7 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
     private const float RIVAL_UI_DISTANCE = 50f;       // proximity gate for HUD attachment
     private const float RACE_TRIGGER_DISTANCE = 6f;
     private const float SPEED_MATCH_DIFF_MS = 2f;
-    private const float SPEED_MATCH_WINDOW = 3f;
+    private const float SPEED_MATCH_WINDOW = 2.5f;
     private const float RACE_DISTANCE = 500f;
 
     private class PerRivalState {
