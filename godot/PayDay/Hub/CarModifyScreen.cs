@@ -94,7 +94,7 @@ public partial class CarModifyScreen : CenterContainer {
 
         foreach (var part in parts) {
             var currentLevel = _state.CarDetails.LevelOfPart(part);
-            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Name == part.Name));
+            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Code == part.Code));
             row.Updated += RefreshConfirmButton;
 
             childBox.AddChild(row);
@@ -227,7 +227,7 @@ public partial class PartRow : HBoxContainer {
             if (tier.Item1 == _newRarity) {
                 btn.Text = "✓";
             } else if (tier.Item1 == _existingRarity) {
-                btn.Text = "Applied";
+                btn.Text = "Owned";
             } else {
                 btn.Text = PartLevelHelper.GetDisplayName(tier.Item1);
             }

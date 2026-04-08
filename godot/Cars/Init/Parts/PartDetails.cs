@@ -7,7 +7,8 @@ using System.Text.Json.Serialization;
 
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
-public partial class PartDetails : RefCounted {
+public partial class PartDetails {
+    public string Code { get; set; }
     public string Name { get; set; }
     public string Color { get; set; }
     public double[] LevelCost { get; set; }
@@ -21,8 +22,10 @@ public partial class PartDetails : RefCounted {
     public Dictionary<string, object>[] GetAllValues() => Levels;
 
     public void Validate(IEnumerable<FieldInfo> allFields) {
+        if (string.IsNullOrWhiteSpace(Code))
+            throw new Exception("No code set for part with levels " + Levels.Length);
         if (string.IsNullOrWhiteSpace(Name))
-            throw new Exception("No name set for part with levels " + Levels.Length);
+            throw new Exception($"Part '{Code}': Name not populated (missing registry entry?).");
         if (LevelCost.Length != Levels.Length)
             throw new Exception($"Part {Name}: Level {Levels.Length} has different amount to LevelCost {LevelCost.Length}");
         if (!Godot.Color.HtmlIsValid(Color))

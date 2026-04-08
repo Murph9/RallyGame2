@@ -1,0 +1,156 @@
+{
+  "Parts": [
+    {
+      "category": "Car",
+      "code": "brakes",
+      "name": "Brakes",
+      "icon": "brakes.png",
+      "color": "#e6194B",
+      "levelCost": [0, 300, 500, 1000, 2500]
+    },
+    {
+      "category": "Car",
+      "code": "transmission",
+      "name": "Transmission",
+      "icon": "transmission.png",
+      "color": "#ffe119",
+      "levelCost": [0, 2000, 4000, 7000, 13000]
+    },
+    {
+      "category": "Car",
+      "code": "flywheel_clutch",
+      "name": "Flywheel and Clutch",
+      "icon": "clutch_flywheel.png",
+      "color": "#f032e6",
+      "levelCost": [0, 700, 1500, 3000, 6000]
+    },
+    {
+      "category": "Car",
+      "code": "nitro",
+      "name": "Nitro",
+      "icon": "nitro.png",
+      "color": "#3cb44b",
+      "levelCost": [0, 1500, 3000, 5500, 9000]
+    },
+    {
+      "category": "Car",
+      "code": "chassis",
+      "name": "Chassis and Weight Reduction",
+      "icon": "chassis_weight.png",
+      "color": "#ffffdd",
+      "levelCost": [0, 1500, 3500, 7000, 13000]
+    },
+    {
+      "category": "Car",
+      "code": "rear_spoiler",
+      "name": "Rear Spoiler",
+      "icon": "rear_spoiler.png",
+      "color": "#42d4f4",
+      "levelCost": [0, 500, 1200, 2500, 5000]
+    },
+    {
+      "category": "Car",
+      "code": "front_bumper",
+      "name": "Front Bumper",
+      "icon": "front_bumper.png",
+      "color": "#911eb4",
+      "levelCost": [0, 500, 1200, 2500, 5000]
+    },
+    {
+      "category": "Engine",
+      "code": "cylinder_head",
+      "name": "Cylinder Head, Fuel Injectors & Spark Plugs",
+      "icon": "fuel_system.png",
+      "color": "#000085",
+      "levelCost": [0, 800, 2000, 4000, 8000]
+    },
+    {
+      "category": "Engine",
+      "code": "cams_valves",
+      "name": "Camshafts & Valves",
+      "icon": "cams_valves.png",
+      "color": "#f58231",
+      "levelCost": [0, 1000, 2500, 5000, 10000]
+    },
+    {
+      "category": "Engine",
+      "code": "intake",
+      "name": "Intake & Air Filter",
+      "icon": "intake_filter.png",
+      "color": "#800000",
+      "levelCost": [0, 600, 1500, 3000, 6000]
+    },
+    {
+      "category": "Engine",
+      "code": "turbo",
+      "name": "Turbo",
+      "icon": "turbo.png",
+      "color": "#aaffc3",
+      "levelCost": [0, 2000, 4500, 9000, 16000]
+    },
+    {
+      "category": "Engine",
+      "code": "exhaust",
+      "name": "Exhaust",
+      "icon": "exhaust.png",
+      "color": "#a9a9a9",
+      "levelCost": [0, 700, 1800, 3500, 7000]
+    },
+    {
+      "category": "Engine",
+      "code": "ecu",
+      "name": "ECU",
+      "icon": "ecu.png",
+      "color": "#808000",
+      "levelCost": [0, 1200, 3000, 6000, 11000]
+    },
+    {
+      "category": "Engine",
+      "code": "pistons",
+      "name": "Pistons & Cylinders",
+      "icon": "pistons.png",
+      "color": "#469990",
+      "levelCost": [0, 1500, 3500, 7000, 13000]
+    },
+    {
+      "category": "Engine",
+      "code": "engine_block",
+      "name": "Engine Block",
+      "icon": "engine_block.png",
+      "color": "#9A6324",
+      "levelCost": [0, 2000, 5000, 10000, 18000]
+    },
+    {
+      "category": "Engine",
+      "code": "radiator",
+      "name": "Radiator",
+      "icon": "radiator.png",
+      "color": "#bfef45",
+      "levelCost": [0, 500, 1200, 2500, 5000]
+    },
+    {
+      "category": "Engine",
+      "code": "engine_drivetrain",
+      "name": "Transmission & Drivetrain",
+      "icon": "transmission.png",
+      "color": "#ffd8b1",
+      "levelCost": [0, 1000, 2500, 5000, 9000]
+    },
+    {
+      "category": "Suspension",
+      "code": "suspension",
+      "name": "Suspension",
+      "icon": "suspension.png",
+      "color": "#dcbeff",
+      "levelCost": [0, 1000, 2500, 5000, 9500]
+    },
+    {
+      "category": "Traction",
+      "code": "tyres",
+      "name": "Tyres",
+      "icon": "tyres.png",
+      "color": "#4363d8",
+      "levelCost": [0, 1000, 2500, 5000, 9000]
+    }
+  ]
+}

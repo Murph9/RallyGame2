@@ -39,6 +39,9 @@ public class TractionDetails : IHaveParts {
     public static TractionDetails LoadFromFile(string name) {
         var tractionDetails = FileLoader.ReadJsonFile<TractionDetails>("Cars", "Init", "Data", name + ".json");
 
+        foreach (var part in tractionDetails.Parts)
+            PartRegistry.Instance.Merge(part);
+
         tractionDetails.LoadSelf();
         return tractionDetails;
     }

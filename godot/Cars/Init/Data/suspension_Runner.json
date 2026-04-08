@@ -1,10 +1,7 @@
 {
   "Parts": [
     {
-      "color": "#dcbeff",
-      "name": "SuspensionRunner",
-      "icon": "suspension.png",
-      "levelCost": [0, 1200, 2800, 5500, 10000],
+      "code": "suspension",
       "levels": [
         {
           "FrontAntiroll": 0.7,

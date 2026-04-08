@@ -66,6 +66,9 @@ public class SuspensionDetails : IHaveParts {
     public static SuspensionDetails LoadFromFile(string name) {
         var tractionDetails = FileLoader.ReadJsonFile<SuspensionDetails>("Cars", "Init", "Data", name + ".json");
 
+        foreach (var part in tractionDetails.Parts)
+            PartRegistry.Instance.Merge(part);
+
         tractionDetails.LoadSelf();
         return tractionDetails;
     }

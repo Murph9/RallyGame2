@@ -321,17 +321,17 @@ public class CarDetails : IHaveParts {
     }
 
     public void ApplyPartChange(PartDetails part, PartLevel level) {
-        var owner = GetAllSubDetails().First(x => x.Parts.Any(p => p.Name == part.Name));
-        owner.PartLevels[part.Name] = level;
+        var owner = GetAllSubDetails().First(x => x.Parts.Any(p => p.Code == part.Code));
+        owner.PartLevels[part.Code] = level;
         LoadSelf(Main.DEFAULT_GRAVITY);
     }
     public PartLevel LevelOfPart(PartDetails part) {
-        var owner = GetAllSubDetails().FirstOrDefault(x => x.Parts.Any(p => p.Name == part.Name));
+        var owner = GetAllSubDetails().FirstOrDefault(x => x.Parts.Any(p => p.Code == part.Code));
         if (owner == null) return PartLevel.Common;
-        return owner.PartLevels.TryGetValue(part.Name, out var level) ? level : PartLevel.Common;
+        return owner.PartLevels.TryGetValue(part.Code, out var level) ? level : PartLevel.Common;
     }
     public PartLevel? MaxLevelOfPart(PartDetails part) {
-        var realPart = GetAllPartsInTree().FirstOrDefault(x => x.Name == part.Name);
+        var realPart = GetAllPartsInTree().FirstOrDefault(x => x.Code == part.Code);
         if (realPart == null) return null;
         return (PartLevel)(realPart.Levels.Length - 1);
     }
@@ -344,16 +344,16 @@ public class CarDetails : IHaveParts {
     }
 
     public PartCategory GetPartCategory(PartDetails part) {
-        if (Engine.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+        if (Engine.GetAllPartsInTree().Any(x => x.Code == part.Code)) {
             return Engine.PartCategory;
         }
-        if (TractionDetails.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+        if (TractionDetails.GetAllPartsInTree().Any(x => x.Code == part.Code)) {
             return TractionDetails.PartCategory;
         }
-        if (SuspensionDetails.GetAllPartsInTree().Any(x => x.Name == part.Name)) {
+        if (SuspensionDetails.GetAllPartsInTree().Any(x => x.Code == part.Code)) {
             return SuspensionDetails.PartCategory;
         }
-        if (Parts.Any(x => x.Name == part.Name)) {
+        if (Parts.Any(x => x.Code == part.Code)) {
             return PartCategory;
         }
         return PartCategory.Car; // as a fallback

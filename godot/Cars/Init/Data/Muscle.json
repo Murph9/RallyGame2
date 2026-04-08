@@ -47,10 +47,7 @@
   ],
   "Parts": [
     {
-      "color": "#e6194B",
-      "name": "Brakes",
-      "icon": "brakes.png",
-      "levelCost": [0, 300, 500, 1000, 2500],
+      "code": "brakes",
       "levels": [
         { "BrakeMaxTorque": 500, "BrakeAbsTimeout": 0.1 },
         { "BrakeMaxTorque": 1000, "BrakeAbsTimeout": 0.07 },
@@ -60,9 +57,7 @@
       ]
     },
     {
-      "color": "#ffe119",
-      "name": "Transmission",
-      "icon": "transmission.png",
+      "code": "transmission",
       "levelCost": [0, 2000, 4000, 7500, 14000],
       "levels": [
         {
@@ -93,10 +88,7 @@
       ]
     },
     {
-      "color": "#f032e6",
-      "name": "Flywheel and Clutch",
-      "icon": "clutch_flywheel.png",
-      "levelCost": [0, 700, 1500, 3000, 6000],
+      "code": "flywheel_clutch",
       "levels": [
         { "AutoChangeTime": 0.35 },
         { "AutoChangeTime": 0.25 },
@@ -106,10 +98,7 @@
       ]
     },
     {
-      "color": "#3cb44b",
-      "name": "Nitro",
-      "icon": "nitro.png",
-      "levelCost": [0, 1500, 3000, 5500, 9000],
+      "code": "nitro",
       "levels": [
         {
           "NitroForce": 0,
@@ -144,9 +133,7 @@
       ]
     },
     {
-      "color": "#ffffdd",
-      "name": "Chassis and Weight Reduction",
-      "icon": "chassis_weight.png",
+      "code": "chassis",
       "levelCost": [0, 1500, 3500, 7000, 14000],
       "levels": [
         { "AeroDownforce": 0.05, "AeroDrag": 1.0, "BodyMass": 1520 },
@@ -157,10 +144,7 @@
       ]
     },
     {
-      "color": "#42d4f4",
-      "name": "Rear Spoiler",
-      "icon": "rear_spoiler.png",
-      "levelCost": [0, 500, 1200, 2500, 5000],
+      "code": "rear_spoiler",
       "levels": [
         { "AeroDownforce": 0, "AeroDrag": 0 },
         { "AeroDownforce": 0.1, "AeroDrag": 0.02 },
@@ -170,10 +154,7 @@
       ]
     },
     {
-      "color": "#911eb4",
-      "name": "Front Bumper",
-      "icon": "front_bumper.png",
-      "levelCost": [0, 500, 1200, 2500, 5000],
+      "code": "front_bumper",
       "levels": [
         { "AeroDownforce": 0, "AeroDrag": 0 },
         { "AeroDownforce": 0.1, "AeroDrag": 0.02 },

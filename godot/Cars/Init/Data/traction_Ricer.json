@@ -2,7 +2,7 @@
   "Parts": [
     {
       "color": "#4363d8",
-      "name": "Tyres",
+      "code": "tyres",
       "icon": "tyres.png",
       "levelCost": [0, 1500, 3500, 7000, 13000],
       "levels": [

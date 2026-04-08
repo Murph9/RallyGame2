@@ -8,9 +8,7 @@
   ],
   "Parts": [
     {
-      "color": "#000085",
-      "name": "Cylinder Head, Fuel Injectors & Spark Plugs",
-      "icon": "fuel_system.png",
+      "code": "cylinder_head",
       "levelCost": [0, 1000, 4000, 9000, 18000],
       "levels": [
         { "CombustionEfficiency": 1, "MaxRpm": 14000 },
@@ -21,9 +19,7 @@
       ]
     },
     {
-      "color": "#f58231",
-      "name": "Camshafts & Valves",
-      "icon": "cams_valves.png",
+      "code": "cams_valves",
       "levelCost": [0, 10000, 15000, 25000, 40000],
       "levels": [
         { "IntakeAirEffiency": 1, "MaxRpm": 14000 },
@@ -34,9 +30,7 @@
       ]
     },
     {
-      "color": "#800000",
-      "name": "Intake & Air Filter",
-      "icon": "intake_filter.png",
+      "code": "intake",
       "levelCost": [0, 300, 1300, 2500, 5000],
       "levels": [
         { "IntakeAirEffiency": 1 },
@@ -47,9 +41,7 @@
       ]
     },
     {
-      "color": "#aaffc3",
-      "name": "Turbo",
-      "icon": "turbo.png",
+      "code": "turbo",
       "levelCost": [0, 5000, 8900, 11500, 18000],
       "levels": [
         { "TurboAirMult": 1, "TurboAirStartRPM": 0 },
@@ -76,9 +68,7 @@
       ]
     },
     {
-      "color": "#a9a9a9",
-      "name": "Exhaust",
-      "icon": "exhaust.png",
+      "code": "exhaust",
       "levelCost": [0, 10000, 14000, 26000, 45000],
       "levels": [
         { "ExhaustAirEffiency": 1 },
@@ -89,9 +79,7 @@
       ]
     },
     {
-      "color": "#808000",
-      "name": "ECU",
-      "icon": "ecu.png",
+      "code": "ecu",
       "levelCost": [0, 2000, 4500, 9000, 17000],
       "levels": [
         { "CombustionEfficiency": 1 },
@@ -102,9 +90,7 @@
       ]
     },
     {
-      "color": "#469990",
-      "name": "Pistons & Cylinders",
-      "icon": "pistons.png",
+      "code": "pistons",
       "levelCost": [0, 1200, 2500, 6000, 12000],
       "levels": [
         {
@@ -140,9 +126,7 @@
       ]
     },
     {
-      "color": "#9A6324",
-      "name": "Block",
-      "icon": "engine_block.png",
+      "code": "engine_block",
       "levelCost": [0, 3500, 7000, 14000, 26000],
       "levels": [
         {
@@ -188,10 +172,7 @@
       ]
     },
     {
-      "color": "#bfef45",
-      "name": "Radiator",
-      "icon": "radiator.png",
-      "levelCost": [0, 500, 1200, 2500, 5000],
+      "code": "radiator",
       "levels": [
         { "CoolingRate": 50 },
         { "CoolingRate": 150 },
@@ -201,9 +182,7 @@
       ]
     },
     {
-      "color": "#ffd8b1",
-      "name": "Transmission & Drivetrain",
-      "icon": "transmission.png",
+      "code": "engine_drivetrain",
       "levelCost": [0, 2500, 3000, 7000, 13000],
       "levels": [
         { "TransmissionEfficiency": 0.9 },

@@ -1,4 +1,5 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Utilities;
 
 namespace murph9.RallyGame2.godot.Cars.Init;
@@ -15,6 +16,10 @@ public enum CarMake {
 public static class CarMakeExtensions {
     public static CarDetails LoadFromFile(this CarMake type, Vector3 gravity) {
         var carDetails = FileLoader.ReadJsonFile<CarDetails>("Cars", "Init", "Data", type.ToString() + ".json");
+
+        foreach (var part in carDetails.Parts)
+            PartRegistry.Instance.Merge(part);
+
         carDetails.Engine = EngineDetails.LoadFromFile(carDetails.EngineFileName);
         carDetails.TractionDetails = TractionDetails.LoadFromFile(carDetails.TractionFileName);
         carDetails.SuspensionDetails = SuspensionDetails.LoadFromFile(carDetails.SuspensionFileName);

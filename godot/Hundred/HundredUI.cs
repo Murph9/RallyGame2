@@ -48,7 +48,7 @@ public partial class HundredUI : HBoxContainer {
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
             });
 
-            _partMappings.Add(part.Name, new(part, hbox));
+            _partMappings.Add(part.Code, new(part, hbox));
             partContainer.AddChild(hbox);
         }
 
@@ -102,7 +102,7 @@ public partial class HundredUI : HBoxContainer {
         // show the parts and their current levels
         var allParts = state.CarDetails.GetAllPartsInTree();
         foreach (var part in allParts) {
-            var uiPart = _partMappings[part.Name];
+            var uiPart = _partMappings[part.Code];
             uiPart.Item2.GetChild<Label>(1).Text = state.CarDetails.LevelOfPart(part).ToString();
         }
 

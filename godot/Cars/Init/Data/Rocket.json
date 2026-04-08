@@ -47,9 +47,7 @@
   ],
   "Parts": [
     {
-      "color": "#e6194B",
-      "name": "Brakes",
-      "icon": "brakes.png",
+      "code": "brakes",
       "levelCost": [0, 1000, 2500, 5000, 10000],
       "levels": [
         { "BrakeMaxTorque": 1500, "BrakeAbsTimeout": 0.04 },
@@ -60,9 +58,7 @@
       ]
     },
     {
-      "color": "#ffe119",
-      "name": "Transmission",
-      "icon": "transmission.png",
+      "code": "transmission",
       "levelCost": [0, 3000, 6000, 11000, 20000],
       "levels": [
         {
@@ -103,9 +99,7 @@
       ]
     },
     {
-      "color": "#f032e6",
-      "name": "Flywheel and Clutch",
-      "icon": "clutch_flywheel.png",
+      "code": "flywheel_clutch",
       "levelCost": [0, 1400, 3000, 6000, 11000],
       "levels": [
         { "AutoChangeTime": 0.15 },
@@ -116,9 +110,7 @@
       ]
     },
     {
-      "color": "#3cb44b",
-      "name": "Nitro",
-      "icon": "nitro.png",
+      "code": "nitro",
       "levelCost": [0, 1500, 3500, 6500, 11000],
       "levels": [
         {
@@ -154,9 +146,7 @@
       ]
     },
     {
-      "color": "#ffffdd",
-      "name": "Chassis and Weight Reduction",
-      "icon": "chassis_weight.png",
+      "code": "chassis",
       "levelCost": [0, 1500, 4000, 8000, 15000],
       "levels": [
         { "AeroDownforce": 2.0, "AeroDrag": 0.15, "BodyMass": 1500 },
@@ -167,9 +157,7 @@
       ]
     },
     {
-      "color": "#42d4f4",
-      "name": "Rear Spoiler",
-      "icon": "rear_spoiler.png",
+      "code": "rear_spoiler",
       "levelCost": [0, 500, 1500, 3500, 7000],
       "levels": [
         { "AeroDownforce": 0, "AeroDrag": 0 },
@@ -180,9 +168,7 @@
       ]
     },
     {
-      "color": "#911eb4",
-      "name": "Front Bumper",
-      "icon": "front_bumper.png",
+      "code": "front_bumper",
       "levelCost": [0, 500, 1500, 3500, 7000],
       "levels": [
         { "AeroDownforce": 0, "AeroDrag": 0 },

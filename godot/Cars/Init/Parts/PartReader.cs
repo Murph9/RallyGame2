@@ -42,7 +42,7 @@ public class PartReader {
 
         // then apply given method of setting them
         foreach (var part in _self.Parts) {
-            var level = _self.PartLevels.TryGetValue(part.Name, out var l) ? l : PartLevel.Common;
+            var level = _self.PartLevels.TryGetValue(part.Code, out var l) ? l : PartLevel.Common;
             var partValues = part.GetLevel(level);
 
             foreach (var fieldProp in _fieldProps) {
@@ -74,7 +74,7 @@ public class PartReader {
         foreach (var fieldProp in _fieldProps) {
             var li = new List<PartDetails>();
             foreach (var part in _self.Parts) {
-                var level = _self.PartLevels.TryGetValue(part.Name, out var l) ? l : PartLevel.Common;
+                var level = _self.PartLevels.TryGetValue(part.Code, out var l) ? l : PartLevel.Common;
                 var partValues = part.GetLevel(level);
                 if (partValues.ContainsKey(fieldProp.Field.Name))
                     li.Add(part);

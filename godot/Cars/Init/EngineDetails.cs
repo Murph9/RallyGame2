@@ -68,6 +68,9 @@ public class EngineDetails : IHaveParts {
     public static EngineDetails LoadFromFile(string name) {
         var engineDetails = FileLoader.ReadJsonFile<EngineDetails>("Cars", "Init", "Data", name + ".json");
 
+        foreach (var part in engineDetails.Parts)
+            PartRegistry.Instance.Merge(part);
+
         engineDetails.LoadSelf();
         return engineDetails;
     }

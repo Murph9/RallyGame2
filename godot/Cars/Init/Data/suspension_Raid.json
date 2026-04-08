@@ -1,10 +1,7 @@
 {
   "Parts": [
     {
-      "color": "#dcbeff",
-      "name": "SuspensionRaid",
-      "icon": "suspension.png",
-      "levelCost": [0, 1100, 2600, 5200, 9500],
+      "code": "suspension",
       "levels": [
         {
           "FrontAntiroll": 1,
