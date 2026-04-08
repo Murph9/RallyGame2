@@ -69,7 +69,7 @@ public partial class PayDayGlobalState : Node {
 
         // prevent duplicate part and rarity combos
         foreach (var existingPart in _partInventory) {
-            if (existingPart.Part.Name == part.Part.Name && existingPart.Rarity == part.Rarity)
+            if (existingPart.Part.Code == part.Part.Code && existingPart.Rarity == part.Rarity)
                 return;
         }
 
