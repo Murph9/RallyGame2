@@ -213,9 +213,9 @@ public partial class RivalEncounterManager : Node {
     }
 
     private void RespawnRivalNearPlayer(RivalEntry entry) {
-        var t = _playerCar.RigidBody.GlobalTransform;
-        t.Origin += t.Basis.X * 3f;
-        entry.Car.RigidBody.GlobalTransform = t;
+        var lastCheckpoint = _roadManager.GetPassedCheckpoint(_playerCar.RigidBody.GlobalPosition);
+        lastCheckpoint.Origin += lastCheckpoint.Basis.X * 3f;
+        entry.Car.RigidBody.GlobalTransform = lastCheckpoint;
         entry.Car.RigidBody.LinearVelocity = _playerCar.RigidBody.LinearVelocity;
         entry.Car.RigidBody.AngularVelocity = Vector3.Zero;
     }
