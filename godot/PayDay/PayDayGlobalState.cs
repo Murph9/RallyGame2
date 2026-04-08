@@ -56,6 +56,14 @@ public partial class PayDayGlobalState : Node {
     }
 
     public void AddCollectedPart(CollectedPart part) {
+        // check the part is actually valid for the car
+        var maxPartLevel = CarDetails.MaxLevelOfPart(part.Part);
+        if (maxPartLevel is null) return;
+
+        if (part.Rarity >= maxPartLevel.Value) {
+            part = new CollectedPart(part.Part, maxPartLevel.Value); // reduce to max level
+        }
+
         if (part.Rarity == PartLevel.Common)
             return; // do not save common parts, we always own them
 

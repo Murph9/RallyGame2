@@ -32,12 +32,12 @@ public static class PartLevelHelper {
     public static PartLevel RollRarity(int dayNumber) {
         float day = Math.Min(dayNumber, 20);
 
-        // weights: [Poor, Common, Uncommon, Rare, Epic, Legendary]
+        // weights: [Common, Uncommon, Rare, Epic, Legendary]
         float legendary = day * 0.5f;      //  0 – 10 %
         float epic = day * 2.0f;           //  0 – 40 %
         float rare = day * 3.0f;           //  0 – 60 %
         float uncommon = 20f;
-        float common = 30f;
+        float common = 0f;
 
         float[] weights = [common, uncommon, rare, epic, legendary];
 

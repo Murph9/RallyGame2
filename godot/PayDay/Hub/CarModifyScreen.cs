@@ -227,7 +227,7 @@ public partial class PartRow : HBoxContainer {
             if (tier.Item1 == _newRarity) {
                 btn.Text = "✓";
             } else if (tier.Item1 == _existingRarity) {
-                btn.Text = "Owned";
+                btn.Text = "Applied";
             } else {
                 btn.Text = PartLevelHelper.GetDisplayName(tier.Item1);
             }

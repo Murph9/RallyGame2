@@ -330,6 +330,11 @@ public class CarDetails : IHaveParts {
         if (owner == null) return PartLevel.Common;
         return owner.PartLevels.TryGetValue(part.Name, out var level) ? level : PartLevel.Common;
     }
+    public PartLevel? MaxLevelOfPart(PartDetails part) {
+        var realPart = GetAllPartsInTree().FirstOrDefault(x => x.Name == part.Name);
+        if (realPart == null) return null;
+        return (PartLevel)(realPart.Levels.Length - 1);
+    }
 
     private IEnumerable<IHaveParts> GetAllSubDetails() {
         yield return this;

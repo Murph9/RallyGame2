@@ -155,8 +155,8 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
         if (car.Inputs is TrafficAiInputs trafficAi && trafficAi.InReverse)
             return;
 
-        // Retrieve part details from the car to assign a stake.
-        var details = car.Details;
+        // Retrieve part details from the player car to assign a stake.
+        var details = _playerCar.Details;
         var stake = GD.Randf() < 0.5f ? RivalStakeType.Parts : RivalStakeType.Money;
         PartDetails wageredPart = null;
         if (stake == RivalStakeType.Parts && details != null) {
