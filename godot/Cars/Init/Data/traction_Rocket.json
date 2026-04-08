@@ -1,0 +1,62 @@
+{
+  "Parts": [
+    {
+      "color": "#4363d8",
+      "name": "Tyres",
+      "icon": "tyres.png",
+      "levelCost": [0, 1500, 3500, 7000, 13000],
+      "levels": [
+        {
+          "LatMaxSlip": 0.08,
+          "LatGripMax": 1.9,
+          "LatPeakLength": 0.15,
+          "LatPeakDecay": 2.5,
+          "LongMaxSlip": 0.3,
+          "LongGripMax": 2.6,
+          "LongPeakLength": 0.3,
+          "LongPeakDecay": 1.8
+        },
+        {
+          "LatMaxSlip": 0.065,
+          "LatGripMax": 2.1,
+          "LatPeakLength": 0.14,
+          "LatPeakDecay": 2.3,
+          "LongMaxSlip": 0.25,
+          "LongGripMax": 2.85,
+          "LongPeakLength": 0.27,
+          "LongPeakDecay": 1.65
+        },
+        {
+          "LatMaxSlip": 0.055,
+          "LatGripMax": 2.35,
+          "LatPeakLength": 0.13,
+          "LatPeakDecay": 2.1,
+          "LongMaxSlip": 0.22,
+          "LongGripMax": 3.15,
+          "LongPeakLength": 0.24,
+          "LongPeakDecay": 1.5
+        },
+        {
+          "LatMaxSlip": 0.045,
+          "LatGripMax": 2.65,
+          "LatPeakLength": 0.12,
+          "LatPeakDecay": 1.9,
+          "LongMaxSlip": 0.19,
+          "LongGripMax": 3.5,
+          "LongPeakLength": 0.21,
+          "LongPeakDecay": 1.35
+        },
+        {
+          "LatMaxSlip": 0.035,
+          "LatGripMax": 3.0,
+          "LatPeakLength": 0.11,
+          "LatPeakDecay": 1.7,
+          "LongMaxSlip": 0.16,
+          "LongGripMax": 3.9,
+          "LongPeakLength": 0.18,
+          "LongPeakDecay": 1.2
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
       "color": "#dcbeff",
       "name": "SuspensionRicer",
       "icon": "suspension.png",
-      "levelCost": [0],
+      "levelCost": [0, 1400, 3200, 6500, 12000],
       "levels": [
         {
           "FrontAntiroll": 40,
@@ -21,6 +21,70 @@
           "RearPreloadDistance": 0,
           "RearRelax": 0.5,
           "RearStiffness": 35
+        },
+        {
+          "FrontAntiroll": 44,
+          "FrontComp": 0.48,
+          "FrontMaxTravel": 0.11,
+          "FrontMinTravel": -0.11,
+          "FrontPreloadDistance": 0.005,
+          "FrontRelax": 0.48,
+          "FrontStiffness": 40,
+          "RearAntiroll": 44,
+          "RearComp": 0.48,
+          "RearMaxTravel": 0.11,
+          "RearMinTravel": -0.11,
+          "RearPreloadDistance": 0.005,
+          "RearRelax": 0.48,
+          "RearStiffness": 40
+        },
+        {
+          "FrontAntiroll": 50,
+          "FrontComp": 0.46,
+          "FrontMaxTravel": 0.12,
+          "FrontMinTravel": -0.12,
+          "FrontPreloadDistance": 0.01,
+          "FrontRelax": 0.46,
+          "FrontStiffness": 46,
+          "RearAntiroll": 50,
+          "RearComp": 0.46,
+          "RearMaxTravel": 0.12,
+          "RearMinTravel": -0.12,
+          "RearPreloadDistance": 0.01,
+          "RearRelax": 0.46,
+          "RearStiffness": 46
+        },
+        {
+          "FrontAntiroll": 57,
+          "FrontComp": 0.44,
+          "FrontMaxTravel": 0.13,
+          "FrontMinTravel": -0.13,
+          "FrontPreloadDistance": 0.015,
+          "FrontRelax": 0.44,
+          "FrontStiffness": 54,
+          "RearAntiroll": 57,
+          "RearComp": 0.44,
+          "RearMaxTravel": 0.13,
+          "RearMinTravel": -0.13,
+          "RearPreloadDistance": 0.015,
+          "RearRelax": 0.44,
+          "RearStiffness": 54
+        },
+        {
+          "FrontAntiroll": 65,
+          "FrontComp": 0.42,
+          "FrontMaxTravel": 0.14,
+          "FrontMinTravel": -0.14,
+          "FrontPreloadDistance": 0.02,
+          "FrontRelax": 0.42,
+          "FrontStiffness": 64,
+          "RearAntiroll": 65,
+          "RearComp": 0.42,
+          "RearMaxTravel": 0.14,
+          "RearMinTravel": -0.14,
+          "RearPreloadDistance": 0.02,
+          "RearRelax": 0.42,
+          "RearStiffness": 64
         }
       ]
     }

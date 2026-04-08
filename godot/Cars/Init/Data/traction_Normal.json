@@ -4,7 +4,7 @@
       "color": "#4363d8",
       "name": "Tyres",
       "icon": "tyres.png",
-      "levelCost": [0, 1000],
+      "levelCost": [0, 1000, 2500, 5000, 9000],
       "levels": [
         {
           "LatMaxSlip": 0.1,
@@ -25,6 +25,36 @@
           "LongGripMax": 2.2,
           "LongPeakLength": 0.2,
           "LongPeakDecay": 2
+        },
+        {
+          "LatMaxSlip": 0.06,
+          "LatGripMax": 1.75,
+          "LatPeakLength": 0.19,
+          "LatPeakDecay": 2.8,
+          "LongMaxSlip": 0.3,
+          "LongGripMax": 2.4,
+          "LongPeakLength": 0.3,
+          "LongPeakDecay": 1.9
+        },
+        {
+          "LatMaxSlip": 0.055,
+          "LatGripMax": 1.95,
+          "LatPeakLength": 0.17,
+          "LatPeakDecay": 2.6,
+          "LongMaxSlip": 0.25,
+          "LongGripMax": 2.65,
+          "LongPeakLength": 0.25,
+          "LongPeakDecay": 1.8
+        },
+        {
+          "LatMaxSlip": 0.045,
+          "LatGripMax": 2.2,
+          "LatPeakLength": 0.15,
+          "LatPeakDecay": 2.3,
+          "LongMaxSlip": 0.2,
+          "LongGripMax": 3.0,
+          "LongPeakLength": 0.2,
+          "LongPeakDecay": 1.65
         }
       ]
     }

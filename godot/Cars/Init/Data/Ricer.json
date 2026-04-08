@@ -14,7 +14,7 @@
   "name": "ricer",
   "suspensionFileName": "suspension_Ricer",
   "tractionControl": false,
-  "tractionFileName": "traction_Normal",
+  "tractionFileName": "traction_Ricer",
   "wheelDetails": [
     {
       "mass": 10,
@@ -50,19 +50,45 @@
       "color": "#e6194B",
       "name": "Brakes",
       "icon": "brakes.png",
-      "levelCost": [0],
-      "levels": [{ "BrakeMaxTorque": 3000, "BrakeAbsTimeout": 0.1 }]
+      "levelCost": [0, 300, 600, 1200, 2500],
+      "levels": [
+        { "BrakeMaxTorque": 3000, "BrakeAbsTimeout": 0.1 },
+        { "BrakeMaxTorque": 3600, "BrakeAbsTimeout": 0.07 },
+        { "BrakeMaxTorque": 4200, "BrakeAbsTimeout": 0.05 },
+        { "BrakeMaxTorque": 5000, "BrakeAbsTimeout": 0.03 },
+        { "BrakeMaxTorque": 6000, "BrakeAbsTimeout": 0.02 }
+      ]
     },
     {
       "color": "#ffe119",
       "name": "Transmission",
       "icon": "transmission.png",
-      "levelCost": [0],
+      "levelCost": [0, 2000, 4000, 7000, 13000],
       "levels": [
         {
           "TransFinaldrive": 3.69,
-          "TransGearRatios": [-3.38, 3.32, 1.9, 1.31, 1, 0.84],
+          "TransGearRatios": [-3.38, 3.32, 1.9, 1.31, 1.0, 0.84],
           "TransPowerBalance": 0.5
+        },
+        {
+          "TransFinaldrive": 3.5,
+          "TransGearRatios": [-3.38, 3.32, 1.9, 1.31, 1.0, 0.84],
+          "TransPowerBalance": 0.5
+        },
+        {
+          "TransFinaldrive": 3.5,
+          "TransGearRatios": [-3.38, 3.5, 2.02, 1.39, 1.05, 0.87, 0.76],
+          "TransPowerBalance": 0.5
+        },
+        {
+          "TransFinaldrive": 3.3,
+          "TransGearRatios": [-3.38, 3.65, 2.14, 1.47, 1.1, 0.9, 0.74],
+          "TransPowerBalance": 0.55
+        },
+        {
+          "TransFinaldrive": 3.1,
+          "TransGearRatios": [-3.38, 3.8, 2.26, 1.55, 1.15, 0.93, 0.72],
+          "TransPowerBalance": 0.6
         }
       ]
     },
@@ -70,20 +96,50 @@
       "color": "#f032e6",
       "name": "Flywheel and Clutch",
       "icon": "clutch_flywheel.png",
-      "levelCost": [0],
-      "levels": [{ "AutoChangeTime": 0.25 }]
+      "levelCost": [0, 700, 1400, 2800, 5500],
+      "levels": [
+        { "AutoChangeTime": 0.25 },
+        { "AutoChangeTime": 0.18 },
+        { "AutoChangeTime": 0.12 },
+        { "AutoChangeTime": 0.08 },
+        { "AutoChangeTime": 0.05 }
+      ]
     },
     {
       "color": "#3cb44b",
       "name": "Nitro",
       "icon": "nitro.png",
-      "levelCost": [0],
+      "levelCost": [0, 1500, 3000, 5500, 9000],
       "levels": [
         {
           "NitroForce": 0,
           "NitroMax": 0,
           "NitroEnabled": false,
           "NitroRate": 0
+        },
+        {
+          "NitroForce": 250,
+          "NitroMax": 12,
+          "NitroEnabled": true,
+          "NitroRate": 1
+        },
+        {
+          "NitroForce": 380,
+          "NitroMax": 16,
+          "NitroEnabled": true,
+          "NitroRate": 1.2
+        },
+        {
+          "NitroForce": 520,
+          "NitroMax": 20,
+          "NitroEnabled": true,
+          "NitroRate": 1.5
+        },
+        {
+          "NitroForce": 700,
+          "NitroMax": 25,
+          "NitroEnabled": true,
+          "NitroRate": 1.8
         }
       ]
     },
@@ -91,22 +147,40 @@
       "color": "#ffffdd",
       "name": "Chassis and Weight Reduction",
       "icon": "chassis_weight.png",
-      "levelCost": [0],
-      "levels": [{ "AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1200 }]
+      "levelCost": [0, 1200, 2800, 5500, 10000],
+      "levels": [
+        { "AeroDownforce": 0.05, "AeroDrag": 0.33, "BodyMass": 1200 },
+        { "AeroDownforce": 0.05, "AeroDrag": 0.31, "BodyMass": 1100 },
+        { "AeroDownforce": 0.06, "AeroDrag": 0.29, "BodyMass": 1000 },
+        { "AeroDownforce": 0.07, "AeroDrag": 0.27, "BodyMass": 900 },
+        { "AeroDownforce": 0.08, "AeroDrag": 0.25, "BodyMass": 800 }
+      ]
     },
     {
       "color": "#42d4f4",
       "name": "Rear Spoiler",
       "icon": "rear_spoiler.png",
-      "levelCost": [0],
-      "levels": [{ "AeroDownforce": 0, "AeroDrag": 0 }]
+      "levelCost": [0, 500, 1200, 2500, 5000],
+      "levels": [
+        { "AeroDownforce": 0, "AeroDrag": 0 },
+        { "AeroDownforce": 0.1, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.18, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.28, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.4, "AeroDrag": 0.02 }
+      ]
     },
     {
       "color": "#911eb4",
       "name": "Front Bumper",
       "icon": "front_bumper.png",
-      "levelCost": [0],
-      "levels": [{ "AeroDownforce": 0, "AeroDrag": 0 }]
+      "levelCost": [0, 500, 1200, 2500, 5000],
+      "levels": [
+        { "AeroDownforce": 0, "AeroDrag": 0 },
+        { "AeroDownforce": 0.1, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.18, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.28, "AeroDrag": 0.02 },
+        { "AeroDownforce": 0.4, "AeroDrag": 0.02 }
+      ]
     }
   ]
 }
