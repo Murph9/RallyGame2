@@ -343,6 +343,13 @@ public class CarDetails : IHaveParts {
         yield return SuspensionDetails;
     }
 
+    public IEnumerable<PartDelta> CalcDeltaForPart(PartDetails part, PartLevel fromLevel, PartLevel toLevel) {
+        var owner = GetAllSubDetails().FirstOrDefault(x => x.Parts.Any(p => p.Code == part.Code));
+        if (owner == null) return [];
+        if (owner == this) return PartReader.CalcDelta(part, fromLevel, toLevel);
+        return owner.CalcDeltaForPart(part, fromLevel, toLevel);
+    }
+
     public PartCategory GetPartCategory(PartDetails part) {
         if (Engine.GetAllPartsInTree().Any(x => x.Code == part.Code)) {
             return Engine.PartCategory;

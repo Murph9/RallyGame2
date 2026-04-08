@@ -54,4 +54,5 @@ public class TractionDetails : IHaveParts {
 
     public IEnumerable<PartResult> GetPartResultsInTree() => PartReader.GetResults();
     public IEnumerable<PartDetails> GetAllPartsInTree() => Parts;
+    public IEnumerable<PartDelta> CalcDeltaForPart(PartDetails part, PartLevel fromLevel, PartLevel toLevel) => PartReader.CalcDelta(part, fromLevel, toLevel);
 }

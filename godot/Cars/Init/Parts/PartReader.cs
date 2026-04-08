@@ -7,6 +7,8 @@ using System.Text.Json;
 
 namespace murph9.RallyGame2.godot.Cars.Init.Parts;
 
+public record PartDelta(string FieldName, object FromValue, object ToValue, HigherIs HigherIs);
+
 public class PartReader {
     record FieldProps(FieldInfo Field, object DefaultValue, HowToApply HowToApply, HigherIs HigherIs, DefaultIs DefaultIs);
 
@@ -81,6 +83,40 @@ public class PartReader {
             }
             yield return new PartResult(fieldProp.Field.Name, fieldProp.Field.GetValue(_self), fieldProp.HigherIs, li);
         }
+    }
+
+    /// <summary>
+    /// Returns the per-field differences that upgrading <paramref name="part"/> from
+    /// <paramref name="fromLevel"/> to <paramref name="toLevel"/> would produce.
+    /// </summary>
+    public IEnumerable<PartDelta> CalcDelta(PartDetails part, PartLevel fromLevel, PartLevel toLevel) {
+        var fromValues = part.GetLevel(fromLevel);
+        var toValues = part.GetLevel(toLevel);
+
+        // Union of all field keys touched by either level
+        var allKeys = fromValues.Keys.Union(toValues.Keys);
+        foreach (var key in allKeys) {
+            var fieldProp = _fieldProps.FirstOrDefault(x => x.Field.Name == key);
+            if (fieldProp == null) continue;
+
+            var fromRaw = fromValues.TryGetValue(key, out var fv) ? fv : null;
+            var toRaw = toValues.TryGetValue(key, out var tv) ? tv : null;
+
+            var fromObj = fromRaw != null ? ReadJsonValue(fieldProp.Field, (JsonElement)fromRaw) : null;
+            var toObj = toRaw != null ? ReadJsonValue(fieldProp.Field, (JsonElement)toRaw) : null;
+
+            if (!Equals(fromObj, toObj))
+                yield return new PartDelta(key, fromObj, toObj, fieldProp.HigherIs);
+        }
+    }
+
+    private static object ReadJsonValue(FieldInfo field, JsonElement json) {
+        if (field.FieldType == typeof(bool)) return json.GetBoolean();
+        if (field.FieldType == typeof(int)) return json.GetInt32();
+        if (field.FieldType == typeof(float)) return json.GetSingle();
+        if (field.FieldType == typeof(double)) return json.GetDouble();
+        if (field.FieldType == typeof(float[])) return json.EnumerateArray().Select(x => (float)x.GetDouble()).ToArray();
+        return json.ToString();
     }
 
     private static void ApplySet(FieldInfo field, object self, JsonElement jsonPartValue) {

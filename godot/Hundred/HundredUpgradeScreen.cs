@@ -1,9 +1,7 @@
 using Godot;
-using murph9.RallyGame2.godot.Cars.Init;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -75,14 +73,10 @@ public partial class HundredUpgradeScreen : CenterContainer {
                 if (_appliedPart == part)
                     return;
 
-                // clone it so we don't modify the original
-                var currentClone = state.CarDetails.Clone();
-                currentClone.ApplyPartChange(part, targetLevel);
-
                 _appliedPart = part;
                 _targetLevel = targetLevel;
                 _buttonPressed = optionButton;
-                ReloadStats(state, currentClone);
+                ReloadStats(state, part, currentLevel, targetLevel);
             };
             container.AddChild(optionButton);
 
@@ -109,11 +103,8 @@ public partial class HundredUpgradeScreen : CenterContainer {
         optionsBox.AddChild(chooseNothing);
     }
 
-    private void ReloadStats(HundredGlobalState state, CarDetails currentClone = null) {
+    private void ReloadStats(HundredGlobalState state, PartDetails previewPart = null, PartLevel fromLevel = PartLevel.Common, PartLevel toLevel = PartLevel.Common) {
         var statsBox = GetNode<VBoxContainer>("PanelContainer/VBoxContainer/VBoxContainer/VBoxContainerStats");
-
-        // if no changes yet, just duplicate it
-        currentClone ??= state.CarDetails;
 
         // remove any existing things because this is a dumb view for now
         foreach (var n in statsBox.GetChildren().ToArray()) {
@@ -131,106 +122,55 @@ public partial class HundredUpgradeScreen : CenterContainer {
         statsBox.AddChild(stats);
 
         stats.PushColor(Colors.White);
-        stats.PushTable(3);
-        var prevDetails = state.CarDetails.GetPartResultsInTree();
-        var details = currentClone.GetPartResultsInTree();
 
-        stats.PushCell();
-        stats.Pop();
-        stats.PushCell();
-        stats.AppendText("Current  ");
-        stats.Pop();
-        stats.PushCell();
-        stats.AppendText("New  ");
-        stats.Pop();
+        if (previewPart != null) {
+            // Use CalcDeltaForPart to show exactly what this upgrade changes — no clone needed
+            var deltas = state.CarDetails.CalcDeltaForPart(previewPart, fromLevel, toLevel).ToList();
 
-        var maxTorquePrev = state.CarDetails.Engine.MaxTorque();
-        var maxTorque = currentClone.Engine.MaxTorque();
-        stats.PushCell();
-        stats.AppendText($"Max Torque (Nm):");
-        stats.Pop();
-        stats.PushCell();
-        stats.AppendText($"{double.Round(maxTorquePrev.Item1, 2)} @ {maxTorquePrev.Item2} rpm");
-        stats.Pop();
-        stats.PushCell();
-        if (maxTorque != maxTorquePrev) {
-            stats.AppendText($"{double.Round(maxTorque.Item1, 2)} @ {maxTorque.Item2} rpm");
-        }
-        stats.Pop();
+            if (deltas.Count == 0) {
+                stats.AppendText("No stat changes at this level.");
+            } else {
+                stats.PushTable(3);
 
-        var maxKwPrev = state.CarDetails.Engine.MaxKw();
-        var maxKw = currentClone.Engine.MaxKw();
-        stats.PushCell();
-        stats.AppendText("Max Power (kW):");
-        stats.Pop();
-        stats.PushCell();
-        stats.AppendText($"{double.Round(maxKwPrev.Item1, 2)} @ {maxKwPrev.Item2} rpm\n");
-        stats.Pop();
-        stats.PushCell();
-        if (maxKw != maxKwPrev) {
-            stats.AppendText($"{double.Round(maxKw.Item1, 2)} @ {maxKw.Item2} rpm");
-        }
-        stats.Pop();
+                stats.PushCell(); stats.AppendText("Stat"); stats.Pop();
+                stats.PushCell(); stats.AppendText("Current"); stats.Pop();
+                stats.PushCell(); stats.AppendText("New"); stats.Pop();
 
-        foreach (var entry in details) {
-            // if the values are different show them:
-            if (!DynamicsEqual(entry.Value, prevDetails.First(x => x.Name == entry.Name).Value)) {
-                // https://stackoverflow.com/a/8855857/9353639
+                foreach (var delta in deltas) {
+                    stats.PushCell();
+                    stats.AppendText(delta.FieldName);
+                    stats.Pop();
 
-                // TODO support array diff detection
+                    stats.PushCell();
+                    stats.PushColor(Colors.LightBlue);
+                    stats.AppendText(delta.FromValue != null ? GodotClassHelper.ToStringWithRounding(delta.FromValue, 2) : "-");
+                    stats.Pop();
+                    stats.Pop();
 
-                stats.PushCell();
-                stats.AppendText(entry.Name);
-                stats.Pop();
+                    stats.PushCell();
+                    var isImprovement = delta.HigherIs == HigherIs.Good
+                        ? (dynamic)delta.ToValue > (dynamic)delta.FromValue
+                        : delta.HigherIs == HigherIs.Bad
+                            ? (dynamic)delta.ToValue < (dynamic)delta.FromValue
+                            : true;
+                    stats.PushColor(isImprovement ? Colors.Green : Colors.Orange);
+                    stats.AppendText(delta.ToValue != null ? GodotClassHelper.ToStringWithRounding(delta.ToValue, 2) : "-");
+                    stats.Pop();
+                    stats.Pop();
+                }
 
-                stats.PushCell();
-                stats.PushColor(Colors.LightBlue);
-                stats.AppendText(GodotClassHelper.ToStringWithRounding(prevDetails.First(x => x.Name == entry.Name).Value, 2));
-                stats.Pop();
-                stats.Pop();
-                stats.PushCell();
-                stats.PushColor(Colors.Green);
-                stats.AppendText(GodotClassHelper.ToStringWithRounding(entry.Value, 2));
-                stats.Pop();
-                stats.Pop();
-
-                /*stats.PushCell();
-                stats.PushColor(Colors.Gray);
-                stats.AppendText(string.Join(", ", entry.BecauseOf.Select(x => $"[color={x.Color}]{x.Name}[/color]")));
-                stats.Pop();
-                stats.Pop();*/
+                stats.Pop(); // table
             }
+        } else {
+            stats.AppendText("Select a part to preview changes.");
         }
 
-        stats.Pop();
-        stats.Pop();
+        stats.Pop(); // white
 
-        var torqueCurveGraph = new TorqueCurveGraph(currentClone, null, state.CarDetails, null);
+        // Torque graph always shows current car (no clone needed when no part selected)
+        var torqueCurveGraph = new TorqueCurveGraph(state.CarDetails, null, null, null);
         statsBox.AddChild(torqueCurveGraph);
     }
 
-    private static bool DynamicsEqual(object obj1, object obj2) {
-        if (obj1 is bool b1 && obj2 is bool b2) {
-            return b1 == b2;
-        } else if (obj1 is int i1 && obj2 is int i2) {
-            return i1 == i2;
-        } else if (obj1 is float f1 && obj2 is float f2) {
-            return f1 == f2;
-        } else if (obj1 is double d1 && obj2 is double d2) {
-            return d1 == d2;
-        } else if (obj1 is string s1 && obj2 is string s2) {
-            return s1 == s2;
-        } else if (obj1 is float[] fa1 && obj2 is float[] fa2) {
-            if (fa1.Length != fa2.Length) return false;
-            for (int i = 0; i < fa1.Length; i++) {
-                if (fa1[i] != fa2[i]) return false;
-            }
-            return true;
-        }
-
-        GD.PushError("What type is " + obj1.GetType());
-        if ((dynamic)obj1 == (dynamic)obj2)
-            return true;
-        return false;
-    }
+    private void ReloadStats(HundredGlobalState state) => ReloadStats(state, null);
 }

@@ -53,6 +53,7 @@ public class SuspensionDetails : IHaveParts {
 
     public IEnumerable<PartResult> GetPartResultsInTree() => PartReader.GetResults();
     public IEnumerable<PartDetails> GetAllPartsInTree() => Parts;
+    public IEnumerable<PartDelta> CalcDeltaForPart(PartDetails part, PartLevel fromLevel, PartLevel toLevel) => PartReader.CalcDelta(part, fromLevel, toLevel);
 
     public CarSusDetails Front => new(FrontAntiroll, FrontComp, FrontMaxTravel, FrontMinTravel, FrontPreloadDistance, FrontRelax, FrontStiffness);
     public CarSusDetails Rear => new(RearAntiroll, RearComp, RearMaxTravel, RearMinTravel, RearPreloadDistance, RearRelax, RearStiffness);

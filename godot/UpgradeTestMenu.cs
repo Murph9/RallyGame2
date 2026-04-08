@@ -121,14 +121,20 @@ public partial class UpgradeTestMenu : CenterContainer {
         // options to select
         var parts = _carDetails.GetAllPartsInTree();
         foreach (var part in parts) {
+            var currentLevel = _carDetails.LevelOfPart(part);
             var option = new OptionButton();
             var popup = option.GetPopup();
-            int i = 0;
-            foreach (var l in part.GetAllValues()) {
-                popup.AddItem("Level: " + i.ToString() + " " + string.Join(", ", l.Select(x => x.Key + ": " + x.Value)));
-                i++;
+            for (int i = 0; i < part.GetAllValues().Length; i++) {
+                var level = (PartLevel)i;
+                // Show what changes relative to the previous level so each entry is self-describing
+                var fromLevel = i > 0 ? (PartLevel)(i - 1) : level;
+                var deltas = _carDetails.CalcDeltaForPart(part, fromLevel, level);
+                var deltaText = deltas.Any()
+                    ? string.Join(", ", deltas.Select(d => $"{d.FieldName}: {ToStringWithRounding(d.FromValue, 2)} -> {ToStringWithRounding(d.ToValue, 2)}"))
+                    : "(no changes)";
+                popup.AddItem($"{level}: {deltaText}");
             }
-            option.Selected = (int)_carDetails.LevelOfPart(part);
+            option.Selected = (int)currentLevel;
             option.ItemSelected += (id) => {
                 _carDetails.ApplyPartChange(part, (PartLevel)id);
                 LoadPage();
@@ -160,6 +166,8 @@ public partial class UpgradeTestMenu : CenterContainer {
     }
 
     private static string ToStringWithRounding(object obj, int length) {
+        if (obj is null)
+            return $"<null:{length}>";
         if (obj is float f)
             return float.Round(f, length).ToString();
         if (obj is double d)
