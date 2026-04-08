@@ -10,18 +10,30 @@ Download godot, setup the .vscode launch.json script to point to its location
 
 Basic Idea is that you are paying off pay day loan or rent to own scheme for some stupid appliance, you race collect parts and money every 'day' to come home and apply to the car
 
+TODOs:
+
+- traffic cars should disappear hitting the end barrier (because they have no target)
+- global across run stat changes (and rouge lite features) including but not limited to:
+    - distance travelled, rivals fought + won/lost, upgrades collected, highest level, time off the ground
+    - with global goals like alto's adventure
+    - which unlocks: new car skins, new couches and house items
+- modify car screen should show car stats
+- challenging traffic should show their relative stats to yours
+    - challenging cars should have a downside
+- car ai should be better :[
+
 Some other notes:
 
 - Parts have a colour based rarity with camera and animation to apply to the car
 - the run had the loan gets worse every day - terrible terms and conditions
 - Talk to friends about progress and they are the narrator
+    - Set up info about how are you going to pay for this jokes about making drugs but ultimately you aren't a chemist
+    - Really double down on the rarity jokes
 - Global progress is a glowy home - which exists in 3d space as the menu
 - Do house parts cost different amounts or is it random and just difficulty
 - Car parts also glow with the same rarity system
 - How long are the nights? A few minutes? Need to calculate how long it takes to win a few
 - Choose between money and parts to finish the loan
-- Set up info about how are you going to pay for this jokes about making drugs but ultimately you aren't a chemist
-- Really double down on the rarity jokes
 
 Simplify this idea by just using one car (so the parts can be easy to add)
 
@@ -34,7 +46,7 @@ MVP:
 - come across cars to race along the road for $ or parts
 - shaders that we can apply to all the parts/furniture which make it rarer
     - honestly we might just copy looter games:
-      grey (poor), white (common), green (uncommon), blue (rare), purple (epic) or orange (legendary)
+      white (common), green (uncommon), blue (rare), purple (epic) or orange (legendary)
     - stats can stay static for now
 
 ---
