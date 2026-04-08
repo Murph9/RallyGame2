@@ -120,11 +120,11 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
         // ── World marker (pre-race only) ──────────────────────────────────────
         _onScreenMarker = new Label {
-            Text = $"▼  RIVAL  ·  {_wageredPartName}",
+            Text = _wageredPartName,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
-        SetLabelStyle(_onScreenMarker, color, 15);
+        SetLabelStyle(_onScreenMarker, color, 20);
         AddChild(_onScreenMarker);
 
         _arrowLabel = new Label {

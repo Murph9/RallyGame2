@@ -286,9 +286,19 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void RespawnRivalNearPlayer(Car rival) {
-        var t = _playerCar.RigidBody.GlobalTransform;
-        t.Origin += t.Basis.X * 3f;
-        rival.RigidBody.GlobalTransform = t;
+        // Place the rival a few checkpoints ahead of the player so the catch-up
+        // teleport is never visible (they appear in front, not beside the player).
+        // Each racing rival skips to a different checkpoint so they don't stack.
+        // positionIndex = 1 keeps them in the forward traffic lane.
+        int slot = _racingQueue.IndexOf(rival);
+        int skip = 1 + slot; // slot 0 → 1 ahead, slot 1 → 2 ahead, etc.
+        var checkpoints = _manager.GetNextCheckpoints(
+            _playerCar.RigidBody.GlobalPosition, false, 1);
+        var target = checkpoints.Skip(skip).FirstOrDefault();
+        if (target == default) target = checkpoints.LastOrDefault();
+        if (target == default) return;
+
+        rival.RigidBody.GlobalTransform = target;
         rival.RigidBody.LinearVelocity = _playerCar.RigidBody.LinearVelocity;
         rival.RigidBody.AngularVelocity = Vector3.Zero;
     }
