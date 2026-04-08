@@ -10,18 +10,6 @@ Download godot, setup the .vscode launch.json script to point to its location
 
 Basic Idea is that you are paying off pay day loan or rent to own scheme for some stupid appliance, you race collect parts and money every 'day' to come home and apply to the car
 
-TODOs:
-
-- traffic cars should disappear hitting the end barrier (because they have no target)
-- global across run stat changes (and rouge lite features) including but not limited to:
-    - distance travelled, rivals fought + won/lost, upgrades collected, highest level, time off the ground
-    - with global goals like alto's adventure
-    - which unlocks: new car skins, new couches and house items
-- modify car screen should show car stats
-- challenging traffic should show their relative stats to yours
-    - challenging cars should have a downside
-- car ai should be better :[
-
 Some other notes:
 
 - Parts have a colour based rarity with camera and animation to apply to the car
@@ -35,10 +23,9 @@ Some other notes:
 - How long are the nights? A few minutes? Need to calculate how long it takes to win a few
 - Choose between money and parts to finish the loan
 
-Simplify this idea by just using one car (so the parts can be easy to add)
-
 MVP:
 
+- use one type of car
 - a house with grey/colourable furniture
     - which is a menu that is clickable
 - a single type of infinite road that just ends on the timer
@@ -48,6 +35,23 @@ MVP:
     - honestly we might just copy looter games:
       white (common), green (uncommon), blue (rare), purple (epic) or orange (legendary)
     - stats can stay static for now
+
+- TODOs for MVP:
+    - traffic cars should disappear hitting the end barrier (because they have no target)
+    - modify car screen should show car stats
+    - challenging traffic should show their relative stats to yours
+        - challenging cars should have a downside
+    - car ai should be better :[
+
+Nice product stuff:
+
+- global across run stat changes (and rouge lite features) including but not limited to:
+    - distance travelled, rivals fought + won/lost, upgrades collected, highest level, time off the ground
+    - with global goals like alto's adventure
+    - which unlocks: new car skins, new couches and house items
+- multiple cars to use
+- environments that you have to buy parts for
+- part upgrades that aren't just: its better
 
 ---
 
