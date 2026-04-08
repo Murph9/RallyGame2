@@ -49,7 +49,6 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
         public PartDetails WageredPart;
         public RivalHighlighter Highlighter;
         public RivalIndicatorUI IndicatorUI;
-        public int SlotIndex;
         // Race state (ported from RivalEntry)
         public bool RaceActive;
         public float PlayerStartDist;
@@ -59,6 +58,8 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
     }
 
     private readonly Dictionary<Car, PerRivalState> _rivalStates = [];
+    // Cars in this list are actively racing; their index IS their sidebar slot.
+    private readonly List<Car> _racingQueue = [];
     private Car _playerCar;
     private int _dayNumber;
 
@@ -67,14 +68,6 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
     public void Init(Car playerCar, int dayNumber) {
         _playerCar = playerCar;
         _dayNumber = dayNumber;
-    }
-
-    // ── Slot management ───────────────────────────────────────────────────────
-
-    private int NextFreeSlot() {
-        var used = new HashSet<int>(_rivalStates.Values.Select(s => s.SlotIndex));
-        for (int i = 0; ; i++)
-            if (!used.Contains(i)) return i;
     }
 
     // ── Main update ───────────────────────────────────────────────────────────
@@ -182,11 +175,10 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
             Rarity = rarity,
             Stake = stake,
             WageredPart = wageredPart,
-            SlotIndex = NextFreeSlot(),
         };
 
         var indicatorUI = new RivalIndicatorUI();
-        indicatorUI.Init(_playerCar, car, rarity, stake, wageredPartName, state.SlotIndex);
+        indicatorUI.Init(_playerCar, car, rarity, stake, wageredPartName);
         AddChild(indicatorUI);
         state.IndicatorUI = indicatorUI;
 
@@ -196,6 +188,9 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
 
     private void RemoveRivalState(Car car, bool wasRace) {
         if (!_rivalStates.TryGetValue(car, out var state)) return;
+
+        _racingQueue.Remove(car);
+        UpdateRacingSlots();
 
         state.Highlighter?.QueueFree();
         state.IndicatorUI?.QueueFree();
@@ -210,11 +205,22 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
 
     // ── Race logic ────────────────────────────────────────────────────────────
 
+    /// <summary>Reassigns sidebar slot indices after any queue change.</summary>
+    private void UpdateRacingSlots() {
+        for (int i = 0; i < _racingQueue.Count; i++) {
+            if (_rivalStates.TryGetValue(_racingQueue[i], out var s))
+                s.IndicatorUI?.SetSlotIndex(i);
+        }
+    }
+
     private void StartRace(Car rival, PerRivalState state) {
         state.RaceActive = true;
         state.PlayerStartDist = _playerCar.DistanceTravelled;
         state.CheckpointSet = false;
         rival.ChangeInputsTo(new RacingAiInputs(_manager));
+
+        _racingQueue.Add(rival);
+        UpdateRacingSlots();
 
         // Attach world-space glow + billboard now that the race is confirmed.
         var highlighter = new RivalHighlighter();
@@ -249,6 +255,9 @@ public partial class PaydayRivalEncounterManager : TrafficManager {
         if (!state.RaceActive) return;
         state.RaceActive = false;
         state.CheckpointSet = false;
+
+        _racingQueue.Remove(rival);
+        UpdateRacingSlots();
 
         if (state.RaceCheckpoint != null) {
             RemoveChild(state.RaceCheckpoint);

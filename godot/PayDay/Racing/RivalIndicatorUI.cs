@@ -47,6 +47,9 @@ public partial class RivalIndicatorUI : CanvasLayer {
     // World marker nodes (only visible pre-race)
     private Label _onScreenMarker;
     private Label _arrowLabel;
+    // Challenge bar: shown when speed-match is actively accumulating
+    private ColorRect _challengeBg;
+    private ColorRect _challengeFill;
 
     // Race progress (fed by manager each frame)
     private float _raceDistanceDriven;
@@ -64,6 +67,7 @@ public partial class RivalIndicatorUI : CanvasLayer {
 
     public void UpdateSpeedMatchProgress(double progress) => _speedMatchProgress = progress;
     public void SetRaceActive(bool active) => _raceActive = active;
+    public void SetSlotIndex(int index) => _slotIndex = index;
     public void UpdateRaceProgress(float driven, float total, float checkpointDist) {
         _raceDistanceDriven = driven;
         _raceTotalDistance = total;
@@ -132,6 +136,23 @@ public partial class RivalIndicatorUI : CanvasLayer {
         };
         SetLabelStyle(_arrowLabel, color, 28);
         AddChild(_arrowLabel);
+
+        // ── Challenge progress bar (pre-race, shown while speed-matching) ─────
+        const float barW = 100f;
+        const float barH = 6f;
+        _challengeBg = new ColorRect {
+            Size = new Vector2(barW, barH),
+            Color = new Color(0.15f, 0.15f, 0.15f, 0.85f),
+            Visible = false,
+        };
+        AddChild(_challengeBg);
+
+        _challengeFill = new ColorRect {
+            Size = new Vector2(0, barH),
+            Color = color,
+            Visible = false,
+        };
+        AddChild(_challengeFill);
     }
 
     public override void _Process(double delta) {
@@ -150,10 +171,12 @@ public partial class RivalIndicatorUI : CanvasLayer {
     // ── Race mode ─────────────────────────────────────────────────────────────
 
     private void UpdateRaceMode() {
-        // Show sidebar, hide world marker
+        // Show sidebar, hide world marker + challenge bar
         _statusPanel.Visible = true;
         _onScreenMarker.Visible = false;
         _arrowLabel.Visible = false;
+        _challengeBg.Visible = false;
+        _challengeFill.Visible = false;
 
         var viewport = GetViewport();
         var screenSize = viewport.GetVisibleRect().Size;
@@ -220,9 +243,26 @@ public partial class RivalIndicatorUI : CanvasLayer {
             _onScreenMarker.Visible = true;
             _arrowLabel.Visible = false;
             _onScreenMarker.Position = screenPos - new Vector2(_onScreenMarker.Size.X / 2f, 0);
+
+            // Challenge bar — sits just below the marker label when filling
+            bool challenging = _speedMatchProgress > 0.01;
+            _challengeBg.Visible = challenging;
+            _challengeFill.Visible = challenging;
+            if (challenging) {
+                const float barW = 100f;
+                const float barH = 6f;
+                float markerBottom = _onScreenMarker.Position.Y + _onScreenMarker.Size.Y + 3f;
+                float barX = screenPos.X - barW / 2f;
+                _challengeBg.Position = new Vector2(barX, markerBottom);
+                _challengeFill.Position = new Vector2(barX, markerBottom);
+                _challengeFill.Size = new Vector2(barW * (float)_speedMatchProgress, barH);
+                _challengeFill.Color = new Color(c.R, c.G, c.B, 1f);
+            }
         } else {
             _onScreenMarker.Visible = false;
             _arrowLabel.Visible = true;
+            _challengeBg.Visible = false;
+            _challengeFill.Visible = false;
 
             var center = screenSize / 2f;
             var dir = (screenPos - center).Normalized();
