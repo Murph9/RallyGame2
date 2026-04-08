@@ -38,7 +38,7 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
     public int PiecesPlaced { get; private set; }
     public float CurrentRoadWidth { get; private set; }
 
-    public InfiniteRoadManager(float spawnDistance, WorldType initialWorldType, float removePieceDistance) {
+    public InfiniteRoadManager(float spawnDistance, WorldType initialWorldType, float removePieceDistance, TrafficManager trafficManager = null) {
         UpdateWorldType(initialWorldType);
 
         var strat = new PiecePlacementStrategy(PiecePlacementStrategy.Type.Camera, spawnDistance);
@@ -49,7 +49,8 @@ public partial class InfiniteRoadManager : Node3D, IRoadManager {
 
         CurrentRoadWidth = _world.GetRoadWidth();
 
-        _trafficManager = new TrafficManager(this);
+        _trafficManager = trafficManager ?? new TrafficManager(this);
+        trafficManager?.SetRoadManager(this);
         AddChild(_trafficManager);
     }
 

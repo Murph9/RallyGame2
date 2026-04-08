@@ -29,8 +29,8 @@ public partial class PayDayRacingScene : Node3D {
     public override void _Ready() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
 
-        // Build road first so we can get the correct spawn transform
-        _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2, 150);
+        _rivalManager = new PaydayRivalEncounterManager();
+        _roadManager = new InfiniteRoadManager(300, World.Procedural.WorldType.Simple2, 150, _rivalManager);
         AddChild(_roadManager);
         GetNode<GlobalState>("/root/GlobalState").RoadManager = _roadManager;
 
@@ -39,10 +39,7 @@ public partial class PayDayRacingScene : Node3D {
         _car.RigidBody.Translate(new Vector3(0, 0, 8));
         AddChild(_car);
 
-        // create the rival placer
-        _rivalManager = new PaydayRivalEncounterManager();
-        AddChild(_rivalManager);
-        _rivalManager.Init(_roadManager, _car, state.DayNumber);
+        _rivalManager.Init(_car, state.DayNumber);
         _rivalManager.RivalRaceStarted += (rival) => EmitSignal(SignalName.RivalRaceStarted, rival);
         _rivalManager.RivalWonReward += (reward) => EmitSignal(SignalName.RivalWon, reward);
         _rivalManager.RivalWonMoney += () => EmitSignal(SignalName.RivalWonMoney);

@@ -23,14 +23,32 @@ public partial class TrafficManager : Node3D, ITrafficManager {
     public const float TRAFFIC_SPAWN_PLAYER_DISTANCE = 100;
 
 
-    private readonly List<Car> _normalTraffic = [];
-    private readonly List<Car> _opponents = [];
-    private readonly IRoadManager _manager;
+    protected readonly List<Car> _normalTraffic = [];
+    protected readonly List<Car> _opponents = [];
+    protected IRoadManager _manager;
 
     private readonly RandomNumberGenerator _rand = new();
     private bool _paused;
 
     public TrafficManager(IRoadManager manager) {
+        _manager = manager;
+    }
+
+    /// <summary>
+    /// Parameterless constructor for subclasses constructed before the road
+    /// manager exists. Call <see cref="SetRoadManager"/> before the node
+    /// enters the scene tree.
+    /// </summary>
+    protected TrafficManager() { }
+
+    /// <summary>
+    /// When false, TrySpawnOpponent() is skipped and existing opponents are not
+    /// removed by the base _Process loop. Set to false by subclasses that manage
+    /// the opponent population themselves (e.g. PaydayRivalEncounterManager).
+    /// </summary>
+    public bool SpawnOpponents { get; set; } = true;
+
+    public void SetRoadManager(IRoadManager manager) {
         _manager = manager;
     }
 
@@ -58,6 +76,7 @@ public partial class TrafficManager : Node3D, ITrafficManager {
     }
 
     public override void _Process(double delta) {
+        if (_manager == null) throw new Exception("Road manager not set for traffic manager");
         if (_paused) return;
 
         var cameraPos = GetViewport().GetCamera3D().Position;
@@ -75,18 +94,21 @@ public partial class TrafficManager : Node3D, ITrafficManager {
             }
         }
 
-        foreach (var opponent in new List<Car>(_opponents)) {
-            var nextOpponentCheckpoint = _manager.GetNextCheckpoint(opponent.RigidBody.GlobalPosition);
-            var removeForFallingOff = opponent.RigidBody.GlobalPosition.Y + 100 < nextOpponentCheckpoint.Origin.Y;
-            var removeForBeingFarBehind = (opponent.RigidBody.GlobalPosition - cameraPos).Length() > 250;
-            if (removeForFallingOff || removeForBeingFarBehind) {
-                _opponents.Remove(opponent);
-                RemoveChild(opponent);
+        if (SpawnOpponents) {
+            foreach (var opponent in new List<Car>(_opponents)) {
+                var nextOpponentCheckpoint = _manager.GetNextCheckpoint(opponent.RigidBody.GlobalPosition);
+                var removeForFallingOff = opponent.RigidBody.GlobalPosition.Y + 100 < nextOpponentCheckpoint.Origin.Y;
+                var removeForBeingFarBehind = (opponent.RigidBody.GlobalPosition - cameraPos).Length() > 250;
+                if (removeForFallingOff || removeForBeingFarBehind) {
+                    _opponents.Remove(opponent);
+                    RemoveChild(opponent);
+                }
             }
         }
 
         TrySpawnTraffic();
-        TrySpawnOpponent();
+        if (SpawnOpponents)
+            TrySpawnOpponent();
     }
 
 
