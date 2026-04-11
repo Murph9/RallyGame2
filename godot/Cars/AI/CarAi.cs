@@ -7,13 +7,11 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public abstract partial class CarAi(IRoadManager roadManager, float inputSmoothing = CarAi.INPUT_SMOOTHING) : Node3D, ICarInputs {
+public abstract partial class CarAi(IRoadManager roadManager, float inputSmoothing = CarAi.INPUT_SMOOTHING_SPEED_DEFAULT) : Node3D, ICarInputs {
 
     private const float POINT_TARGET_BUFFER = 3; // car width used in TooFast calc
 
-    // smoothing parameters
-    protected const float DEFAULT_STEERING_SPEED_DEG_PER_SEC = 90f;
-    protected const float INPUT_SMOOTHING = 5f;
+    protected const float INPUT_SMOOTHING_SPEED_DEFAULT = 5f;
 
     protected readonly IRoadManager _roadManager = roadManager;
     protected readonly float _inputSmoothing = inputSmoothing;
@@ -50,7 +48,7 @@ public abstract partial class CarAi(IRoadManager roadManager, float inputSmoothi
         CarAiPhysicsProcess(delta);
 
         // smooth steering
-        Steering = Mathf.MoveToward(WantSteering, Steering, DEFAULT_STEERING_SPEED_DEG_PER_SEC * (float)delta);
+        Steering = Mathf.Lerp(WantSteering, Steering, _inputSmoothing * (float)delta);
         // smooth acceleration
         AccelCur = Mathf.Lerp(WantAccel, AccelCur, _inputSmoothing * (float)delta);
         // smooth braking

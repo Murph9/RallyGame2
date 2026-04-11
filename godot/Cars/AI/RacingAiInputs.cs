@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManager) {
+public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManager, CarAi.INPUT_SMOOTHING_SPEED_DEFAULT / 2f) {
 
     public override void CarAiPhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
