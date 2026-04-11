@@ -15,7 +15,7 @@ public partial class TrafficAiInputs(IRoadManager roadManager, bool inReverse) :
 
     public bool InReverse { get; init; } = inReverse;
 
-    public override void _PhysicsProcess(double delta) {
+    public override void CarAiPhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
         var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition, InReverse, InReverse ? -1 : 1);
@@ -28,21 +28,21 @@ public partial class TrafficAiInputs(IRoadManager roadManager, bool inReverse) :
 
         var targetInfront = true; // TODO
         if (tooSlowForTarget && targetInfront) {
-            AccelCur = 1f;
-            BrakingCur = 0;
+            WantAccel = 1f;
+            WantBraking = 0;
         } else {
-            BrakingCur = 0.3f;
-            AccelCur = 0;
+            WantBraking = 0.3f;
+            WantAccel = 0;
         }
 
         if (IsDrifting()) {
-            AccelCur = 0;
-            Steering /= 2f; // turn less than wanted
+            WantAccel = 0;
+            WantSteering /= 2f; // turn less than wanted
         }
 
         // if going too fast slow down a little
         if (Car.RigidBody.LinearVelocity.Length() > TargetSpeedMs) {
-            AccelCur = 0;
+            WantAccel = 0;
         }
 
         FlipIfSlowUpsideDown();

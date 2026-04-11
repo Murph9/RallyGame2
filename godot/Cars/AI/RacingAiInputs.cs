@@ -2,14 +2,13 @@ using Godot;
 using murph9.RallyGame2.godot.Cars.Sim;
 using murph9.RallyGame2.godot.Component;
 using murph9.RallyGame2.godot.Utilities.Debug3D;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
 public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManager) {
 
-    public override void _PhysicsProcess(double delta) {
+    public override void CarAiPhysicsProcess(double delta) {
         if (!_listeningToInputs) return;
 
         var nextCheckPoints = _roadManager.GetNextCheckpoints(Car.RigidBody.GlobalPosition)
@@ -19,8 +18,8 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
             return;
         }
 
-        AccelCur = 1;
-        BrakingCur = 0;
+        WantAccel = 1;
+        WantBraking = 0;
 
         SteerAt(nextCheckPoints.First().Origin);
 
@@ -28,14 +27,14 @@ public partial class RacingAiInputs(IRoadManager roadManager) : CarAi(roadManage
 
         if (TooFastForNextCheckpoints((Car.RigidBody.GlobalPosition - nextCheckPoints.First().Origin).Normalized(),
                 [.. nextCheckPoints.Prepend(_roadManager.GetPassedCheckpoint(Car.RigidBody.GlobalPosition))])) {
-            BrakingCur = 1;
-            AccelCur = 0;
+            WantBraking = 1;
+            WantAccel = 0;
         }
 
         var isDrifting = IsDrifting();
         if (isDrifting) {
-            AccelCur = 0;
-            BrakingCur = 0.5f;
+            WantAccel = 0;
+            WantBraking = 0.5f;
         }
 
         FlipIfSlowUpsideDown();

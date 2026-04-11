@@ -7,11 +7,16 @@ using System.Linq;
 
 namespace murph9.RallyGame2.godot.Cars.AI;
 
-public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInputs {
+public abstract partial class CarAi(IRoadManager roadManager, float inputSmoothing = CarAi.INPUT_SMOOTHING) : Node3D, ICarInputs {
 
     private const float POINT_TARGET_BUFFER = 3; // car width used in TooFast calc
 
+    // smoothing parameters
+    protected const float DEFAULT_STEERING_SPEED_DEG_PER_SEC = 90f;
+    protected const float INPUT_SMOOTHING = 5f;
+
     protected readonly IRoadManager _roadManager = roadManager;
+    protected readonly float _inputSmoothing = inputSmoothing;
 
     private Car _car;
     public Car Car {
@@ -26,17 +31,32 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
 
     public bool HandbrakeCur { get; protected set; }
 
-    public float AccelCur { get; protected set; }
 
-    public float BrakingCur { get; protected set; }
-
-    public float Steering { get; protected set; }
+    // create inputs for smooth steering
+    protected float WantSteering;
+    protected float WantAccel;
+    protected float WantBraking;
+    public float AccelCur { get; private set; }
+    public float BrakingCur { get; private set; }
+    public float Steering { get; private set; }
 
     protected bool _listeningToInputs = true;
 
     public void AcceptInputs() => _listeningToInputs = true;
     public void IgnoreInputs() => _listeningToInputs = false;
     public void ReadInputs() { }
+
+    public override void _PhysicsProcess(double delta) {
+        CarAiPhysicsProcess(delta);
+
+        // smooth steering
+        Steering = Mathf.MoveToward(WantSteering, Steering, DEFAULT_STEERING_SPEED_DEG_PER_SEC * (float)delta);
+        // smooth acceleration
+        AccelCur = Mathf.Lerp(WantAccel, AccelCur, _inputSmoothing * (float)delta);
+        // smooth braking
+        BrakingCur = Mathf.Lerp(WantBraking, BrakingCur, _inputSmoothing * (float)delta);
+    }
+    public abstract void CarAiPhysicsProcess(double delta);
 
     private float GetWantSteerAngleToTarget(Vector3 pos) {
         var curPos = Car.RigidBody.GlobalPosition;
@@ -47,7 +67,7 @@ public abstract partial class CarAi(IRoadManager roadManager) : Node3D, ICarInpu
     protected void SteerAt(Transform3D pos) => SteerAt(pos.Origin);
     protected void SteerAt(Vector3 pos) {
         var steeringWant = GetWantSteerAngleToTarget(pos);
-        Steering = Mathf.Clamp(steeringWant, -Car.Details.MaxSteerAngle, Car.Details.MaxSteerAngle);
+        WantSteering = Mathf.Clamp(steeringWant, -Car.Details.MaxSteerAngle, Car.Details.MaxSteerAngle);
     }
     protected bool ShouldTurnLeftFor(Vector3 pos) => GetWantSteerAngleToTarget(pos) > 0;
     protected bool ShouldTurnRightFor(Vector3 pos) => GetWantSteerAngleToTarget(pos) < 0;
