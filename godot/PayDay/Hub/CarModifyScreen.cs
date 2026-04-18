@@ -49,6 +49,7 @@ public partial class CarModifyScreen : CenterContainer {
         if (_state?.CarDetails != null) {
             var box = GetNode<VBoxContainer>("HBox/Panel/VBox");
             _carStatsUI = new CarStatsUI();
+            _carStatsUI.SetCarDetails(_state.CarDetails);
             _carStatsUI.SizeFlagsVertical = SizeFlags.ShrinkEnd;
             box.AddChild(_carStatsUI);
         }
@@ -114,7 +115,7 @@ public partial class CarModifyScreen : CenterContainer {
     }
 
     private void Refresh() {
-        _carStatsUI?.Refresh();
+        _carStatsUI?.SetCarDetails(_state.CarDetails);
 
         if (_confirmButton == null)
             return;

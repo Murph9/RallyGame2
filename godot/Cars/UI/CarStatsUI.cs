@@ -1,64 +1,27 @@
-// New file
 using Godot;
-using murph9.RallyGame2.godot.PayDay;
+using murph9.RallyGame2.godot.Cars.Init;
 
 namespace murph9.RallyGame2.godot.Cars.UI;
 
 public partial class CarStatsUI : Control {
 
-    private PayDayGlobalState _state;
+    private CarDetails _carDetails;
     private double accel;
     private double topSpeed;
     private double handling;
     private double braking;
 
-    private VBoxContainer _carStatsVBox;
-
-    public override void _Ready() {
-        _state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
-
+    public void SetCarDetails(CarDetails carDetails) {
+        _carDetails = carDetails;
         Refresh();
     }
 
-    private void ComputeStats() {
-        if (_state.CarDetails == null) {
-            accel = 0;
-            topSpeed = 0;
-            handling = 0;
-            braking = 0;
-            return;
-        }
-
-        float maxTorque = (float)_state.CarDetails.Engine.MaxTorque().Item1;
-        float maxKw = (float)_state.CarDetails.Engine.MaxKw().Item1;
-        float drag = Mathf.Abs(_state.CarDetails.QuadraticDrag(new Vector3(27f, 0f, 0f)).X);
-
-        var mass = _state.CarDetails.TotalMass;
-        accel = mass > 0 ? ClampToRange(SkewLog(maxTorque / mass, -1f, 0.75f), 0, 1) : 0;
-        topSpeed = drag > 0 ? ClampToRange(SkewLog(maxKw / drag, -2f, 10f), 0, 1) : 0;
-
-        var longGrip = _state.CarDetails.TractionDetails.LongGripMax;
-        var handlingRaw = (float)(_state.CarDetails.TractionDetails.LatGripMax / longGrip);
-        handling = ClampToRange(SkewLog(handlingRaw, -1f, 1f), 0, 1);
-
-        var brakingRaw = _state.CarDetails.BrakeMaxTorque * longGrip / mass;
-        braking = mass > 0 ? ClampToRange(SkewLog(brakingRaw, 0f, 1f), 0, 1) : 0;
-    }
-
-    private static double ClampToRange(double value, double min, double max) {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-            return min;
-        return Mathf.Clamp(value, min, max);
-    }
-
-    private static double SkewLog(double value, double preMin, double preMax) => SkewLog(value, preMin, preMax, 0, 1);
-    private static double SkewLog(double value, double preMin, double preMax, double min, double max) {
-        var mx = Mathf.Log(value - preMin) / Mathf.Log(preMax - preMin);
-        return mx * (max - min) + min;
-    }
-
     public void Refresh() {
-        ComputeStats();
+        var stats = CarStatsCalculator.ComputeStats(_carDetails);
+        accel = stats.Acceleration;
+        topSpeed = stats.TopSpeed;
+        handling = stats.Handling;
+        braking = stats.Braking;
         BuildUI();
     }
 
@@ -73,8 +36,8 @@ public partial class CarStatsUI : Control {
         AddStatRow(vbox, "Top Speed", topSpeed);
         AddStatRow(vbox, "Handling", handling);
         AddStatRow(vbox, "Braking", braking);
-        AddFlagRow(vbox, "Nitro", _state.CarDetails.NitroEnabled);
-        AddFlagRow(vbox, "Turbo", _state.CarDetails.Engine.TurboAirMult > 1);
+        AddFlagRow(vbox, "Nitro", _carDetails.NitroEnabled);
+        AddFlagRow(vbox, "Turbo", _carDetails.Engine.TurboAirMult > 1);
     }
 
     private static void AddStatRow(VBoxContainer parent, string labelText, double value) {
