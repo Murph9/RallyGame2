@@ -4,18 +4,13 @@ using murph9.RallyGame2.godot.PayDay;
 
 namespace murph9.RallyGame2.godot.Cars.UI;
 
-  public partial class CarStatsUI : Control {
+public partial class CarStatsUI : Control {
 
     private PayDayGlobalState _state;
     private double accel;
     private double topSpeed;
     private double handling;
     private double braking;
-
-    public override void _Notification(int what) {
-        if (what == NotificationLayoutChanged)
-            _carStatsVBox?.CustomMinimumSize = new Vector2(0, 0);
-    }
 
     private VBoxContainer _carStatsVBox;
 
