@@ -22,13 +22,15 @@ public partial class PayDayStatsBar : CanvasLayer {
         _partsLabel = GetNode<Label>("Panel/VBox/PartsLabel");
 
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
-        state.MoneyChanged += (_) => Refresh();
-        state.DayEnded += (_) => Refresh();
+        state.MoneyChanged += Refresh;
+        state.DayEnded += Refresh;
         state.RunEnded += Refresh;
 
         Refresh();
     }
 
+    private void Refresh(int _) => Refresh();
+    private void Refresh(float _) => Refresh();
     private void Refresh() {
         var state = GetNode<PayDayGlobalState>("/root/PayDayGlobalState");
         _dayLabel.Text = $"Day {state.DayNumber}";

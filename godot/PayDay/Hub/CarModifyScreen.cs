@@ -1,5 +1,6 @@
 using Godot;
 using murph9.RallyGame2.godot.Cars.Init.Parts;
+using murph9.RallyGame2.godot.Cars.UI;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
 using murph9.RallyGame2.godot.Utilities.Extensions;
@@ -30,6 +31,7 @@ public partial class CarModifyScreen : CenterContainer {
     private PayDayGlobalState _state;
     private VBoxContainer _treeContainer;
     private Button _confirmButton;
+    private CarStatsUI _carStatsUI;
 
 
     public override void _Ready() {
@@ -43,6 +45,13 @@ public partial class CarModifyScreen : CenterContainer {
         _confirmButton.Disabled = true;
 
         PopulateTree();
+
+        if (_state?.CarDetails != null) {
+            var box = GetNode<VBoxContainer>("HBox/Panel/VBox");
+            _carStatsUI = new CarStatsUI();
+            _carStatsUI.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+            box.AddChild(_carStatsUI);
+        }
     }
 
     // ─── Tree population ──────────────────────────────────────────────────────
@@ -53,7 +62,7 @@ public partial class CarModifyScreen : CenterContainer {
 
         if (_state.PartInventory.Count == 0) {
             _treeContainer.AddChild(new Label { Text = "No parts in inventory." });
-            RefreshConfirmButton();
+            Refresh();
             return;
         }
 
@@ -71,7 +80,7 @@ public partial class CarModifyScreen : CenterContainer {
         if (!anyGroup)
             _treeContainer.AddChild(new Label { Text = "No parts in inventory." });
 
-        RefreshConfirmButton();
+        Refresh();
     }
 
     private void AddGroupSection(string groupName, List<PartDetails> parts) {
@@ -95,7 +104,7 @@ public partial class CarModifyScreen : CenterContainer {
         foreach (var part in parts) {
             var currentLevel = _state.CarDetails.LevelOfPart(part);
             var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Code == part.Code));
-            row.Updated += RefreshConfirmButton;
+            row.Updated += Refresh;
 
             childBox.AddChild(row);
             _rows.Add(row);
@@ -104,7 +113,9 @@ public partial class CarModifyScreen : CenterContainer {
         childBox.AddChild(new HSeparator());
     }
 
-    private void RefreshConfirmButton() {
+    private void Refresh() {
+        _carStatsUI?.Refresh();
+
         if (_confirmButton == null)
             return;
 
