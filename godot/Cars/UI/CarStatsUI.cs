@@ -6,11 +6,6 @@ namespace murph9.RallyGame2.godot.Cars.UI;
 public partial class CarStatsUI : Control {
 
     private CarDetails _carDetails;
-    private double accel;
-    private double topSpeed;
-    private double handling;
-    private double braking;
-
     public void SetCarDetails(CarDetails carDetails) {
         _carDetails = carDetails;
         Refresh();
@@ -18,24 +13,20 @@ public partial class CarStatsUI : Control {
 
     public void Refresh() {
         var stats = CarStatsCalculator.ComputeStats(_carDetails);
-        accel = stats.Acceleration;
-        topSpeed = stats.TopSpeed;
-        handling = stats.Handling;
-        braking = stats.Braking;
-        BuildUI();
+        BuildUI(stats);
     }
 
-    private void BuildUI() {
+    private void BuildUI(CarStats stats) {
         // Remove existing UI elements before building new ones
         foreach (var child in GetChildren())
             child.QueueFree();
 
         var vbox = new VBoxContainer();
         AddChild(vbox);
-        AddStatRow(vbox, "Acceleration", accel);
-        AddStatRow(vbox, "Top Speed", topSpeed);
-        AddStatRow(vbox, "Handling", handling);
-        AddStatRow(vbox, "Braking", braking);
+        AddStatRow(vbox, "Acceleration", stats.Acceleration);
+        AddStatRow(vbox, "Top Speed", stats.TopSpeed);
+        AddStatRow(vbox, "Handling", stats.Handling);
+        AddStatRow(vbox, "Braking", stats.Braking);
         AddFlagRow(vbox, "Nitro", _carDetails.NitroEnabled);
         AddFlagRow(vbox, "Turbo", _carDetails.Engine.TurboAirMult > 1);
     }
