@@ -3,6 +3,7 @@ using murph9.RallyGame2.godot.Cars.Init.Parts;
 using murph9.RallyGame2.godot.Cars.UI;
 using murph9.RallyGame2.godot.Component.Rarity;
 using murph9.RallyGame2.godot.PayDay.Parts;
+using murph9.RallyGame2.godot.Utilities;
 using murph9.RallyGame2.godot.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
@@ -104,7 +105,8 @@ public partial class CarModifyScreen : HBoxContainer {
 
         foreach (var part in parts) {
             var currentLevel = _state.CarDetails.LevelOfPart(part);
-            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Code == part.Code));
+            var row = new PartRow(part, currentLevel, _state.PartInventory.Where(x => x.Part.Code == part.Code),
+                (from, to) => _state.CarDetails.CalcDeltaForPart(part, from, to));
             row.Updated += Refresh;
 
             childBox.AddChild(row);
@@ -161,8 +163,9 @@ public partial class StagedPart(PartDetails part, PartLevel rarity) : RefCounted
 /// A single row in the part tree representing one part across all owned rarity variants.
 /// Shows an OptionButton dropdown to select a rarity tier and a symbol next to it indicating
 /// whether the staged selection is an upgrade (▲), downgrade (▼), or unchanged (no symbol).
+/// When a change is staged, a stat-delta panel is shown below comparing the current and new values.
 /// </summary>
-public partial class PartRow : HBoxContainer {
+public partial class PartRow : VBoxContainer {
 
     [Signal]
     public delegate void UpdatedEventHandler();
@@ -171,11 +174,13 @@ public partial class PartRow : HBoxContainer {
 
     private readonly PartDetails _part;
     private readonly PartLevel _existingRarity;
+    private readonly Func<PartLevel, PartLevel, IEnumerable<PartDelta>> _calcDelta;
     private PartLevel? _newRarity = null;
 
     private OptionButton _dropdown;
     private Label _changeIndicator;
     private ColorRect _colorBar;
+    private RichTextLabel _deltaLabel;
 
     public void Reset() {
         _newRarity = null;
@@ -183,12 +188,17 @@ public partial class PartRow : HBoxContainer {
     }
     public StagedPart GetResult() => _newRarity.HasValue ? new StagedPart(_part, _newRarity.Value) : null;
 
-    public PartRow(PartDetails part, PartLevel currentRarity, IEnumerable<CollectedPart> ownedRarities) {
+    public PartRow(PartDetails part, PartLevel currentRarity, IEnumerable<CollectedPart> ownedRarities, Func<PartLevel, PartLevel, IEnumerable<PartDelta>> calcDelta) {
         _part = part;
         _existingRarity = currentRarity;
+        _calcDelta = calcDelta;
 
         SizeFlagsHorizontal = SizeFlags.Fill;
         MouseFilter = MouseFilterEnum.Stop;
+
+        // ── Main row ─────────────────────────────────────────────────────────
+        var mainRow = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.Fill };
+        AddChild(mainRow);
 
         // Colour bar reflecting the current (equipped) rarity
         _colorBar = new ColorRect {
@@ -196,10 +206,10 @@ public partial class PartRow : HBoxContainer {
             Color = PartLevelHelper.GetColour(currentRarity),
             SizeFlagsVertical = SizeFlags.Fill,
         };
-        AddChild(_colorBar);
+        mainRow.AddChild(_colorBar);
 
         if (part?.IconImage != null) {
-            AddChild(new TextureRect {
+            mainRow.AddChild(new TextureRect {
                 Texture = part.IconImage,
                 CustomMinimumSize = new Vector2(32, 32),
                 ExpandMode = TextureRect.ExpandModeEnum.FitHeightProportional,
@@ -208,7 +218,7 @@ public partial class PartRow : HBoxContainer {
         }
 
         // Part name
-        AddChild(new Label {
+        mainRow.AddChild(new Label {
             Text = part.Name ?? "Unknown",
             SizeFlagsHorizontal = SizeFlags.Expand | SizeFlags.Fill,
             VerticalAlignment = VerticalAlignment.Center,
@@ -243,7 +253,7 @@ public partial class PartRow : HBoxContainer {
         var children = badgeRow.GetChildren();
         if (children.Count > 0)
             children[^1].QueueFree();
-        AddChild(badgeRow);
+        mainRow.AddChild(badgeRow);
 
         // Build the dropdown with owned tiers (Common always included)
         _dropdown = new OptionButton {
@@ -267,7 +277,7 @@ public partial class PartRow : HBoxContainer {
             _dropdown.Select(currentIdx);
 
         _dropdown.ItemSelected += OnItemSelected;
-        AddChild(_dropdown);
+        mainRow.AddChild(_dropdown);
 
         // Change indicator symbol shown after the dropdown
         _changeIndicator = new Label {
@@ -276,7 +286,19 @@ public partial class PartRow : HBoxContainer {
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
         };
-        AddChild(_changeIndicator);
+        mainRow.AddChild(_changeIndicator);
+
+        // ── Delta panel (hidden until a change is staged) ─────────────────────
+        _deltaLabel = new RichTextLabel {
+            BbcodeEnabled = true,
+            FitContent = true,
+            AutowrapMode = TextServer.AutowrapMode.Off,
+            SizeFlagsHorizontal = SizeFlags.Fill,
+            Visible = false,
+        };
+        _deltaLabel.AddThemeFontSizeOverride("normal_font_size", 11);
+        _deltaLabel.AddThemeFontSizeOverride("bold_font_size", 11);
+        AddChild(_deltaLabel);
 
         UpdateDropdown();
     }
@@ -295,9 +317,11 @@ public partial class PartRow : HBoxContainer {
             _changeIndicator.AddThemeColorOverride("font_color",
                 upgraded ? new Color(0.4f, 1f, 0.4f) : new Color(1f, 0.5f, 0.3f));
             _colorBar.Color = PartLevelHelper.GetColour(_newRarity.Value);
+            UpdateDeltaPanel(_existingRarity, _newRarity.Value);
         } else {
             _changeIndicator.Text = "";
             _colorBar.Color = PartLevelHelper.GetColour(_existingRarity);
+            _deltaLabel.Visible = false;
         }
 
         // Sync dropdown selection back (e.g. after Reset)
@@ -306,5 +330,37 @@ public partial class PartRow : HBoxContainer {
             if (currentIdx >= 0)
                 _dropdown.Select(currentIdx);
         }
+    }
+
+    private void UpdateDeltaPanel(PartLevel fromLevel, PartLevel toLevel) {
+        _deltaLabel.Clear();
+
+        var deltas = _calcDelta?.Invoke(fromLevel, toLevel).ToList();
+        if (deltas == null || deltas.Count == 0) {
+            _deltaLabel.Visible = false;
+            return;
+        }
+
+        _deltaLabel.PushIndent(1);
+        foreach (var delta in deltas) {
+            var fromStr = delta.FromValue != null ? GodotClassHelper.ToStringWithRounding(delta.FromValue, 2) : "-";
+            var toStr = delta.ToValue != null ? GodotClassHelper.ToStringWithRounding(delta.ToValue, 2) : "-";
+
+            bool isImprovement = delta.HigherIs == HigherIs.Good
+                ? (dynamic)delta.ToValue > (dynamic)delta.FromValue
+                : delta.HigherIs == HigherIs.Bad
+                    ? (dynamic)delta.ToValue < (dynamic)delta.FromValue
+                    : true;
+
+            var arrowColour = isImprovement ? "green" : "orange";
+            var arrow = isImprovement ? "▲" : "▼";
+
+            _deltaLabel.AppendText($"[color=gray]{delta.FieldName}:[/color]  " +
+                                   $"[color=lightblue]{fromStr}[/color]  " +
+                                   $"[color={arrowColour}]{arrow} {toStr}[/color]\n");
+        }
+        _deltaLabel.Pop(); // indent
+
+        _deltaLabel.Visible = true;
     }
 }
