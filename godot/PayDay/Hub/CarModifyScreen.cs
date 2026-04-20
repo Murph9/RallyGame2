@@ -20,7 +20,7 @@ namespace murph9.RallyGame2.godot.PayDay.Hub;
 ///   Other tiers are blocked if their target level is not above the current level.
 /// Centre: the live 3D car view (camera switched to "car" by HubScene before this opens).
 /// </summary>
-public partial class CarModifyScreen : CenterContainer {
+public partial class CarModifyScreen : HBoxContainer {
 
     [Signal]
     public delegate void ClosedEventHandler();
@@ -40,17 +40,17 @@ public partial class CarModifyScreen : CenterContainer {
         if (Center.HasValue)
             GetViewport().GetCamera3D().LookAt(Center.Value);
 
-        _treeContainer = GetNode<VBoxContainer>("Panel/HBox/VBox/ScrollContainer/TreeContainer");
-        _confirmButton = GetNode<Button>("Panel/HBox/VBox/ConfirmButton");
+        _treeContainer = GetNode<VBoxContainer>("LeftPanel/VBox/ScrollContainer/TreeContainer");
+        _confirmButton = GetNode<Button>("RightPanel/VBox/ButtonRow/ConfirmButton");
         _confirmButton.Disabled = true;
 
         PopulateTree();
 
         if (_state?.CarDetails != null) {
-            var box = GetNode<Control>("Panel/HBox/CarStatsUI");
+            var box = GetNode<Control>("RightPanel/VBox/CarStatsUI");
             _carStatsUI = new CarStatsUI();
             _carStatsUI.SetCarDetails(_state.CarDetails);
-            _carStatsUI.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+            _carStatsUI.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             box.AddChild(_carStatsUI);
         }
     }

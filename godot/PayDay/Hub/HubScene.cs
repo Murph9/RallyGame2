@@ -312,14 +312,17 @@ public partial class HubScene : Node3D {
 
         var modifyScreen = GD.Load<PackedScene>(GodotClassHelper.GetScenePath(typeof(CarModifyScreen))).Instantiate<CarModifyScreen>();
         modifyScreen.Center = eventPosition;
+
+        var layer = new CanvasLayer { Layer = 9 };
         modifyScreen.Closed += () => {
-            RemoveChild(modifyScreen);
-            modifyScreen.QueueFree();
+            RemoveChild(layer);
+            layer.QueueFree();
             _hubInteractionEnabled = true;
             RefreshAllRarityGlows();
             UseCamera("main");
         };
-        AddChild(modifyScreen);
+        layer.AddChild(modifyScreen);
+        AddChild(layer);
     }
 
     /// <summary>Recomputes the rarity-glow material on all decorative hub items.</summary>

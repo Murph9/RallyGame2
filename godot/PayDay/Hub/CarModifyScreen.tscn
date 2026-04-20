@@ -2,66 +2,104 @@
 
 [ext_resource type="Script" uid="uid://by0gsuf45a6m7" path="res://PayDay/Hub/CarModifyScreen.cs" id="1_carmodify"]
 
-[node name="CarModifyScreen" type="CenterContainer" unique_id=264433584]
+[node name="CarModifyScreen" type="HBoxContainer" unique_id=264433584]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 90.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_carmodify")
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=253086275]
-custom_minimum_size = Vector2(450, 600)
+[node name="LeftPanel" type="MarginContainer" parent="." unique_id=253086275]
+custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="HBox" type="HBoxContainer" parent="Panel" unique_id=261643864]
+[node name="VBox" type="VBoxContainer" parent="LeftPanel" unique_id=360602948]
+custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 8
 
-[node name="VBox" type="VBoxContainer" parent="Panel/HBox" unique_id=360602948]
+[node name="TitleLabel" type="Label" parent="LeftPanel/VBox" unique_id=326059082]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="TitleLabel" type="Label" parent="Panel/HBox/VBox" unique_id=326059082]
-layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Modify Car"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="Panel/HBox/VBox" unique_id=955368137]
+[node name="SubtitleLabel" type="Label" parent="LeftPanel/VBox" unique_id=955368137]
 layout_mode = 2
-text = "Apply parts to stage them, then Confirm to commit"
+text = "Stage parts then Confirm to apply"
 horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="HSeparator" type="HSeparator" parent="Panel/HBox/VBox" unique_id=1779817433]
+[node name="HSeparator" type="HSeparator" parent="LeftPanel/VBox" unique_id=1779817433]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBox/VBox" unique_id=494770545]
+[node name="ScrollContainer" type="ScrollContainer" parent="LeftPanel/VBox" unique_id=494770545]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TreeContainer" type="VBoxContainer" parent="Panel/HBox/VBox/ScrollContainer" unique_id=1566203015]
+[node name="TreeContainer" type="VBoxContainer" parent="LeftPanel/VBox/ScrollContainer" unique_id=1566203015]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HSeparator2" type="HSeparator" parent="Panel/HBox/VBox" unique_id=1583668839]
-layout_mode = 2
-
-[node name="ConfirmButton" type="Button" parent="Panel/HBox/VBox" unique_id=229500295]
+[node name="Spacer" type="Control" parent="." unique_id=111111111]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="RightPanel" type="MarginContainer" parent="." unique_id=222222222]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="RightPanel" unique_id=333333333]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="StatsTitle" type="Label" parent="RightPanel/VBox" unique_id=444444444]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Car Stats"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="RightPanel/VBox" unique_id=555555555]
+layout_mode = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="RightPanel/VBox" unique_id=1234567890]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="ConfirmButton" type="Button" parent="RightPanel/VBox/ButtonRow" unique_id=229500295]
+custom_minimum_size = Vector2(110, 36)
+layout_mode = 2
 text = "Confirm"
 
-[node name="CloseButton" type="Button" parent="Panel/HBox/VBox" unique_id=1782295173]
+[node name="CloseButton" type="Button" parent="RightPanel/VBox/ButtonRow" unique_id=1782295173]
+custom_minimum_size = Vector2(110, 36)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Close"
 
-[node name="CarStatsUI" type="Control" parent="Panel/HBox" unique_id=229500296]
+[node name="HSeparator2" type="HSeparator" parent="RightPanel/VBox" unique_id=1790422506]
+layout_mode = 2
+
+[node name="CarStatsUI" type="Control" parent="RightPanel/VBox" unique_id=229500296]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[connection signal="pressed" from="Panel/HBox/VBox/ConfirmButton" to="." method="ConfirmButton_Pressed"]
-[connection signal="pressed" from="Panel/HBox/VBox/CloseButton" to="." method="CloseButton_Pressed"]
+[connection signal="pressed" from="RightPanel/VBox/ButtonRow/ConfirmButton" to="." method="ConfirmButton_Pressed"]
+[connection signal="pressed" from="RightPanel/VBox/ButtonRow/CloseButton" to="." method="CloseButton_Pressed"]
