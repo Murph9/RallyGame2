@@ -40,14 +40,14 @@ public partial class CarModifyScreen : CenterContainer {
         if (Center.HasValue)
             GetViewport().GetCamera3D().LookAt(Center.Value);
 
-        _treeContainer = GetNode<VBoxContainer>("HBox/Panel/VBox/ScrollContainer/TreeContainer");
-        _confirmButton = GetNode<Button>("HBox/Panel/VBox/ConfirmButton");
+        _treeContainer = GetNode<VBoxContainer>("Panel/HBox/VBox/ScrollContainer/TreeContainer");
+        _confirmButton = GetNode<Button>("Panel/HBox/VBox/ConfirmButton");
         _confirmButton.Disabled = true;
 
         PopulateTree();
 
         if (_state?.CarDetails != null) {
-            var box = GetNode<VBoxContainer>("HBox/Panel/VBox");
+            var box = GetNode<Control>("Panel/HBox/CarStatsUI");
             _carStatsUI = new CarStatsUI();
             _carStatsUI.SetCarDetails(_state.CarDetails);
             _carStatsUI.SizeFlagsVertical = SizeFlags.ShrinkEnd;

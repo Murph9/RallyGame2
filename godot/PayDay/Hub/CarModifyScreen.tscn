@@ -10,51 +10,58 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_carmodify")
 
-[node name="HBox" type="HBoxContainer" parent="." unique_id=261643864]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="Panel" type="PanelContainer" parent="HBox" unique_id=870542013]
+[node name="Panel" type="PanelContainer" parent="." unique_id=253086275]
 custom_minimum_size = Vector2(450, 600)
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="HBox/Panel" unique_id=360602948]
+[node name="HBox" type="HBoxContainer" parent="Panel" unique_id=261643864]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TitleLabel" type="Label" parent="HBox/Panel/VBox" unique_id=326059082]
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox" unique_id=360602948]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/HBox/VBox" unique_id=326059082]
 layout_mode = 2
 text = "Modify Car"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="HBox/Panel/VBox" unique_id=955368137]
+[node name="SubtitleLabel" type="Label" parent="Panel/HBox/VBox" unique_id=955368137]
 layout_mode = 2
 text = "Apply parts to stage them, then Confirm to commit"
 horizontal_alignment = 1
-autowrap_mode = 3
 
-[node name="HSeparator" type="HSeparator" parent="HBox/Panel/VBox" unique_id=1779817433]
+[node name="HSeparator" type="HSeparator" parent="Panel/HBox/VBox" unique_id=1779817433]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HBox/Panel/VBox" unique_id=494770545]
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBox/VBox" unique_id=494770545]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TreeContainer" type="VBoxContainer" parent="HBox/Panel/VBox/ScrollContainer" unique_id=1566203015]
+[node name="TreeContainer" type="VBoxContainer" parent="Panel/HBox/VBox/ScrollContainer" unique_id=1566203015]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ConfirmButton" type="Button" parent="HBox/Panel/VBox" unique_id=229500295]
+[node name="HSeparator2" type="HSeparator" parent="Panel/HBox/VBox" unique_id=1583668839]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="Panel/HBox/VBox" unique_id=229500295]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Confirm"
 
-[node name="CloseButton" type="Button" parent="HBox/Panel/VBox" unique_id=1782295173]
+[node name="CloseButton" type="Button" parent="Panel/HBox/VBox" unique_id=1782295173]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Close"
 
-[connection signal="pressed" from="HBox/Panel/VBox/ConfirmButton" to="." method="ConfirmButton_Pressed"]
-[connection signal="pressed" from="HBox/Panel/VBox/CloseButton" to="." method="CloseButton_Pressed"]
+[node name="CarStatsUI" type="Control" parent="Panel/HBox" unique_id=229500296]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="pressed" from="Panel/HBox/VBox/ConfirmButton" to="." method="ConfirmButton_Pressed"]
+[connection signal="pressed" from="Panel/HBox/VBox/CloseButton" to="." method="CloseButton_Pressed"]
