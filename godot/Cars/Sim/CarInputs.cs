@@ -78,11 +78,16 @@ public class HumanCarInputs : ICarInputs {
             return steeringRaw;
         }
 
-        if (localVel.LengthSquared() < 40) // prevent slow speed weirdness
+        var lenSq = localVel.LengthSquared();
+        if (lenSq < 20) // prevent slow speed weirdness
             return steeringRaw;
 
         // this is magic, but: minimum should be best slip angle, but it doesn't catch up to the turning angle required
         // so we just add some of the angular vel value to it
-        return sign * ((float)Car.Details.TractionDetails.LatMaxSlip + Car.RigidBody.AngularVelocity.Length() * 0.125f);
+        var atSpeed = sign * ((float)Car.Details.TractionDetails.LatMaxSlip + Car.RigidBody.AngularVelocity.Length() * 0.125f);
+
+        // and also increase the slow speed lerped for smoothing
+        var t = Mathf.Clamp((lenSq - 20) / 40f, 0f, 1f);
+        return Mathf.Lerp(steeringRaw, atSpeed, t);
     }
 }
