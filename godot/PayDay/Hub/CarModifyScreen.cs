@@ -159,20 +159,28 @@ public partial class StagedPart(PartDetails part, PartLevel rarity) : RefCounted
 
 /// <summary>
 /// A single row in the part tree representing one part across all owned rarity variants.
-/// The staged tier shows ✕ and current is ✓ instead of its name.
+/// Shows an OptionButton dropdown to select a rarity tier and a symbol next to it indicating
+/// whether the staged selection is an upgrade (▲), downgrade (▼), or unchanged (no symbol).
 /// </summary>
 public partial class PartRow : HBoxContainer {
 
     [Signal]
     public delegate void UpdatedEventHandler();
 
-    private readonly List<(PartLevel, Button)> _tiers = [];
+    private readonly List<PartLevel> _tierLevels = [];
 
     private readonly PartDetails _part;
     private readonly PartLevel _existingRarity;
     private PartLevel? _newRarity = null;
 
-    public void Reset() => _newRarity = null;
+    private OptionButton _dropdown;
+    private Label _changeIndicator;
+    private ColorRect _colorBar;
+
+    public void Reset() {
+        _newRarity = null;
+        UpdateDropdown();
+    }
     public StagedPart GetResult() => _newRarity.HasValue ? new StagedPart(_part, _newRarity.Value) : null;
 
     public PartRow(PartDetails part, PartLevel currentRarity, IEnumerable<CollectedPart> ownedRarities) {
@@ -182,12 +190,13 @@ public partial class PartRow : HBoxContainer {
         SizeFlagsHorizontal = SizeFlags.Fill;
         MouseFilter = MouseFilterEnum.Stop;
 
-        // Colour of the current rarity
-        AddChild(new ColorRect {
+        // Colour bar reflecting the current (equipped) rarity
+        _colorBar = new ColorRect {
             CustomMinimumSize = new Vector2(6, 0),
             Color = PartLevelHelper.GetColour(currentRarity),
             SizeFlagsVertical = SizeFlags.Fill,
-        });
+        };
+        AddChild(_colorBar);
 
         if (part?.IconImage != null) {
             AddChild(new TextureRect {
@@ -205,46 +214,97 @@ public partial class PartRow : HBoxContainer {
             VerticalAlignment = VerticalAlignment.Center,
         });
 
+        // Tier badges — small coloured pills showing every available rarity at a glance
+        var badgeRow = new HBoxContainer {
+            SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
+        };
         foreach (var (level, index) in part.Levels.WithIndex()) {
-            // always show common, but and only show owned tiers
             if ((PartLevel)index != PartLevel.Common && !ownedRarities.Any(x => (int)x.Rarity == index))
                 continue;
 
             var rarity = (PartLevel)index;
-
-            var btn = new Button {
-                CustomMinimumSize = new Vector2(80, 0)
+            var badge = new Label {
+                Text = PartLevelHelper.GetDisplayName(rarity),
+                VerticalAlignment = VerticalAlignment.Center,
+                AutowrapMode = TextServer.AutowrapMode.Off,
             };
-            btn.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(rarity));
-            btn.Pressed += () => ButtonPressed(rarity);
+            badge.AddThemeColorOverride("font_color", PartLevelHelper.GetColour(rarity));
+            badge.AddThemeFontSizeOverride("font_size", 10);
+            badgeRow.AddChild(badge);
 
-            AddChild(btn);
-            _tiers.Add(new(rarity, btn));
+            // Separator dot between badges (not after last)
+            badgeRow.AddChild(new Label {
+                Text = " · ",
+                VerticalAlignment = VerticalAlignment.Center,
+                AutowrapMode = TextServer.AutowrapMode.Off,
+            });
         }
-        UpdateButtons();
+        // Remove the trailing separator
+        var children = badgeRow.GetChildren();
+        if (children.Count > 0)
+            children[^1].QueueFree();
+        AddChild(badgeRow);
+
+        // Build the dropdown with owned tiers (Common always included)
+        _dropdown = new OptionButton {
+            CustomMinimumSize = new Vector2(120, 0),
+            SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
+        };
+
+        foreach (var (level, index) in part.Levels.WithIndex()) {
+            if ((PartLevel)index != PartLevel.Common && !ownedRarities.Any(x => (int)x.Rarity == index))
+                continue;
+
+            var rarity = (PartLevel)index;
+            var label = PartLevelHelper.GetDisplayName(rarity);
+            _dropdown.AddItem(label);
+            _tierLevels.Add(rarity);
+        }
+
+        // Pre-select the currently equipped tier
+        var currentIdx = _tierLevels.IndexOf(currentRarity);
+        if (currentIdx >= 0)
+            _dropdown.Select(currentIdx);
+
+        _dropdown.ItemSelected += OnItemSelected;
+        AddChild(_dropdown);
+
+        // Change indicator symbol shown after the dropdown
+        _changeIndicator = new Label {
+            Text = "",
+            CustomMinimumSize = new Vector2(24, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        AddChild(_changeIndicator);
+
+        UpdateDropdown();
     }
 
-    private void ButtonPressed(PartLevel rarity) {
-        if (_existingRarity == rarity) {
-            _newRarity = null;
-        } else {
-            _newRarity = rarity;
-        }
-        UpdateButtons();
-    }
-
-    private void UpdateButtons() {
-        foreach (var tier in _tiers) {
-            var btn = tier.Item2;
-            if (tier.Item1 == _newRarity) {
-                btn.Text = "✓";
-            } else if (tier.Item1 == _existingRarity) {
-                btn.Text = "Owned";
-            } else {
-                btn.Text = PartLevelHelper.GetDisplayName(tier.Item1);
-            }
-        }
-
+    private void OnItemSelected(long idx) {
+        var selected = _tierLevels[(int)idx];
+        _newRarity = selected == _existingRarity ? null : selected;
+        UpdateDropdown();
         EmitSignal(SignalName.Updated);
+    }
+
+    private void UpdateDropdown() {
+        if (_newRarity.HasValue) {
+            var upgraded = (int)_newRarity.Value > (int)_existingRarity;
+            _changeIndicator.Text = upgraded ? "▲" : "▼";
+            _changeIndicator.AddThemeColorOverride("font_color",
+                upgraded ? new Color(0.4f, 1f, 0.4f) : new Color(1f, 0.5f, 0.3f));
+            _colorBar.Color = PartLevelHelper.GetColour(_newRarity.Value);
+        } else {
+            _changeIndicator.Text = "";
+            _colorBar.Color = PartLevelHelper.GetColour(_existingRarity);
+        }
+
+        // Sync dropdown selection back (e.g. after Reset)
+        if (!_newRarity.HasValue) {
+            var currentIdx = _tierLevels.IndexOf(_existingRarity);
+            if (currentIdx >= 0)
+                _dropdown.Select(currentIdx);
+        }
     }
 }

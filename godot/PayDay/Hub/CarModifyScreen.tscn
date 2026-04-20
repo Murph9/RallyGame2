@@ -14,6 +14,7 @@ script = ExtResource("1_carmodify")
 [node name="LeftPanel" type="MarginContainer" parent="." unique_id=253086275]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
@@ -21,7 +22,6 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
 [node name="VBox" type="VBoxContainer" parent="LeftPanel" unique_id=360602948]
-custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -48,10 +48,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="TreeContainer" type="VBoxContainer" parent="LeftPanel/VBox/ScrollContainer" unique_id=1566203015]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Spacer" type="Control" parent="." unique_id=111111111]
 layout_mode = 2
 size_flags_horizontal = 3
 
