@@ -1,11 +1,25 @@
 using Godot;
+using murph9.RallyGame2.godot.Cars.AI;
 using murph9.RallyGame2.godot.Cars.Init;
 
 namespace murph9.RallyGame2.godot.Cars.UI;
 
 public record CarStats(double Acceleration, double TopSpeed, double Handling, double Braking);
+public record SimpleCarStats(float TopSpeedKmh, float MaxKw, float LateralG);
 
 public static class CarStatsCalculator {
+    public static SimpleCarStats ComputeSimpleStats(CarDetails carDetails) {
+        if (carDetails == null)
+            return new SimpleCarStats(0, 0, 0);
+
+        float topSpeedMs = CarRoughCalc.EstimateTopSpeed(carDetails);
+        float topSpeedKmh = topSpeedMs * 3.6f;
+        float maxKw = (float)carDetails.Engine.MaxKw().Item1;
+        // Lateral G = LatGripMax (already expressed as a multiple of gravity)
+        float lateralG = (float)carDetails.TractionDetails.LatGripMax;
+
+        return new SimpleCarStats(topSpeedKmh, maxKw, lateralG);
+    }
 
     public static CarStats ComputeStats(CarDetails carDetails) {
         if (carDetails == null) {

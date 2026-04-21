@@ -117,7 +117,8 @@ public partial class CarModifyScreen : HBoxContainer {
     }
 
     private void Refresh() {
-        _carStatsUI?.SetCarDetails(_state.CarDetails);
+        var stagedPublicStats = ComputeStagedPublicStats();
+        _carStatsUI?.SetCarDetails(_state.CarDetails, stagedPublicStats);
 
         if (_confirmButton == null)
             return;
@@ -127,6 +128,32 @@ public partial class CarModifyScreen : HBoxContainer {
         _confirmButton.Text = countChanged > 0
             ? $"Confirm ({countChanged} change{(countChanged == 1 ? "" : "s")})"
             : "Confirm";
+    }
+
+    /// <summary>
+    /// Temporarily applies all staged part changes to CarDetails, reads the resulting
+    /// public stats, then reverts — so the live car state is never permanently mutated.
+    /// Returns null when there are no staged changes.
+    /// </summary>
+    private SimpleCarStats ComputeStagedPublicStats() {
+        var staged = _rows.Select(r => r.GetResult()).Where(r => r != null).ToList();
+        if (staged.Count == 0)
+            return null;
+
+        // Save current levels so we can revert
+        var saved = staged.Select(sp => (sp.Part, CurrentLevel: _state.CarDetails.LevelOfPart(sp.Part))).ToList();
+
+        try {
+            // Apply staged changes
+            foreach (var sp in staged)
+                _state.CarDetails.ApplyPartChange(sp.Part, sp.Rarity);
+
+            return CarStatsCalculator.ComputeSimpleStats(_state.CarDetails);
+        } finally {
+            // Always revert, even if an exception occurs
+            foreach (var (part, level) in saved)
+                _state.CarDetails.ApplyPartChange(part, level);
+        }
     }
 
     public void ConfirmButton_Pressed() {
